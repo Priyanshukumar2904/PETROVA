@@ -1,3 +1,4 @@
+from petrova.core.router import route_command
 from petrova.ui.console import console
 
 
@@ -8,10 +9,12 @@ def start_shell():
         if not command:
             continue
 
-        if command.lower() == "exit":
-            console.print("\n[bold green]PETROVA[/bold green]")
-            console.print("Session terminated.")
-            break
+        handled = route_command(command)
 
-        console.print(f"\n[bold green]PETROVA[/bold green]")
-        console.print(f"You entered: [cyan]{command}[/cyan]")
+        if handled:
+            continue
+
+        console.print()
+        console.print("[bold red]PETROVA[/bold red]")
+        console.print(f"Unknown command: [yellow]{command}[/yellow]")
+        console.print("Type [cyan]help[/cyan] to view available commands.")
