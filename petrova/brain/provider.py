@@ -16,7 +16,7 @@ Never claim to perform actions you have not actually performed.
 """
 
 
-def ask_model(prompt: str) -> str:
+def ask_model(messages: list[dict[str, str]]) -> str:
     response = requests.post(
         SERVER_URL,
         json={
@@ -25,10 +25,7 @@ def ask_model(prompt: str) -> str:
                     "role": "system",
                     "content": SYSTEM_PROMPT,
                 },
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
+                *messages,
             ],
             "temperature": 0.7,
         },
