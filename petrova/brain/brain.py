@@ -1,19 +1,23 @@
 from petrova.brain.provider import ask_model
 from petrova.memory.store import initialize, get_memories, save_memory
+from petrova.memory.extractor import extract_memory
 
 
 initialize()
 
 conversation: list[dict[str, str]] = []
 
+MAX_SESSION_MESSAGES = 12
+MAX_MEMORIES = 10
+
 
 def ask(prompt: str) -> str:
     """
     PETROVA Brain
-    Maintains session conversation and persistent local memory.
+    Maintains short-term session context and persistent local memory.
     """
 
-    memories = get_memories()
+    memories = get_memories(MAX_MEMORIES)
 
     context = []
 
@@ -21,13 +25,14 @@ def ask(prompt: str) -> str:
         context.append({
             "role": "system",
             "content": (
-                "These are persistent memories from previous PETROVA sessions. "
-                "Use them when relevant:\n\n"
+                "These are persistent memories about the user or their projects. "
+                "Use them only when relevant. Do not mention the memory system "
+                "unless the user asks about it.\n\n"
                 + "\n".join(f"- {memory}" for memory in memories)
             ),
         })
 
-    context.extend(conversation)
+    context.extend(conversation[-MAX_SESSION_MESSAGES:])
 
     context.append({
         "role": "user",
@@ -46,7 +51,10 @@ def ask(prompt: str) -> str:
         "content": response,
     })
 
-    save_memory(f"User: {prompt}")
-    save_memory(f"PETROVA: {response}")
+    memory = extract_memory(prompt)
+
+    if memory:
+        content, category, importance = memory
+        save_memory(content, category, importance)
 
     return response

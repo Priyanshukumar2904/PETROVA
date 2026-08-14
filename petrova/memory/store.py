@@ -13,7 +13,9 @@ def initialize():
             """
             CREATE TABLE IF NOT EXISTS memories (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                content TEXT NOT NULL,
+                content TEXT NOT NULL UNIQUE,
+                category TEXT NOT NULL DEFAULT 'general',
+                importance INTEGER NOT NULL DEFAULT 3,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
@@ -21,25 +23,44 @@ def initialize():
         connection.commit()
 
 
-def save_memory(content: str):
+def save_memory(
+    content: str,
+    category: str = "general",
+    importance: int = 3,
+):
+    importance = max(1, min(5, importance))
+
     with sqlite3.connect(DB_PATH) as connection:
         connection.execute(
-            "INSERT INTO memories (content) VALUES (?)",
-            (content,),
+            """
+            INSERT OR IGNORE INTO memories
+            (content, category, importance)
+            VALUES (?, ?, ?)
+            """,
+            (content.strip(), category, importance),
         )
         connection.commit()
 
 
-def get_memories(limit: int = 20) -> list[str]:
+def get_memories(limit: int = 10) -> list[str]:
     with sqlite3.connect(DB_PATH) as connection:
         rows = connection.execute(
             """
             SELECT content
             FROM memories
-            ORDER BY id DESC
+            ORDER BY importance DESC, id DESC
             LIMIT ?
             """,
             (limit,),
         ).fetchall()
 
-    return [row[0] for row in reversed(rows)]
+    return [row[0] for row in rows]
+
+
+def delete_memory(content: str):
+    with sqlite3.connect(DB_PATH) as connection:
+        connection.execute(
+            "DELETE FROM memories WHERE content = ?",
+            (content,),
+        )
+        connection.commit()
