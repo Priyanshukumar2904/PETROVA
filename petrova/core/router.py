@@ -3,6 +3,7 @@ from petrova.commands.version import version_command
 from petrova.commands.about import about_command
 from petrova.commands.clear import clear_command
 from petrova.commands.exit import exit_command
+from petrova.commands.server import status_command
 
 
 def route_command(command: str):
@@ -14,6 +15,7 @@ def route_command(command: str):
         "about": about_command,
         "clear": clear_command,
         "exit": exit_command,
+        "status": status_command,
     }
 
     handler = routes.get(command)

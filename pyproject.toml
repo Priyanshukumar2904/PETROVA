@@ -46,3 +46,5 @@ classifiers = [
 
 [project.scripts]
 petrova = "petrova.cli:main"
+[tool.setuptools.packages.find]
+include = ["petrova*"]
