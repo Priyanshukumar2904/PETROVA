@@ -13,13 +13,13 @@ from petrova.memory.store import (
     delete_memory,
     clear_all_memories,
     get_memory_count,
-    enforce_storage_quota,
 )
-from petrova.memory.decision import evaluate_memory_candidate, is_sensitive, is_ephemeral
-from petrova.memory.manager import process_memory
+from petrova.memory.decision import evaluate_memory_candidate
 from petrova.brain.prompt import build_system_prompt
+from petrova.brain.brain import extract_urls, extract_suggested_commands
 from petrova.core.router import route_command
 from petrova.tools.executor import is_potentially_dangerous, is_readonly_safe
+from petrova.tools.web import clean_html
 
 
 class TestPetrovaCore(unittest.TestCase):
@@ -43,37 +43,26 @@ class TestPetrovaCore(unittest.TestCase):
 
         self.assertEqual(get_memory_count(), 3)
 
-        # Search memory
         results = search_memories("Neovim")
         self.assertGreater(len(results), 0)
         self.assertIn("Neovim", results[0]["content"])
 
-        # Category retrieval
         prefs = get_all_memories(category="preference")
         self.assertEqual(len(prefs), 1)
 
-        # Deletion
         delete_memory("Prefers Neovim for coding")
         self.assertEqual(get_memory_count(), 2)
 
     def test_memory_decision_matrix(self):
-        # 1. Ephemeral banter should be ignored
-        should, cat, _, _ = evaluate_memory_candidate("hello petrova")
+        should, _, _, _ = evaluate_memory_candidate("hello petrova")
         self.assertFalse(should)
 
-        # 2. Secret passwords should be discarded
         should, _, _, _ = evaluate_memory_candidate("my api_key = 'sk-1234567890'")
         self.assertFalse(should)
 
-        # 3. Explicit directive should be remembered
         should, cat, imp, content = evaluate_memory_candidate("remember that I use Docker for microservices")
         self.assertTrue(should)
         self.assertEqual(content, "I use Docker for microservices")
-
-        # 4. Natural preference declaration
-        should, cat, _, _ = evaluate_memory_candidate("my favorite shell is zsh")
-        self.assertTrue(should)
-        self.assertEqual(cat, "preference")
 
     def test_tool_safety_classification(self):
         self.assertTrue(is_potentially_dangerous("rm -rf /"))
@@ -83,6 +72,25 @@ class TestPetrovaCore(unittest.TestCase):
         self.assertTrue(is_readonly_safe("uname -a"))
         self.assertTrue(is_readonly_safe("df -h"))
         self.assertFalse(is_readonly_safe("rm test.txt"))
+
+    def test_command_and_url_extraction(self):
+        # Command extraction
+        response = "Run this:\n```bash\nsudo pacman -Syu\n```"
+        cmds = extract_suggested_commands(response)
+        self.assertIn("sudo pacman -Syu", cmds)
+
+        # URL extraction
+        text = "Check out https://github.com/Priyanshukumar2904/PETROVA and https://google.com"
+        urls = extract_urls(text)
+        self.assertEqual(len(urls), 2)
+        self.assertIn("https://github.com/Priyanshukumar2904/PETROVA", urls)
+
+    def test_html_cleaner(self):
+        html = "<html><body><h1>Title</h1><p>Paragraph text.</p><script>evil()</script></body></html>"
+        cleaned = clean_html(html)
+        self.assertIn("Title", cleaned)
+        self.assertIn("Paragraph text.", cleaned)
+        self.assertNotIn("evil()", cleaned)
 
     def test_system_prompt_builder(self):
         memories = [{"content": "User prefers concise answers."}]

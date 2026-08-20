@@ -18,6 +18,8 @@ def help_command():
     # General & Execution
     table.add_row("/help", "Show this command reference")
     table.add_row("/run <cmd> [or !<cmd>]", "Safely execute a Linux shell command")
+    table.add_row("/web <query>", "Search the web without API keys")
+    table.add_row("/fetch <url>", "Fetch and inspect web page or GitHub repository")
     table.add_row("/status", "Display current system, model, permissions & memory status")
     table.add_row("/config [or /setup]", "Reconfigure user name, AI model, permissions, or storage")
     table.add_row("/clear", "Clear terminal screen")

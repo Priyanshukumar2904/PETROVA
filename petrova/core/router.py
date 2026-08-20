@@ -46,6 +46,11 @@ def route_command(user_input: str) -> bool:
         execute_command(" ".join(args))
         return True
 
+    elif primary in ("web", "search", "fetch", "repo"):
+        from petrova.commands.web import web_command
+        return web_command(args)
+
+
     elif primary in ("status", "info"):
         console.print()
         console.print(get_status_table())
