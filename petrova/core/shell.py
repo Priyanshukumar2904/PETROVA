@@ -1,6 +1,6 @@
 """
 Interactive REPL Shell for PETROVA.
-Clean typography, live streaming metrics (tokens, speed, thermals), and safe command execution.
+Clean typography, live streaming metrics (tokens, speed, thermals), and safe command execution with auto-diagnostics.
 """
 
 import sys
@@ -11,6 +11,7 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
 from rich.panel import Panel
 from rich.syntax import Syntax
+from rich.prompt import Confirm
 
 from petrova.brain.brain import stream_ask, ask, extract_suggested_commands
 from petrova.core.router import route_command
@@ -58,7 +59,7 @@ PROMPT_STYLE = Style.from_dict({
 
 
 def handle_suggested_commands(full_response: str):
-    """Detect shell commands proposed by PETROVA and offer execution."""
+    """Detect shell commands proposed by PETROVA, offer execution and auto-diagnostics on failure."""
     config = get_config()
     perm_mode = config.get("permission_mode", "confirm")
 
@@ -79,7 +80,19 @@ def handle_suggested_commands(full_response: str):
         ))
 
         # Execute using permission rules in executor
-        execute_command(cmd)
+        code, stdout, stderr = execute_command(cmd)
+
+        # Auto-diagnosis hook on non-zero exit codes (except user cancellation)
+        if code not in (0, 1) and stderr:
+            console.print()
+            if Confirm.ask("[bold yellow]Command encountered an error. Ask PETROVA to diagnose & fix?[/bold yellow]", default=True):
+                console.print("\n[bold green]PETROVA (Diagnosis)[/bold green]")
+                diag_prompt = f"The command `{cmd}` failed with exit code {code}.\nError details:\n{stderr}\nPlease diagnose the root cause and provide the corrected command."
+                for token in stream_ask(diag_prompt):
+                    sys.stdout.write(token)
+                    sys.stdout.flush()
+                sys.stdout.write("\n")
+                sys.stdout.flush()
 
 
 def start_shell():

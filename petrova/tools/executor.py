@@ -1,8 +1,10 @@
 """
 Safe Linux Terminal Command Execution Engine for PETROVA.
-Implements permission checking, timeout protection, output formatting, and explain-before-execute.
+Supports interactive TUI applications (htop, btop, vim), live streaming, and error diagnostics.
 """
 
+import os
+import sys
 import time
 import subprocess
 from typing import Tuple, Optional
@@ -13,6 +15,13 @@ from rich.syntax import Syntax
 from petrova.ui.console import console
 from petrova.config.settings import get_config
 
+# Full-screen interactive TUI / Curses applications that require direct TTY
+INTERACTIVE_COMMANDS = [
+    "htop", "top", "btop", "nvtop", "iotop", "iftop", "nmtui", "ncdu",
+    "vim", "vi", "nvim", "nano", "micro", "emacs",
+    "less", "more", "man", "watch", "fzf", "lazygit", "ranger", "yazi", "mc"
+]
+
 # Commands considered dangerous requiring explicit warning/confirmation regardless of mode
 DANGEROUS_COMMANDS = [
     "rm -rf", "rm -r", "mkfs", "dd", "shutdown", "reboot", "poweroff",
@@ -20,12 +29,27 @@ DANGEROUS_COMMANDS = [
     "> /dev/sda", "> /dev/nvme", "killall", "pkill -9", "iptables -F"
 ]
 
+# Safe read-only system inspection commands
 SAFE_READONLY_COMMANDS = [
     "ls", "dir", "pwd", "uname", "whoami", "id", "uptime", "date",
     "df", "free", "cat", "head", "tail", "grep", "find", "ps", "top",
-    "htop", "neofetch", "fastfetch", "lscpu", "lsblk", "ip", "ifconfig",
-    "ping", "curl", "which", "whereis", "file", "systemctl status"
+    "htop", "btop", "neofetch", "fastfetch", "lscpu", "lsblk", "ip", "ifconfig",
+    "ping", "curl", "which", "whereis", "file", "systemctl status", "sensors"
 ]
+
+
+def is_interactive(command: str) -> bool:
+    """Check if command invokes a full-screen interactive TUI or editor."""
+    cmd_lower = command.strip().lower()
+    # Normalize typos: "h top" -> "htop", "n vim" -> "nvim"
+    cmd_parts = cmd_lower.replace("h top", "htop").split()
+    if not cmd_parts:
+        return False
+    # Check base program name (e.g. "sudo htop" -> "htop")
+    base = cmd_parts[0]
+    if base == "sudo" and len(cmd_parts) > 1:
+        base = cmd_parts[1]
+    return base in INTERACTIVE_COMMANDS
 
 
 def is_potentially_dangerous(command: str) -> bool:
@@ -40,22 +64,43 @@ def is_readonly_safe(command: str) -> bool:
     if not cmd_parts:
         return False
     base = cmd_parts[0].lower()
+    if base == "sudo" and len(cmd_parts) > 1:
+        base = cmd_parts[1].lower()
     return base in SAFE_READONLY_COMMANDS and not any(op in command for op in [">", ">>", "| rm", "| sh", "| bash"])
+
+
+def normalize_command(command: str) -> str:
+    """Normalize common user typos in command names."""
+    cmd = command.strip()
+    # Fix common spacing typos: "h top" -> "htop", "fast fetch" -> "fastfetch"
+    replacements = {
+        "h top": "htop",
+        "b top": "btop",
+        "n vim": "nvim",
+        "fast fetch": "fastfetch",
+        "neo fetch": "neofetch",
+    }
+    for typo, fix in replacements.items():
+        if cmd.lower().startswith(typo):
+            cmd = fix + cmd[len(typo):]
+    return cmd
 
 
 def execute_command(
     command: str,
     explanation: Optional[str] = None,
-    timeout: int = 30,
+    timeout: int = 600,  # 10 minutes generous timeout for compilation & updates
 ) -> Tuple[int, str, str]:
     """
-    Execute a Linux shell command respecting user permissions.
+    Execute a Linux shell command respecting user permissions and interactive TTY needs.
     Returns: (exit_code, stdout, stderr)
     """
+    command = normalize_command(command)
     config = get_config()
-    perm_mode = config.get("permission_mode", "confirm")  # "confirm", "autonomous", "read_only"
+    perm_mode = config.get("permission_mode", "confirm")
     is_danger = is_potentially_dangerous(command)
     is_safe = is_readonly_safe(command)
+    is_tui = is_interactive(command)
 
     # 1. READ ONLY MODE
     if perm_mode == "read_only":
@@ -93,7 +138,19 @@ def execute_command(
             console.print("[dim]Command execution cancelled.[/dim]\n")
             return 1, "", "Execution cancelled by user."
 
-    # 3. ACTUAL EXECUTION
+    # 3. INTERACTIVE TUI EXECUTION (htop, btop, vim, etc.)
+    if is_tui:
+        console.print(f"[dim]Launching interactive process: {command}...[/dim]")
+        try:
+            # Inherits real TTY for full-screen rendering and keyboard controls
+            res = subprocess.run(command, shell=True)
+            console.print(f"[dim]Interactive session ended (exit code {res.returncode}).[/dim]\n")
+            return res.returncode, "[Interactive session completed]", ""
+        except Exception as e:
+            console.print(f"[bold red]Error running interactive tool:[/bold red] {e}")
+            return 1, "", str(e)
+
+    # 4. STANDARD LIVE OUTPUT EXECUTION
     console.print(f"[dim]Running: {command}...[/dim]")
     start_time = time.time()
 
@@ -110,20 +167,21 @@ def execute_command(
         duration = round(time.time() - start_time, 2)
         code = process.returncode
 
-        # Display output
+        # Display stdout
         if stdout:
             console.print()
             console.print(Panel(
                 stdout.strip(),
-                title=f"Output (code {code} in {duration}s)",
+                title=f"Output (exit code {code} in {duration}s)",
                 border_style="green" if code == 0 else "yellow",
             ))
 
+        # Display stderr if failed
         if stderr and code != 0:
             console.print()
             console.print(Panel(
                 stderr.strip(),
-                title=f"Error (code {code})",
+                title=f"Error (exit code {code})",
                 border_style="red",
             ))
 

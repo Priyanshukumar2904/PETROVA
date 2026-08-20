@@ -73,6 +73,18 @@ class TestPetrovaCore(unittest.TestCase):
         self.assertTrue(is_readonly_safe("df -h"))
         self.assertFalse(is_readonly_safe("rm test.txt"))
 
+    def test_interactive_and_normalization(self):
+        from petrova.tools.executor import is_interactive, normalize_command
+        self.assertTrue(is_interactive("htop"))
+        self.assertTrue(is_interactive("sudo htop"))
+        self.assertTrue(is_interactive("vim /etc/fstab"))
+        self.assertTrue(is_interactive("btop"))
+        self.assertFalse(is_interactive("ls -la"))
+
+        self.assertEqual(normalize_command("h top"), "htop")
+        self.assertEqual(normalize_command("fast fetch"), "fastfetch")
+
+
     def test_command_and_url_extraction(self):
         # Command extraction
         response = "Run this:\n```bash\nsudo pacman -Syu\n```"
