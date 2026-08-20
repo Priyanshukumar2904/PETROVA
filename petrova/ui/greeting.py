@@ -1,22 +1,67 @@
 """
-Dynamic, Time-Aware Greeting for PETROVA.
+Warm, Empathetic & Context-Aware Proactive Greeting for PETROVA.
+Provides a caring health check-in, workspace awareness, and continuity from the last session.
 """
 
 from datetime import datetime
 from petrova.config.settings import get_config
+from petrova.linux.stats import get_cpu_temp, get_ram_usage, get_distro_info
+from petrova.linux.workspace import get_workspace_context
+from petrova.memory.store import get_last_session_summary
 
 
 def get_greeting() -> str:
-    """Generate dynamic greeting based on system time and configured user name."""
+    """Generate dynamic, caring, and proactive briefing for the user."""
     config = get_config()
     user_name = config.user_name
     hour = datetime.now().hour
 
+    # 1. Time greeting
     if hour < 12:
-        return f"Good Morning, {user_name}."
+        salutation = f"Good morning, {user_name}!"
     elif hour < 17:
-        return f"Good Afternoon, {user_name}."
+        salutation = f"Good afternoon, {user_name}!"
     elif hour < 22:
-        return f"Good Evening, {user_name}."
+        salutation = f"Good evening, {user_name}!"
     else:
-        return f"Good Night, {user_name}."
+        salutation = f"Working late tonight, {user_name}?"
+
+    # 2. Hardware health assessment
+    temp = get_cpu_temp()
+    ram = get_ram_usage()
+    distro = get_distro_info()
+
+    health_notes = []
+    if temp and temp >= 82.0:
+        health_notes.append(f"⚠️ [bold yellow]Heads-up:[/bold yellow] Your CPU is running warm at [red]{temp}°C[/red].")
+    elif temp:
+        health_notes.append(f"✨ Workstation is running smooth at [green]{temp}°C[/green] ({distro['pretty_name']}).")
+
+    if ram["pct"] >= 88.0:
+        health_notes.append(f"⚠️ [bold yellow]High Memory:[/bold yellow] RAM usage is at [yellow]{ram['pct']}%[/yellow] ({ram['used_gb']}/{ram['total_gb']} GB).")
+
+    # 3. Workspace check
+    ws = get_workspace_context()
+    ws_note = ""
+    if ws["git"]["is_git"]:
+        branch = ws["git"]["branch"]
+        mod = ws["git"]["modified_count"]
+        dirty_str = f" with [yellow]{mod} uncommitted changes[/yellow]" if mod > 0 else " ([green]clean[/green])"
+        ws_note = f"📂 [bold cyan]Workspace:[/bold cyan] Working in [bold]{ws['folder_name']}[/bold] on branch [magenta]'{branch}'[/magenta]{dirty_str}."
+
+    # 4. Episodic memory from last session
+    last_sess = get_last_session_summary()
+    continuity_note = ""
+    if last_sess and last_sess.get("summary"):
+        continuity_note = f"💡 [dim]Last time: {last_sess['summary']}[/dim]"
+
+    # Assemble greeting text
+    lines = [f"[bold cyan]{salutation}[/bold cyan]"]
+    if health_notes:
+        lines.append(" ".join(health_notes))
+    if ws_note:
+        lines.append(ws_note)
+    if continuity_note:
+        lines.append(continuity_note)
+
+    return "\n".join(lines)

@@ -39,7 +39,16 @@ def route_command(user_input: str) -> bool:
     if primary in ("help", "?"):
         return help_command()
 
+    elif primary in ("goal", "plan", "task"):
+        if not args:
+            console.print("[yellow]Usage:[/yellow] [green]/goal <multi-step objective>[/green]")
+            return True
+        from petrova.brain.planner import execute_goal
+        execute_goal(" ".join(args))
+        return True
+
     elif primary in ("run", "exec", "sh", "bash"):
+
         if not args:
             console.print("[yellow]Usage: /run <command>[/yellow] (e.g. [green]/run df -h[/green])")
             return True

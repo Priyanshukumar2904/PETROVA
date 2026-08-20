@@ -24,6 +24,7 @@ from petrova.commands.exit import exit_command
 # Built-in Slash Commands for Tab completion
 SLASH_COMMANDS = [
     "/help",
+    "/goal",
     "/status",
     "/stats",
     "/run",
@@ -31,6 +32,7 @@ SLASH_COMMANDS = [
     "/fetch",
     "/config",
     "/setup",
+
     "/server",
     "/server start",
     "/server stop",

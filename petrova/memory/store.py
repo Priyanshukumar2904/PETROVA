@@ -1,6 +1,6 @@
 """
 Persistent SQLite Memory Storage for PETROVA with Storage Quota Enforcement.
-Stores user facts, preferences, workflows, and context in ~/.local/share/petrova/petrova.db.
+Stores user facts, preferences, workflows, and episodic session journals.
 """
 
 import os
@@ -15,6 +15,7 @@ def initialize():
     DB_FILE.parent.mkdir(parents=True, exist_ok=True)
 
     with sqlite3.connect(DB_FILE) as connection:
+        # Long-term semantic facts
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS memories (
@@ -29,6 +30,18 @@ def initialize():
         )
         connection.execute(
             "CREATE INDEX IF NOT EXISTS idx_memories_category ON memories (category)"
+        )
+
+        # Episodic session logs for conversational continuity
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS session_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                summary TEXT NOT NULL,
+                commands_run INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
         )
         connection.commit()
 
@@ -45,13 +58,12 @@ def enforce_storage_quota():
     config = get_config()
     max_mb = config.get("memory_storage_mb", 500)
     
-    if max_mb <= 0:  # 0 means unlimited
+    if max_mb <= 0:
         return
 
     current_mb = get_db_size_mb()
     if current_mb > max_mb:
         with sqlite3.connect(DB_FILE) as connection:
-            # Delete lowest importance (<=2) old entries first
             connection.execute(
                 """
                 DELETE FROM memories
@@ -97,6 +109,42 @@ def save_memory(
         )
         connection.commit()
         return cursor.rowcount > 0
+
+
+def log_session_summary(summary: str, commands_run: int = 0):
+    """Record summary of session activities for continuity on next launch."""
+    initialize()
+    with sqlite3.connect(DB_FILE) as connection:
+        connection.execute(
+            """
+            INSERT INTO session_logs (summary, commands_run)
+            VALUES (?, ?)
+            """,
+            (summary.strip(), commands_run),
+        )
+        connection.commit()
+
+
+def get_last_session_summary() -> Optional[Dict[str, Any]]:
+    """Retrieve the most recent session summary."""
+    initialize()
+    with sqlite3.connect(DB_FILE) as connection:
+        row = connection.execute(
+            """
+            SELECT summary, commands_run, created_at
+            FROM session_logs
+            ORDER BY id DESC
+            LIMIT 1
+            """
+        ).fetchone()
+
+    if row:
+        return {
+            "summary": row[0],
+            "commands_run": row[1],
+            "created_at": row[2],
+        }
+    return None
 
 
 def get_memories(limit: int = 10) -> List[str]:
@@ -154,7 +202,6 @@ def get_all_memories(category: Optional[str] = None) -> List[Dict[str, Any]]:
 def search_memories(query: str, limit: int = 5) -> List[Dict[str, Any]]:
     """
     Return memories ranked by fast local text relevance and importance.
-    Lightweight, model-free, zero-latency retrieval.
     """
     initialize()
     words = {

@@ -1,0 +1,104 @@
+<svg width="1000" height="480" viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#181825" />
+      <stop offset="100%" stop-color="#11111b" />
+    </linearGradient>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <rect width="1000" height="480" rx="16" fill="#0f172a" stroke="#1e293b" stroke-width="1.5" />
+
+  <!-- Section Title -->
+  <text x="500" y="48" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="800" fill="#38bdf8" text-anchor="middle" letter-spacing="1">
+    ⚡ PETROVA INTELLIGENCE ARCHITECTURE &amp; CAPABILITIES
+  </text>
+
+  <!-- Row 1 Cards -->
+  <!-- Card 1: Proactive Briefings -->
+  <g transform="translate(40, 80)" filter="url(#cardShadow)">
+    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#38bdf8" stroke-width="1" />
+    <text x="20" y="36" font-family="sans-serif" font-size="20">🌟</text>
+    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#38bdf8">Proactive Health Briefings</text>
+    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8" width="240">
+      <tspan x="20" dy="0">Time-aware greetings with live CPU</tspan>
+      <tspan x="20" dy="18">thermals, RAM telemetry, and</tspan>
+      <tspan x="20" dy="18">previous session continuity.</tspan>
+    </text>
+    <rect x="20" y="122" width="100" height="22" rx="4" fill="#0369a1" fill-opacity="0.3" />
+    <text x="28" y="137" font-family="monospace" font-size="10" fill="#38bdf8">Hardware Aware</text>
+  </g>
+
+  <!-- Card 2: Distro Fidelity -->
+  <g transform="translate(360, 80)" filter="url(#cardShadow)">
+    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#34d399" stroke-width="1" />
+    <text x="20" y="36" font-family="sans-serif" font-size="20">🐧</text>
+    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#34d399">Deep Distro Precision</text>
+    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8">
+      <tspan x="20" dy="0">Native package manager intelligence</tspan>
+      <tspan x="20" dy="18">(CachyOS, Arch, paru, pacman)</tspan>
+      <tspan x="20" dy="18">with zero cross-distro hallucinations.</tspan>
+    </text>
+    <rect x="20" y="122" width="115" height="22" rx="4" fill="#065f46" fill-opacity="0.3" />
+    <text x="28" y="137" font-family="monospace" font-size="10" fill="#34d399">CachyOS / Arch</text>
+  </g>
+
+  <!-- Card 3: Safe Command Execution -->
+  <g transform="translate(680, 80)" filter="url(#cardShadow)">
+    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#f472b6" stroke-width="1" />
+    <text x="20" y="36" font-family="sans-serif" font-size="20">⚡</text>
+    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#f472b6">Interactive TTY Execution</text>
+    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8">
+      <tspan x="20" dy="0">Full-screen TTY support for htop, top,</tspan>
+      <tspan x="20" dy="18">vim, and sudo prompts with safe</tspan>
+      <tspan x="20" dy="18">[y/N] permission checks.</tspan>
+    </text>
+    <rect x="20" y="122" width="105" height="22" rx="4" fill="#831843" fill-opacity="0.3" />
+    <text x="28" y="137" font-family="monospace" font-size="10" fill="#f472b6">htop &amp; TUI Ready</text>
+  </g>
+
+  <!-- Row 2 Cards -->
+  <!-- Card 4: SQLite Memory -->
+  <g transform="translate(40, 270)" filter="url(#cardShadow)">
+    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#a78bfa" stroke-width="1" />
+    <text x="20" y="36" font-family="sans-serif" font-size="20">🧠</text>
+    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#a78bfa">Persistent SQLite Memory</text>
+    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8">
+      <tspan x="20" dy="0">Remembers user preferences, shell</tspan>
+      <tspan x="20" dy="18">habits, and project details with</tspan>
+      <tspan x="20" dy="18">automatic quota enforcement.</tspan>
+    </text>
+    <rect x="20" y="122" width="100" height="22" rx="4" fill="#4c1d95" fill-opacity="0.3" />
+    <text x="28" y="137" font-family="monospace" font-size="10" fill="#a78bfa">Zero-Latency</text>
+  </g>
+
+  <!-- Card 5: Web & GitHub Inspector -->
+  <g transform="translate(360, 270)" filter="url(#cardShadow)">
+    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#fbbf24" stroke-width="1" />
+    <text x="20" y="36" font-family="sans-serif" font-size="20">🌐</text>
+    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#fbbf24">Online Repo &amp; Web Fetch</text>
+    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8">
+      <tspan x="20" dy="0">Pass any GitHub repo or web URL</tspan>
+      <tspan x="20" dy="18">to instantly fetch structure, README,</tspan>
+      <tspan x="20" dy="18">and code documentation.</tspan>
+    </text>
+    <rect x="20" y="122" width="105" height="22" rx="4" fill="#78350f" fill-opacity="0.3" />
+    <text x="28" y="137" font-family="monospace" font-size="10" fill="#fbbf24">No API Key Req</text>
+  </g>
+
+  <!-- Card 6: Multi-Step Goal Planner -->
+  <g transform="translate(680, 270)" filter="url(#cardShadow)">
+    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#38bdf8" stroke-width="1" />
+    <text x="20" y="36" font-family="sans-serif" font-size="20">🎯</text>
+    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#38bdf8">Multi-Step Goal Planner</text>
+    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8">
+      <tspan x="20" dy="0">Type /goal &lt;task&gt; to decompose</tspan>
+      <tspan x="20" dy="18">complex objectives into sequenced,</tspan>
+      <tspan x="20" dy="18">interactive execution plans.</tspan>
+    </text>
+    <rect x="20" y="122" width="110" height="22" rx="4" fill="#0369a1" fill-opacity="0.3" />
+    <text x="28" y="137" font-family="monospace" font-size="10" fill="#38bdf8">Agentic Planning</text>
+  </g>
+</svg>

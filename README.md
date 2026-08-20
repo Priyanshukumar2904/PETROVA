@@ -19,13 +19,13 @@
 
 ## 🌟 Overview
 
-**PETROVA** is an open-source, privacy-first AI Operating Assistant designed for Linux. It combines local Large Language Models (LLMs), intelligent system tooling, real-time command execution, and persistent long-term SQLite memory to help you understand, maintain, diagnose, and automate your Linux system.
+**PETROVA** is an open-source, privacy-first AI Operating Assistant designed for Linux. It combines local Large Language Models (LLMs), intelligent system tooling, real-time command execution, proactive hardware telemetry, and persistent long-term SQLite memory to help you understand, maintain, diagnose, and automate your Linux system.
 
 Unlike cloud chatbots that send your data across the internet, PETROVA runs **100% locally on your machine**, keeps your history private, and directly connects to local inference backends (`llama.cpp`, `Ollama`, or OpenAI-compatible APIs).
 
 ---
 
-## 🎬 Live Terminal Demo
+## 🎬 Live Terminal Walkthrough
 
 <p align="center">
   <img src="assets/terminal_demo.svg" alt="PETROVA Interactive Terminal Demo" width="100%" />
@@ -33,14 +33,24 @@ Unlike cloud chatbots that send your data across the internet, PETROVA runs **10
 
 ---
 
+## 💎 Core Architecture & Capabilities
+
+<p align="center">
+  <img src="assets/features_showcase.svg" alt="PETROVA Features Showcase" width="100%" />
+</p>
+
+---
+
 ## ✨ Key Features
 
 - 🚀 **1-Command Global Startup**: Launch your assistant from any terminal prompt simply by typing `petrova`.
-- 🧙‍♂️ **One-Time Onboarding Wizard**: Effortlessly choose your preferred name, model tier, terminal permissions, and memory storage quota on first launch.
-- ⚡ **Interactive Command Execution**: Ask PETROVA to perform operations (e.g. *“update my system”*, *“clean disk cache”*, *“diagnose open ports”*). PETROVA proposes the exact bash command and safely prompts `[y/N]` before executing.
+- 🌟 **Proactive Health Briefings & Empathy**: Greeted with live CPU temperatures, RAM usage alerts, and continuity memory from your previous session.
+- 🐧 **Deep Distro Precision**: Automatically detects your exact Linux distribution (e.g. CachyOS / Arch) and formulates native package commands (`sudo pacman -Syu`, `paru -Syu`, `cachyos-rate-mirrors`).
+- ⚡ **Interactive Full-Screen TTY Support**: Run full-screen interactive tools (`htop`, `btop`, `top`, `vim`, `nano`) directly inside the session, returning smoothly upon exit.
+- 🎯 **Multi-Step Goal Planner (`/goal`)**: Decompose complex objectives into sequenced, interactive execution plans.
 - 🧠 **Persistent SQLite Memory**: Remembers user preferences, project notes, and shell habits across sessions with automated storage quota caps (`~/.local/share/petrova/petrova.db`).
 - 🌐 **Live Web & GitHub Inspector**: Pass any URL or GitHub repo link (`https://github.com/...`) in chat or via `/fetch`, and PETROVA will analyze the live repository structure and README.
-- 🏎️ **Zero-Latency Token Streaming**: Real-time SSE token streaming renders responses instantly token-by-token with zero terminal freezing.
+- 🏎️ **Zero-Latency Token Streaming**: Real-time SSE token streaming renders responses instantly token-by-token with live tokens/sec and thermal stats.
 
 ---
 
@@ -76,7 +86,9 @@ petrova
 | Command | Description |
 | :--- | :--- |
 | **`/help`** | Display complete command reference table |
+| **`/goal <objective>`** | Plan and execute a multi-step agentic objective with live progress |
 | **`/run <command>`** *(or `!<cmd>`)* | Safely execute a Linux shell command with live duration metrics |
+| **`/stats`** | Display live hardware, CPU temperature, RAM gauge, and storage dashboard |
 | **`/fetch <url>`** | Fetch and inspect any live web page or GitHub repository |
 | **`/web <query>`** | Search the web without needing external API keys |
 | **`/status`** | View live system health, AI server, permissions, and memory usage |
@@ -91,7 +103,7 @@ petrova
 | **`/memory delete <id>`** | Delete a specific memory item by ID |
 | **`/server start \| stop \| status`** | Manage local background AI inference supervisor |
 | **`/clear`** | Clear terminal screen |
-| **`/exit`** *(or `/quit`)* | Exit session |
+| **`/exit`** *(or `/quit`)* | Exit session (automatically records session journal) |
 
 ---
 
@@ -101,35 +113,37 @@ petrova
 flowchart TD
     subgraph Terminal["🖥️ Interactive CLI Interface"]
         A["prompt_toolkit REPL & Shell"]
-        B["Rich Terminal & Status UI"]
+        B["Rich Terminal & Telemetry Dashboard"]
         C["Slash Command Router"]
     end
 
     subgraph Core["⚙️ PETROVA Brain & Engine"]
-        D["System Context & Action Prompt Builder"]
+        D["System Context & Distro-Aware Prompt Builder"]
         E["Token Streaming Provider"]
         F["Process Supervisor (llama-server / Ollama)"]
-        G["Safe Command Executor (Timeout & Safety Rules)"]
+        G["Safe Command Executor (TTY Interactive & Safe Rules)"]
         H["Web & GitHub Inspector"]
+        I["Multi-Step Goal Planner"]
     end
 
     subgraph Storage["💾 XDG Storage Standard"]
-        I["Config: ~/.config/petrova/config.json"]
-        J["Memory DB: ~/.local/share/petrova/petrova.db"]
-        K["History: ~/.local/share/petrova/history"]
+        J["Config: ~/.config/petrova/config.json"]
+        K["Memory & Session DB: ~/.local/share/petrova/petrova.db"]
+        L["History: ~/.local/share/petrova/history"]
     end
 
     A --> C
     C -->|Slash Commands| B
     C -->|Run Shell Command| G
     C -->|Web / GitHub Query| H
+    C -->|Agentic Goal| I
     A -->|AI Question| D
     D --> E
     D <--> H
     E <-->|Inference| F
-    D <-->|Memory Retrieval| J
-    A <--> I
-    A <--> K
+    D <-->|Memory Retrieval & Session Log| K
+    A <--> J
+    A <--> L
 ```
 
 ---
