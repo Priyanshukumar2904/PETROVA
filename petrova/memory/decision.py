@@ -32,15 +32,18 @@ EXPLICIT_TRIGGERS = [
 
 # Heuristic category extractors
 KNOWLEDGE_PATTERNS = [
+    (re.compile(r"\b(?:i\s+(?:am\s+using|use|run)\s+([a-zA-Z0-9_\-\.\s]+?(?:linux|os|distro|cachyos|arch|fedora|ubuntu|debian|gentoo|nixos|void)))", re.IGNORECASE), "configuration", 5),
+    (re.compile(r"\b(?:my\s+(?:distro|os|operating\s+system|system)\s+is\s+([^\.\n]+))", re.IGNORECASE), "configuration", 5),
     (re.compile(r"\b(?:my\s+(?:preferred|favorite|default)\s+([a-zA-Z0-9_\-]+)\s+is\s+([^\.\n]+))", re.IGNORECASE), "preference", 4),
     (re.compile(r"\b(?:i\s+(?:usually|always|prefer\s+to)\s+use\s+([^\.\n]+))", re.IGNORECASE), "preference", 4),
     (re.compile(r"\b(?:i\s+am\s+(?:working\s+on|building|developing)\s+([^\.\n]+))", re.IGNORECASE), "project", 4),
     (re.compile(r"\b(?:my\s+project\s+(?:is\s+called|name\s+is|is)\s+([^\.\n]+))", re.IGNORECASE), "project", 4),
-    (re.compile(r"\b(?:my\s+(?:primary|main)\s+(?:os|distro|workstation|laptop)\s+is\s+([^\.\n]+))", re.IGNORECASE), "configuration", 4),
-    (re.compile(r"\b(?:my\s+(?:cpu|gpu|ram|disk)\s+is\s+([^\.\n]+))", re.IGNORECASE), "configuration", 3),
+    (re.compile(r"\b(?:my\s+(?:primary|main)\s+(?:os|distro|workstation|laptop)\s+is\s+([^\.\n]+))", re.IGNORECASE), "configuration", 5),
+    (re.compile(r"\b(?:my\s+(?:cpu|gpu|ram|disk)\s+is\s+([^\.\n]+))", re.IGNORECASE), "configuration", 4),
     (re.compile(r"\b(?:i\s+live\s+in\s+([^\.\n]+)|my\s+timezone\s+is\s+([^\.\n]+))", re.IGNORECASE), "fact", 3),
     (re.compile(r"\b(?:my\s+name\s+is\s+([^\.\n]+)|call\s+me\s+([^\.\n]+))", re.IGNORECASE), "identity", 5),
 ]
+
 
 
 def is_sensitive(text: str) -> bool:

@@ -1,21 +1,22 @@
 """
 Interactive REPL Shell for PETROVA.
-Clean typography, tab-only auto-completion (no empty blocks), and interactive command execution.
+Clean typography, live streaming metrics (tokens, speed, thermals), and safe command execution.
 """
 
 import sys
+import time
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
 from rich.panel import Panel
 from rich.syntax import Syntax
-from rich.prompt import Confirm
 
-from petrova.brain.brain import stream_ask, ask, extract_suggested_commands, conversation_history
+from petrova.brain.brain import stream_ask, ask, extract_suggested_commands
 from petrova.core.router import route_command
 from petrova.tools.executor import execute_command
 from petrova.config.settings import HISTORY_FILE, get_config
+from petrova.linux.stats import get_cpu_temp, get_ram_usage
 from petrova.ui.console import console
 from petrova.commands.exit import exit_command
 
@@ -23,7 +24,10 @@ from petrova.commands.exit import exit_command
 SLASH_COMMANDS = [
     "/help",
     "/status",
+    "/stats",
     "/run",
+    "/web",
+    "/fetch",
     "/config",
     "/setup",
     "/server",
@@ -43,7 +47,7 @@ SLASH_COMMANDS = [
     "/about",
 ]
 
-# Clean terminal style definitions (no glitchy reverse-video blocks)
+# Clean terminal style definitions
 PROMPT_STYLE = Style.from_dict({
     "prompt": "#00d7d7 bold",
     "arrow": "#00ffaf bold",
@@ -65,7 +69,7 @@ def handle_suggested_commands(full_response: str):
     if not commands:
         return
 
-    for cmd in commands[:2]:  # Handle up to 2 commands
+    for cmd in commands[:2]:
         console.print()
         console.print(Panel(
             Syntax(cmd, "bash", theme="monokai", line_numbers=False),
@@ -82,7 +86,6 @@ def start_shell():
     """Run main interactive PETROVA prompt session."""
     HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-    # complete_while_typing=False ensures no popup blocks clutter the screen while typing
     session = PromptSession(
         history=FileHistory(str(HISTORY_FILE)),
         completer=WordCompleter(SLASH_COMMANDS, ignore_case=True, match_middle=True),
@@ -102,7 +105,7 @@ def start_shell():
             ).strip()
 
         except KeyboardInterrupt:
-            # Ctrl+C clears the current line without closing session
+            # Ctrl+C clears the current line
             console.print()
             continue
 
@@ -123,16 +126,31 @@ def start_shell():
         console.print("[bold green]PETROVA[/bold green]")
 
         full_response_parts = []
+        token_count = 0
+        start_time = time.time()
+
         try:
             # Real-time token streaming
             for token in stream_ask(user_input):
                 sys.stdout.write(token)
                 sys.stdout.flush()
                 full_response_parts.append(token)
+                token_count += 1
             sys.stdout.write("\n")
             sys.stdout.flush()
 
+            duration = round(time.time() - start_time, 2)
             full_response = "".join(full_response_parts)
+
+            # Telemetry metrics bar
+            if token_count > 0 and duration > 0:
+                tps = round(token_count / duration, 1)
+                temp = get_cpu_temp()
+                ram = get_ram_usage()
+                temp_str = f" • 🌡️ {temp}°C" if temp else ""
+                console.print(
+                    f"[dim]⏱️ {duration}s  •  ⚡ {tps} tok/s  •  🪙 ~{token_count} tokens{temp_str}  •  🧠 RAM: {ram['used_gb']}GB[/dim]"
+                )
 
             # 3. Check if response proposed terminal commands to run
             handle_suggested_commands(full_response)

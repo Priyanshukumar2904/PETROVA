@@ -57,6 +57,11 @@ def route_command(user_input: str) -> bool:
         console.print()
         return True
 
+    elif primary in ("stats", "telemetry", "hw", "temp"):
+        from petrova.commands.stats import stats_command
+        return stats_command()
+
+
     elif primary in ("version", "v"):
         return version_command()
 
