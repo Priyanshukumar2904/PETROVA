@@ -1,15 +1,19 @@
+"""
+Persistent SQLite Memory Storage for PETROVA.
+Stores user facts, preferences, workflows, and context in ~/.local/share/petrova/petrova.db.
+"""
+
 import re
 import sqlite3
-from pathlib import Path
-
-
-DB_PATH = Path(__file__).resolve().parents[2] / "data" / "petrova.db"
+from typing import List, Dict, Any, Optional
+from petrova.config.settings import DB_FILE
 
 
 def initialize():
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    """Initialize memory database and table schemas."""
+    DB_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-    with sqlite3.connect(DB_PATH) as connection:
+    with sqlite3.connect(DB_FILE) as connection:
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS memories (
@@ -17,9 +21,13 @@ def initialize():
                 content TEXT NOT NULL UNIQUE,
                 category TEXT NOT NULL DEFAULT 'general',
                 importance INTEGER NOT NULL DEFAULT 3,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
+        )
+        connection.execute(
+            "CREATE INDEX IF NOT EXISTS idx_memories_category ON memories (category)"
         )
         connection.commit()
 
@@ -28,27 +36,36 @@ def save_memory(
     content: str,
     category: str = "general",
     importance: int = 3,
-):
+) -> bool:
+    """Save or update a memory in persistent storage."""
     importance = max(1, min(5, importance))
     content = content.strip()
 
     if not content:
-        return
+        return False
 
-    with sqlite3.connect(DB_PATH) as connection:
-        connection.execute(
+    initialize()
+    with sqlite3.connect(DB_FILE) as connection:
+        cursor = connection.cursor()
+        cursor.execute(
             """
-            INSERT OR IGNORE INTO memories
-            (content, category, importance)
+            INSERT INTO memories (content, category, importance)
             VALUES (?, ?, ?)
+            ON CONFLICT(content) DO UPDATE SET
+                category = excluded.category,
+                importance = excluded.importance,
+                updated_at = CURRENT_TIMESTAMP
             """,
-            (content, category, importance),
+            (content, category.lower(), importance),
         )
         connection.commit()
+        return cursor.rowcount > 0
 
 
-def get_memories(limit: int = 10) -> list[str]:
-    with sqlite3.connect(DB_PATH) as connection:
+def get_memories(limit: int = 10) -> List[str]:
+    """Get top memories ordered by importance and recency."""
+    initialize()
+    with sqlite3.connect(DB_FILE) as connection:
         rows = connection.execute(
             """
             SELECT content
@@ -62,24 +79,57 @@ def get_memories(limit: int = 10) -> list[str]:
     return [row[0] for row in rows]
 
 
-def search_memories(query: str, limit: int = 5) -> list[dict]:
-    """
-    Return memories ranked by simple local text relevance.
+def get_all_memories(category: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Return all stored memories as dictionaries."""
+    initialize()
+    with sqlite3.connect(DB_FILE) as connection:
+        if category:
+            rows = connection.execute(
+                """
+                SELECT id, content, category, importance, created_at
+                FROM memories
+                WHERE category = ?
+                ORDER BY importance DESC, id DESC
+                """,
+                (category.lower(),),
+            ).fetchall()
+        else:
+            rows = connection.execute(
+                """
+                SELECT id, content, category, importance, created_at
+                FROM memories
+                ORDER BY importance DESC, id DESC
+                """
+            ).fetchall()
 
-    This is intentionally model-free. It gives PETROVA a lightweight
-    retrieval layer that we can later upgrade to embeddings.
-    """
+    return [
+        {
+            "id": r[0],
+            "content": r[1],
+            "category": r[2],
+            "importance": r[3],
+            "created_at": r[4],
+        }
+        for r in rows
+    ]
 
+
+def search_memories(query: str, limit: int = 5) -> List[Dict[str, Any]]:
+    """
+    Return memories ranked by fast local text relevance and importance.
+    Lightweight, model-free, zero-latency retrieval.
+    """
+    initialize()
     words = {
         word.lower()
         for word in re.findall(r"[A-Za-z0-9_]+", query)
-        if len(word) >= 3
+        if len(word) >= 2
     }
 
     if not words:
         return []
 
-    with sqlite3.connect(DB_PATH) as connection:
+    with sqlite3.connect(DB_FILE) as connection:
         rows = connection.execute(
             """
             SELECT id, content, category, importance
@@ -92,11 +142,8 @@ def search_memories(query: str, limit: int = 5) -> list[dict]:
     for memory_id, content, category, importance in rows:
         text = content.lower()
 
-        score = sum(
-            1
-            for word in words
-            if word in text
-        )
+        # Score matching words
+        score = sum(1 for word in words if word in text)
 
         if score == 0:
             continue
@@ -121,10 +168,39 @@ def search_memories(query: str, limit: int = 5) -> list[dict]:
     return results[:limit]
 
 
-def delete_memory(content: str):
-    with sqlite3.connect(DB_PATH) as connection:
-        connection.execute(
-            "DELETE FROM memories WHERE content = ?",
-            (content,),
-        )
+def delete_memory_by_id(memory_id: int) -> bool:
+    """Delete a memory entry by ID."""
+    initialize()
+    with sqlite3.connect(DB_FILE) as connection:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM memories WHERE id = ?", (memory_id,))
         connection.commit()
+        return cursor.rowcount > 0
+
+
+def delete_memory(content: str) -> bool:
+    """Delete a memory entry by matching content string."""
+    initialize()
+    with sqlite3.connect(DB_FILE) as connection:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM memories WHERE content = ?", (content,))
+        connection.commit()
+        return cursor.rowcount > 0
+
+
+def clear_all_memories() -> int:
+    """Delete all memories from database."""
+    initialize()
+    with sqlite3.connect(DB_FILE) as connection:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM memories")
+        connection.commit()
+        return cursor.rowcount
+
+
+def get_memory_count() -> int:
+    """Get the total count of stored memories."""
+    initialize()
+    with sqlite3.connect(DB_FILE) as connection:
+        row = connection.execute("SELECT COUNT(*) FROM memories").fetchone()
+        return row[0] if row else 0

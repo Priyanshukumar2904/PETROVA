@@ -1,25 +1,28 @@
-import requests
+"""
+System Status & Component Health Table for PETROVA.
+"""
+
+import platform
 from rich.table import Table
+from petrova.config.settings import get_config
+from petrova.core.server import is_server_running
+from petrova.memory.store import get_memory_count
 
 
-AI_SERVER_URL = "http://127.0.0.1:8080/health"
+def get_ai_status() -> str:
+    """Check live status of the configured AI inference backend."""
+    config = get_config()
+    host = config.get("server_host", "127.0.0.1")
+    port = config.get("server_port", 8080)
+
+    if is_server_running(host, port):
+        return f"[bold green]ONLINE[/bold green] [dim]({config.backend} @ :{port})[/dim]"
+    return f"[bold yellow]OFFLINE[/bold yellow] [dim](auto-starts on query)[/dim]"
 
 
-def get_ai_status():
-    try:
-        response = requests.get(AI_SERVER_URL, timeout=2)
-        response.raise_for_status()
-
-        if response.json().get("status") == "ok":
-            return "[bold green]ONLINE[/bold green]"
-
-    except (requests.RequestException, ValueError):
-        pass
-
-    return "[bold yellow]OFFLINE[/bold yellow]"
-
-
-def get_status_table():
+def get_status_table() -> Table:
+    """Generate dynamic status table reflecting real system and component states."""
+    config = get_config()
     table = Table(
         show_header=False,
         box=None,
@@ -30,10 +33,14 @@ def get_status_table():
     table.add_column(style="cyan", width=18)
     table.add_column()
 
-    table.add_row("Configuration", "[bold green]READY[/bold green]")
-    table.add_row("Workspace", "[bold green]READY[/bold green]")
-    table.add_row("Linux Tools", "[bold green]READY[/bold green]")
-    table.add_row("AI Model", get_ai_status())
-    table.add_row("Memory", "[bold yellow]OFFLINE[/bold yellow]")
+    mem_count = get_memory_count()
+    uname = platform.uname()
+    os_str = f"{uname.system} {uname.release} ({uname.machine})"
+
+    table.add_row("User Profile", f"[bold green]{config.user_name}[/bold green]")
+    table.add_row("AI Model", f"[bold cyan]{config.model_name}[/bold cyan]")
+    table.add_row("AI Server", get_ai_status())
+    table.add_row("Memory DB", f"[bold green]READY[/bold green] [dim]({mem_count} items stored)[/dim]")
+    table.add_row("Environment", f"[dim]{os_str}[/dim]")
 
     return table

@@ -1,181 +1,117 @@
-# PETROVA
+# ⚡ PETROVA
 
-> **Personal Enhanced Terminal Reasoning & Operations Virtual Assistant**
+<p align="center">
+  <b>Personal Enhanced Terminal Reasoning & Operations Virtual Assistant</b>
+</p>
 
-**PETROVA** is an open-source, privacy-first AI Operating Assistant for Linux that combines local Large Language Models (LLMs), intelligent system tooling, and persistent memory to help users understand, maintain, and automate their Linux systems.
-
-Unlike traditional AI chatbots, PETROVA is designed to become an intelligent operating companion—capable of reasoning about your system, assisting with troubleshooting, executing safe operations, and learning from previous interactions while keeping your data on your own machine.
-
----
-
-# Vision
-
-Modern AI assistants are powerful, but most rely on cloud services and have little understanding of the operating system they run on.
-
-PETROVA aims to bridge that gap by providing a local-first AI assistant that understands Linux, respects user privacy, and evolves into a capable system companion without requiring cloud infrastructure.
-
-Our long-term goal is to build an extensible platform that developers, system administrators, cybersecurity professionals, students, and Linux enthusiasts can customize for their own workflows.
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Linux-blue?style=flat-square&logo=linux" alt="Platform" />
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python" alt="Python" />
+  <img src="https://img.shields.io/badge/Inference-llama.cpp%20%7C%20Ollama-orange?style=flat-square" alt="Inference" />
+  <img src="https://img.shields.io/badge/Storage-XDG%20%2B%20SQLite-10B981?style=flat-square" alt="Storage" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
+</p>
 
 ---
 
-# Core Principles
+## 🌟 Overview
 
-* Privacy First
-* Local AI Inference
-* Open Source
-* Modular Architecture
-* Security Focused
-* Extensible by Design
-* Explain Before Execute
-* User Control Over Automation
+**PETROVA** is an open-source, privacy-first AI Operating Assistant for Linux. It combines local Large Language Models (LLMs), intelligent system tooling, and persistent long-term memory to help you maintain, troubleshoot, and automate your Linux system.
+
+Unlike cloud chatbots, PETROVA runs **100% locally on your machine**, respects your privacy, keeps your conversation data on your own filesystem, and connects directly to your local AI engine (llama.cpp / Ollama / OpenAI-compatible APIs).
 
 ---
 
-# Current Features
+## ✨ Key Features
 
-* Local LLM support
-* Replaceable AI models
-* Modern Python architecture
-* Modular project structure
-* Open-source development
-
----
-
-# Planned Features
-
-## AI Core
-
-* Intelligent conversation engine
-* Configurable system prompts
-* Multi-model support
-* Session management
-* Context-aware reasoning
+- 👤 **Interactive Personalization**: On first launch, PETROVA greets you and asks what name to address you by.
+- 🧠 **Multi-Backend AI Engine**: Works seamlessly with **llama-server (GGUF)**, **Ollama**, or any **OpenAI-compatible local API** (vLLM, LM Studio, LocalAI).
+- 🚀 **Auto-Server Supervisor**: Automatically starts your local model backend in the background upon launching.
+- ⚡ **Real-Time Token Streaming**: Instant token-by-token response rendering without terminal freezing.
+- 💾 **Persistent SQLite Memory**: Remembers user preferences, project notes, and custom instructions across sessions (`~/.local/share/petrova/petrova.db`).
+- ⌨️ **Advanced CLI Experience**: Built with `prompt_toolkit` and `rich`, featuring Up/Down history, Tab auto-completion, and slash commands.
 
 ---
 
-## Memory System
+## 🚀 Quick Start & Installation
 
-* Persistent long-term memory
-* User preference storage
-* Conversation history
-* Project memory
-* Intelligent memory retrieval
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Priyanshukumar2904/PETROVA.git
+cd PETROVA
+```
 
----
+### 2. Install Dependencies
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
 
-## Linux Operations
-
-* System diagnostics
-* Hardware inspection
-* Package manager integration
-* Process management
-* Service management
-* File system analysis
-* Disk usage inspection
-* Log analysis
-* Network diagnostics
-* Performance monitoring
+### 3. Launch PETROVA
+```bash
+petrova
+```
+> *On first run, PETROVA will automatically launch an interactive setup wizard to configure your preferred name and AI model backend.*
 
 ---
 
-## AI Tooling
+## 📖 Built-in Slash Commands
 
-* Safe command execution
-* Command explanation
-* Interactive troubleshooting
-* Automatic error analysis
-* Linux documentation lookup
-
----
-
-## Cybersecurity Toolkit
-
-* Security auditing
-* CVE lookup
-* Port inspection
-* Permission analysis
-* Process inspection
-* Network security tools
-* Security recommendations
+| Command | Action |
+| :--- | :--- |
+| `/help` | Show available commands and options |
+| `/status` | View real-time system, AI server, and memory status |
+| `/config` *(or `/setup`)* | Re-run the configuration wizard to change name or model |
+| `/server status` | Check AI inference server status |
+| `/server start` | Launch the local AI inference server |
+| `/server stop` | Terminate the active local AI server |
+| `/memory list` | View all persistent memories stored by PETROVA |
+| `/memory search <q>` | Search memories by relevance keyword |
+| `/memory add <text>` | Manually store a memory item |
+| `/memory delete <id>` | Delete a specific memory item by ID |
+| `/memory clear` | Wipe all stored memories |
+| `/clear` | Clear terminal screen |
+| `/exit` *(or `/quit`)* | Exit PETROVA |
 
 ---
 
-## Developer Experience
+## 🏗️ Architecture
 
-* VS Code integration
-* Plugin system
-* Python API
-* Command-line interface
-* Configuration profiles
-* Theme support
+```mermaid
+flowchart TD
+    subgraph CLI["🖥️ Interactive CLI Interface"]
+        A["prompt_toolkit REPL & Shell"]
+        B["Rich Terminal & Status UI"]
+        C["Slash Command Router"]
+    end
 
----
+    subgraph Core["⚙️ PETROVA Brain & Engine"]
+        D["System Context & Prompt Builder"]
+        E["Token Streaming Provider"]
+        F["Process Supervisor (llama-server / Ollama)"]
+    end
 
-## Retrieval & Knowledge
+    subgraph Storage["💾 XDG Persistent Storage"]
+        G["Config: ~/.config/petrova/config.json"]
+        H["Memory DB: ~/.local/share/petrova/petrova.db"]
+        I["History: ~/.local/share/petrova/history"]
+    end
 
-* Optional internet search
-* Documentation retrieval
-* Arch Wiki integration
-* Manual page integration
-* Offline knowledge base
-
----
-
-## Future Capabilities
-
-* Voice interaction
-* Vision support
-* Image understanding
-* Multi-agent workflows
-* Workflow automation
-* Smart task scheduling
-* Remote machine support
-* Container awareness
-* Docker integration
-* Kubernetes awareness
-* Multi-machine management
+    A --> C
+    C -->|Slash Commands| B
+    A -->|AI Query| D
+    D --> E
+    E <-->|Auto-Start / Inference| F
+    D <-->|Keyword Search / Storage| H
+    A <--> G
+    A <--> I
+```
 
 ---
 
-# Technology Stack
+## 📜 License
 
-* Python
-* llama.cpp
-* GGUF Models
-* Qwen Coder Series
-* Linux
-* CUDA
-* Git
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
----
-
-# Project Roadmap
-
-* **v0.1** — Foundation
-* **v0.2** — AI Core
-* **v0.3** — Memory Engine
-* **v0.4** — Linux Operations
-* **v0.5** — Intelligent Tooling
-* **v0.6** — Retrieval & Documentation
-* **v0.7** — Voice & Vision
-* **v1.0** — Stable Release
-
----
-
-# Project Status
-
-🚧 **Actively under development.**
-
-PETROVA is currently in its early development phase. Features listed above represent the project's roadmap and will be implemented incrementally with a focus on clean architecture, maintainability, and high code quality.
-
----
-
-# Contributing
-
-Contributions, suggestions, bug reports, and feature requests will be welcome once the core architecture reaches its first stable milestone.
-
----
-
-# License
-
-License information will be added before the first public release.
+Developed with ❤️ by [Priyanshukumar2904](https://github.com/Priyanshukumar2904).

@@ -1,146 +1,65 @@
-import json
-import re
-
-from petrova.brain.provider import ask_model
-from petrova.memory.store import save_memory
-
-
-REMEMBER_PATTERN = re.compile(
-    r"^\s*(?:petrova[\s,:-]*)?(?:remember this|remember this for me)\s*:?\s*",
-    re.IGNORECASE,
-)
-
-
-def explicit_memory(prompt: str) -> str | None:
-    """Return explicitly requested memory exactly as supplied."""
-    match = REMEMBER_PATTERN.match(prompt)
-
-    if not match:
-        return None
-
-    content = prompt[match.end():]
-
-    if not content.strip():
-        return None
-
-    return content
-
-
-def automatic_decision(prompt: str) -> tuple[bool, str, int]:
-    """
-    Ask the local model only whether the user's message should be
-    remembered and how it should be categorized.
-
-    The user's original message remains the memory content.
-    """
-
-    decision_prompt = f"""
-You are PETROVA's memory decision engine.
-
-Decide whether this user message contains information worth remembering
-across future sessions.
-
-Remember things such as:
-- preferences
-- important personal facts
-- ongoing project information
-- useful configuration
-- recurring instructions
-- important commands or workflows
-
-Do NOT remember:
-- ordinary questions
-- temporary requests
-- explanations
-- greetings
-- casual conversation
-- information useful only for this single response
-
-Return ONLY valid JSON.
-
-If it should be remembered:
-
-{{
-  "remember": true,
-  "category": "preference",
-  "importance": 4
-}}
-
-If it should not:
-
-{{
-  "remember": false,
-  "category": "context",
-  "importance": 1
-}}
-
-Allowed categories:
-preference, fact, project, configuration, instruction, context, command
-
-Importance must be an integer from 1 to 5.
-
-USER MESSAGE:
-{prompt}
+"""
+Intelligent Memory Manager for PETROVA.
+Extracts and persists explicit and high-value contextual facts with zero perceived latency.
 """
 
-    try:
-        raw = ask_model([
-            {
-                "role": "user",
-                "content": decision_prompt,
-            }
-        ])
+import re
+import threading
+from typing import Optional, Tuple
+from petrova.memory.store import save_memory
 
-        raw = raw.strip()
-        raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.IGNORECASE)
-        raw = re.sub(r"\s*```$", "", raw)
+# Regex patterns for explicit commands
+EXPLICIT_PATTERNS = [
+    re.compile(r"^\s*(?:petrova[\s,:-]*)?(?:please\s+)?(?:remember\s+this|remember\s+that|remember)\s*[:,-]?\s*(.+)$", re.IGNORECASE),
+    re.compile(r"^\s*(?:petrova[\s,:-]*)?(?:note\s+that|save\s+this|don't\s+forget\s+that|keep\s+in\s+mind\s+that)\s*[:,-]?\s*(.+)$", re.IGNORECASE),
+]
 
-        decision = json.loads(raw)
-
-    except (json.JSONDecodeError, TypeError, ValueError):
-        return False, "context", 1
-
-    remember = bool(decision.get("remember", False))
-
-    category = str(
-        decision.get("category", "context")
-    ).strip().lower()
-
-    try:
-        importance = int(decision.get("importance", 3))
-    except (TypeError, ValueError):
-        importance = 3
-
-    importance = max(1, min(5, importance))
-
-    return remember, category, importance
+# Patterns for direct user identity and configuration declarations
+FACT_PATTERNS = [
+    (re.compile(r"\b(?:my\s+(?:preferred|favorite|default)\s+([a-zA-Z0-9_\-]+)\s+is\s+([^\.\n]+))", re.IGNORECASE), "preference", 4),
+    (re.compile(r"\b(?:i\s+(?:usually|always|prefer\s+to)\s+use\s+([^\.\n]+))", re.IGNORECASE), "preference", 4),
+    (re.compile(r"\b(?:i\s+am\s+working\s+on\s+([^\.\n]+))", re.IGNORECASE), "project", 4),
+    (re.compile(r"\b(?:my\s+primary\s+OS\s+is\s+([^\.\n]+))", re.IGNORECASE), "configuration", 4),
+    (re.compile(r"\b(?:my\s+email\s+is\s+([^\s,]+))", re.IGNORECASE), "fact", 4),
+]
 
 
-def process_memory(prompt: str) -> bool:
+def extract_explicit_memory(prompt: str) -> Optional[Tuple[str, str, int]]:
+    """Check if the user explicitly commanded PETROVA to remember something."""
+    for pattern in EXPLICIT_PATTERNS:
+        match = pattern.match(prompt.strip())
+        if match:
+            fact = match.group(1).strip()
+            if fact:
+                category = "instruction" if "\n" in fact or "command" in fact.lower() else "preference"
+                return fact, category, 5
+    return None
+
+
+def extract_heuristic_facts(prompt: str) -> Optional[Tuple[str, str, int]]:
+    """Detect natural user statements about preferences, projects, or setup."""
+    for pattern, category, importance in FACT_PATTERNS:
+        match = pattern.search(prompt.strip())
+        if match:
+            return match.group(0).strip(), category, importance
+    return None
+
+
+def process_memory(prompt: str):
     """
-    Process one user message.
-
-    Explicit remember requests are always saved exactly.
-    Otherwise the AI decides whether the original message is worth saving.
+    Process a user message for memory extraction.
+    Saves memories synchronously if explicit, or runs lightweight analysis without blocking.
     """
-
-    explicit = explicit_memory(prompt)
-
+    # 1. Check explicit memory
+    explicit = extract_explicit_memory(prompt)
     if explicit:
-        save_memory(
-            explicit,
-            "command" if "\n" in explicit else "context",
-            5,
-        )
-        return True
+        fact, category, importance = explicit
+        save_memory(fact, category, importance)
+        return
 
-    remember, category, importance = automatic_decision(prompt)
-
-    if not remember:
-        return False
-
-    # IMPORTANT:
-    # Save the original user message, not an AI-generated summary.
-    save_memory(prompt, category, importance)
-
-    return True
+    # 2. Check heuristic declarations
+    heuristic = extract_heuristic_facts(prompt)
+    if heuristic:
+        fact, category, importance = heuristic
+        save_memory(fact, category, importance)
+        return

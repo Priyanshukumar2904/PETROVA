@@ -1,26 +1,67 @@
+"""
+Slash Command Router for PETROVA.
+Dispatches commands to corresponding handlers or returns False for AI processing.
+"""
+
 from petrova.commands.help import help_command
 from petrova.commands.version import version_command
 from petrova.commands.about import about_command
 from petrova.commands.clear import clear_command
 from petrova.commands.exit import exit_command
-from petrova.commands.server import status_command
+from petrova.commands.server import server_command
+from petrova.commands.memory import memory_command
+from petrova.commands.config import config_command
+from petrova.ui.status import get_status_table
+from petrova.ui.console import console
 
 
-def route_command(command: str):
-    command = command.lower().strip()
+def route_command(user_input: str) -> bool:
+    """Check if input is a built-in slash command and execute it."""
+    trimmed = user_input.strip()
+    if not trimmed:
+        return False
 
-    routes = {
-        "help": help_command,
-        "version": version_command,
-        "about": about_command,
-        "clear": clear_command,
-        "exit": exit_command,
-        "status": status_command,
-    }
+    # Normalize leading slash: "/help" -> "help"
+    cmd_line = trimmed[1:] if trimmed.startswith("/") else trimmed
+    parts = cmd_line.split()
+    primary = parts[0].lower()
+    args = parts[1:] if len(parts) > 1 else []
 
-    handler = routes.get(command)
+    # Map commands
+    if primary in ("help", "?"):
+        return help_command()
 
-    if handler:
-        return handler()
+    elif primary in ("status", "info"):
+        console.print()
+        console.print(get_status_table())
+        console.print()
+        return True
+
+    elif primary in ("version", "v"):
+        return version_command()
+
+    elif primary in ("about",):
+        return about_command()
+
+    elif primary in ("clear", "cls"):
+        return clear_command()
+
+    elif primary in ("exit", "quit", "q"):
+        return exit_command()
+
+    elif primary in ("server", "srv"):
+        return server_command(args)
+
+    elif primary in ("memory", "mem"):
+        return memory_command(args)
+
+    elif primary in ("config", "setup"):
+        return config_command()
+
+    # If it was an unrecognized slash command (starts with /), warn the user
+    if trimmed.startswith("/"):
+        console.print(f"[bold yellow]Unknown command:[/bold yellow] [red]{trimmed}[/red]")
+        console.print("Type [green]/help[/green] to see available commands.")
+        return True
 
     return False
