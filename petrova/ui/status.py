@@ -6,7 +6,7 @@ import platform
 from rich.table import Table
 from petrova.config.settings import get_config
 from petrova.core.server import is_server_running
-from petrova.memory.store import get_memory_count
+from petrova.memory.store import get_memory_count, get_db_size_mb
 
 
 def get_ai_status() -> str:
@@ -34,13 +34,19 @@ def get_status_table() -> Table:
     table.add_column()
 
     mem_count = get_memory_count()
+    db_size = get_db_size_mb()
+    quota = config.get("memory_storage_mb", 500)
+    quota_str = f"{quota} MB" if quota > 0 else "Unlimited"
+
+    perm_mode = config.get("permission_mode", "confirm").upper()
     uname = platform.uname()
     os_str = f"{uname.system} {uname.release} ({uname.machine})"
 
     table.add_row("User Profile", f"[bold green]{config.user_name}[/bold green]")
     table.add_row("AI Model", f"[bold cyan]{config.model_name}[/bold cyan]")
     table.add_row("AI Server", get_ai_status())
-    table.add_row("Memory DB", f"[bold green]READY[/bold green] [dim]({mem_count} items stored)[/dim]")
+    table.add_row("Permissions", f"[bold green]{perm_mode}[/bold green]")
+    table.add_row("Memory DB", f"[bold green]READY[/bold green] [dim]({mem_count} items, {db_size}MB / {quota_str})[/dim]")
     table.add_row("Environment", f"[dim]{os_str}[/dim]")
 
     return table

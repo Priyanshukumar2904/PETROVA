@@ -12,13 +12,14 @@ def help_command():
         border_style="cyan",
         header_style="bold cyan",
     )
-    table.add_column("Command", style="bold green", width=22)
+    table.add_column("Command", style="bold green", width=24)
     table.add_column("Description")
 
-    # General
+    # General & Execution
     table.add_row("/help", "Show this command reference")
-    table.add_row("/status", "Display current system, model, and memory status")
-    table.add_row("/config [or /setup]", "Reconfigure user name, AI model, or backend")
+    table.add_row("/run <cmd> [or !<cmd>]", "Safely execute a Linux shell command")
+    table.add_row("/status", "Display current system, model, permissions & memory status")
+    table.add_row("/config [or /setup]", "Reconfigure user name, AI model, permissions, or storage")
     table.add_row("/clear", "Clear terminal screen")
     table.add_row("/exit [or /quit]", "Exit PETROVA session")
 

@@ -11,15 +11,23 @@ from petrova.commands.exit import exit_command
 from petrova.commands.server import server_command
 from petrova.commands.memory import memory_command
 from petrova.commands.config import config_command
+from petrova.tools.executor import execute_command
 from petrova.ui.status import get_status_table
 from petrova.ui.console import console
 
 
 def route_command(user_input: str) -> bool:
-    """Check if input is a built-in slash command and execute it."""
+    """Check if input is a built-in slash command or shell escape and execute it."""
     trimmed = user_input.strip()
     if not trimmed:
         return False
+
+    # Quick shell escape: "!ls -la" or "!df -h"
+    if trimmed.startswith("!"):
+        cmd = trimmed[1:].strip()
+        if cmd:
+            execute_command(cmd)
+            return True
 
     # Normalize leading slash: "/help" -> "help"
     cmd_line = trimmed[1:] if trimmed.startswith("/") else trimmed
@@ -30,6 +38,13 @@ def route_command(user_input: str) -> bool:
     # Map commands
     if primary in ("help", "?"):
         return help_command()
+
+    elif primary in ("run", "exec", "sh", "bash"):
+        if not args:
+            console.print("[yellow]Usage: /run <command>[/yellow] (e.g. [green]/run df -h[/green])")
+            return True
+        execute_command(" ".join(args))
+        return True
 
     elif primary in ("status", "info"):
         console.print()

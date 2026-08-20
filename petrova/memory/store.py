@@ -1,12 +1,13 @@
 """
-Persistent SQLite Memory Storage for PETROVA.
+Persistent SQLite Memory Storage for PETROVA with Storage Quota Enforcement.
 Stores user facts, preferences, workflows, and context in ~/.local/share/petrova/petrova.db.
 """
 
+import os
 import re
 import sqlite3
 from typing import List, Dict, Any, Optional
-from petrova.config.settings import DB_FILE
+from petrova.config.settings import DB_FILE, get_config
 
 
 def initialize():
@@ -32,6 +33,40 @@ def initialize():
         connection.commit()
 
 
+def get_db_size_mb() -> float:
+    """Return database file size in megabytes."""
+    if DB_FILE.exists():
+        return round(DB_FILE.stat().st_size / (1024 * 1024), 2)
+    return 0.0
+
+
+def enforce_storage_quota():
+    """Prune lowest-priority old memories if storage quota is exceeded."""
+    config = get_config()
+    max_mb = config.get("memory_storage_mb", 500)
+    
+    if max_mb <= 0:  # 0 means unlimited
+        return
+
+    current_mb = get_db_size_mb()
+    if current_mb > max_mb:
+        with sqlite3.connect(DB_FILE) as connection:
+            # Delete lowest importance (<=2) old entries first
+            connection.execute(
+                """
+                DELETE FROM memories
+                WHERE id IN (
+                    SELECT id FROM memories
+                    WHERE importance <= 2
+                    ORDER BY id ASC
+                    LIMIT 200
+                )
+                """
+            )
+            connection.commit()
+            connection.execute("VACUUM")
+
+
 def save_memory(
     content: str,
     category: str = "general",
@@ -45,6 +80,8 @@ def save_memory(
         return False
 
     initialize()
+    enforce_storage_quota()
+
     with sqlite3.connect(DB_FILE) as connection:
         cursor = connection.cursor()
         cursor.execute(
@@ -141,8 +178,6 @@ def search_memories(query: str, limit: int = 5) -> List[Dict[str, Any]]:
 
     for memory_id, content, category, importance in rows:
         text = content.lower()
-
-        # Score matching words
         score = sum(1 for word in words if word in text)
 
         if score == 0:

@@ -20,6 +20,7 @@ from petrova.commands.exit import exit_command
 SLASH_COMMANDS = [
     "/help",
     "/status",
+    "/run",
     "/config",
     "/setup",
     "/server",
@@ -38,6 +39,7 @@ SLASH_COMMANDS = [
     "/version",
     "/about",
 ]
+
 
 PROMPT_STYLE = Style.from_dict({
     "prompt": "#00d7d7 bold",
