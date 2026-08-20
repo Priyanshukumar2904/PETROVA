@@ -110,11 +110,26 @@ class TestPetrovaCore(unittest.TestCase):
         self.assertIn("PETROVA", prompt)
         self.assertIn("User prefers concise answers.", prompt)
 
+    def test_voice_cleaner_and_workspace(self):
+        from petrova.voice.tts import clean_text_for_speech
+        from petrova.linux.workspace import get_workspace_context
+        
+        sample = "Here is a command: ```bash\nsudo pacman -Syu\n```\nVisit https://cachyos.org today!"
+        cleaned = clean_text_for_speech(sample)
+        self.assertNotIn("sudo pacman -Syu", cleaned)
+        self.assertNotIn("https://cachyos.org", cleaned)
+        self.assertIn("command proposed", cleaned)
+
+        ws = get_workspace_context()
+        self.assertIsNotNone(ws["folder_name"])
+        self.assertIn("project_type", ws)
+
     def test_command_routing(self):
         self.assertTrue(route_command("/help"))
         self.assertTrue(route_command("/version"))
         self.assertTrue(route_command("/about"))
         self.assertFalse(route_command("What is the kernel version?"))
+
 
 
 if __name__ == "__main__":

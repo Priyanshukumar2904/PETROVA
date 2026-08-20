@@ -1,6 +1,6 @@
 """
 Interactive REPL Shell for PETROVA.
-Clean typography, live streaming metrics (tokens, speed, thermals), and safe command execution with auto-diagnostics.
+Clean typography, live streaming metrics, voice synthesis, and safe command execution with auto-diagnostics.
 """
 
 import sys
@@ -18,6 +18,7 @@ from petrova.core.router import route_command
 from petrova.tools.executor import execute_command
 from petrova.config.settings import HISTORY_FILE, get_config
 from petrova.linux.stats import get_cpu_temp, get_ram_usage
+from petrova.voice import is_voice_enabled, speak
 from petrova.ui.console import console
 from petrova.commands.exit import exit_command
 
@@ -25,14 +26,19 @@ from petrova.commands.exit import exit_command
 SLASH_COMMANDS = [
     "/help",
     "/goal",
-    "/status",
+    "/voice",
+    "/voice on",
+    "/voice off",
+    "/voice loop",
+    "/listen",
+    "/speak",
     "/stats",
+    "/status",
     "/run",
     "/web",
     "/fetch",
     "/config",
     "/setup",
-
     "/server",
     "/server start",
     "/server stop",
@@ -90,11 +96,15 @@ def handle_suggested_commands(full_response: str):
             if Confirm.ask("[bold yellow]Command encountered an error. Ask PETROVA to diagnose & fix?[/bold yellow]", default=True):
                 console.print("\n[bold green]PETROVA (Diagnosis)[/bold green]")
                 diag_prompt = f"The command `{cmd}` failed with exit code {code}.\nError details:\n{stderr}\nPlease diagnose the root cause and provide the corrected command."
+                diag_parts = []
                 for token in stream_ask(diag_prompt):
                     sys.stdout.write(token)
                     sys.stdout.flush()
+                    diag_parts.append(token)
                 sys.stdout.write("\n")
                 sys.stdout.flush()
+                if is_voice_enabled():
+                    speak("".join(diag_parts))
 
 
 def start_shell():
@@ -166,6 +176,10 @@ def start_shell():
                 console.print(
                     f"[dim]⏱️ {duration}s  •  ⚡ {tps} tok/s  •  🪙 ~{token_count} tokens{temp_str}  •  🧠 RAM: {ram['used_gb']}GB[/dim]"
                 )
+
+            # Speak response if voice output is enabled
+            if is_voice_enabled():
+                speak(full_response)
 
             # 3. Check if response proposed terminal commands to run
             handle_suggested_commands(full_response)

@@ -55,9 +55,18 @@ def route_command(user_input: str) -> bool:
         execute_command(" ".join(args))
         return True
 
+    elif primary in ("voice", "speak", "talk"):
+        from petrova.commands.voice import voice_command
+        return voice_command(args)
+
+    elif primary in ("listen", "mic", "hear"):
+        from petrova.commands.voice import listen_command
+        return listen_command()
+
     elif primary in ("web", "search", "fetch", "repo"):
         from petrova.commands.web import web_command
         return web_command(args)
+
 
 
     elif primary in ("status", "info"):
