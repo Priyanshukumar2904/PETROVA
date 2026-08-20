@@ -1,6 +1,6 @@
 """
-Model Tier Catalog & Auto-Download Engine for PETROVA.
-Manages lightweight, standard, and powerhouse model presets with automated fetching.
+Expanded Model Tier Catalog & Auto-Download Engine for PETROVA.
+Provides a comprehensive selection of coding, reasoning, and lightweight local models.
 """
 
 import os
@@ -11,51 +11,88 @@ from typing import List, Dict, Any, Optional
 
 import requests
 from rich.progress import Progress, BarColumn, DownloadColumn, TransferSpeedColumn, TimeRemainingColumn, TextColumn
-from petrova.config.settings import MODELS_DIR, find_system_gguf_models
+from petrova.config.settings import MODELS_DIR
 from petrova.ui.console import console
 
-# Recommended GGUF Model Presets (Q4_K_M quantizations for optimal speed & quality)
+# Comprehensive Catalog of High-Performance Open Models
 MODEL_CATALOG: Dict[str, Dict[str, Any]] = {
-    "lightweight": {
-        "tier": "Lightweight / Fast (1.5B - 3B)",
+    "qwen_1.5b": {
+        "category": "🚀 Lightweight (Fast / Low RAM)",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "description": "Ultra-fast, low memory footprint (~1.2 GB RAM). Ideal for older PCs and CPUs.",
+        "description": "Ultra-fast coding model (~1.1 GB RAM). Ideal for older PCs, laptops, and CPU inference.",
         "ollama_tag": "qwen2.5-coder:1.5b",
         "gguf_filename": "qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
         "url": "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
         "approx_size_mb": 980,
     },
-    "standard": {
-        "tier": "Standard / Balanced (7B) — Recommended ⭐",
+    "llama_3b": {
+        "category": "🚀 Lightweight (Fast / Low RAM)",
+        "name": "Llama-3.2-3B-Instruct",
+        "description": "Meta's lightweight compact model (~2.2 GB RAM). Great general Linux assistant.",
+        "ollama_tag": "llama3.2:3b",
+        "gguf_filename": "Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+        "url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+        "approx_size_mb": 2020,
+    },
+    "qwen_7b": {
+        "category": "⚡ Standard / Balanced (Recommended ⭐)",
         "name": "Qwen2.5-Coder-7B-Instruct",
-        "description": "Top-tier Linux & coding reasoning (~4.7 GB RAM/VRAM). Best overall balance.",
+        "description": "Top-rated Linux sysadmin & programming intelligence (~4.7 GB). Best overall balance.",
         "ollama_tag": "qwen2.5-coder:7b",
         "gguf_filename": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
         "url": "https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF/resolve/main/qwen2.5-coder-7b-instruct-q4_k_m-00001-of-00002.gguf",
         "approx_size_mb": 4680,
     },
-    "powerhouse": {
-        "tier": "Powerhouse / Deep Reasoning (14B - 32B)",
+    "deepseek_r1_7b": {
+        "category": "⚡ Standard / Balanced (Recommended ⭐)",
+        "name": "DeepSeek-R1-Distill-Qwen-7B",
+        "description": "Deep reasoning & multi-step troubleshooting model (~4.7 GB). Superb for debugging.",
+        "ollama_tag": "deepseek-r1:7b",
+        "gguf_filename": "DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf",
+        "url": "https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf",
+        "approx_size_mb": 4680,
+    },
+    "llama_8b": {
+        "category": "⚡ Standard / Balanced (Recommended ⭐)",
+        "name": "Llama-3.1-8B-Instruct",
+        "description": "Meta's flagship balanced model (~4.9 GB). Strong general knowledge and shell tasks.",
+        "ollama_tag": "llama3.1:8b",
+        "gguf_filename": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+        "url": "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+        "approx_size_mb": 4920,
+    },
+    "mistral_7b": {
+        "category": "⚡ Standard / Balanced (Recommended ⭐)",
+        "name": "Mistral-7B-Instruct-v0.3",
+        "description": "Fast, highly capable conversational and Linux utility engine (~4.4 GB).",
+        "ollama_tag": "mistral:7b",
+        "gguf_filename": "Mistral-7B-Instruct-v0.3-Q4_K_M.gguf",
+        "url": "https://huggingface.co/bartowski/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/Mistral-7B-Instruct-v0.3-Q4_K_M.gguf",
+        "approx_size_mb": 4370,
+    },
+    "qwen_14b": {
+        "category": "🧠 Powerhouse (High VRAM / Deep Reasoning)",
         "name": "Qwen2.5-Coder-14B-Instruct",
-        "description": "State-of-the-art architecture & complex automation (~9.5 GB VRAM). Needs dedicated GPU.",
+        "description": "Advanced coding and deep Linux architecture reasoning (~9.0 GB VRAM). Needs dedicated GPU.",
         "ollama_tag": "qwen2.5-coder:14b",
         "gguf_filename": "qwen2.5-coder-14b-instruct-q4_k_m.gguf",
         "url": "https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF/resolve/main/qwen2.5-coder-14b-instruct-q4_k_m.gguf",
-        "approx_size_mb": 9300,
-    }
+        "approx_size_mb": 9000,
+    },
 }
 
 
 def download_gguf_model(url: str, filename: str) -> Optional[Path]:
-    """Download GGUF model file with a live progress bar."""
+    """Download GGUF model file with live transfer speed, progress bar, and ETA."""
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     target_path = MODELS_DIR / filename
 
     if target_path.exists() and target_path.stat().st_size > 100 * 1024 * 1024:
-        console.print(f"[bold green]✓ Model file already downloaded:[/bold green] {target_path}")
+        console.print(f"[bold green]✓ Model file already exists on disk:[/bold green] {target_path}")
         return target_path
 
-    console.print(f"\n[cyan]Downloading {filename} to {MODELS_DIR}...[/cyan]")
+    console.print(f"\n[cyan]Starting download: {filename}[/cyan]")
+    console.print(f"[dim]Saving directly to: {target_path}[/dim]\n")
 
     try:
         response = requests.get(url, stream=True, timeout=30)
@@ -70,19 +107,19 @@ def download_gguf_model(url: str, filename: str) -> Optional[Path]:
             TimeRemainingColumn(),
             console=console,
         ) as progress:
-            task = progress.add_task(f"Fetching {filename}", total=total_size)
+            task = progress.add_task(f"Downloading {filename}", total=total_size)
             
             with open(target_path, "wb") as f:
-                for chunk in response.iter_content(chunk_size=1024 * 1024):
+                for chunk in response.iter_content(chunk_size=1024 * 1024):  # 1MB chunks
                     if chunk:
                         f.write(chunk)
                         progress.update(task, advance=len(chunk))
 
-        console.print(f"[bold green]✓ Model download complete:[/bold green] {target_path}\n")
+        console.print(f"\n[bold green]✓ Download successful![/bold green] Model ready at {target_path}\n")
         return target_path
 
     except Exception as e:
-        console.print(f"[bold red]Failed to download model:[/bold red] {e}")
+        console.print(f"\n[bold red]Download error:[/bold red] {e}")
         if target_path.exists():
             target_path.unlink()
         return None
@@ -94,7 +131,7 @@ def pull_ollama_model(model_tag: str) -> bool:
         console.print("[bold red]Ollama binary not found in PATH.[/bold red]")
         return False
 
-    console.print(f"\n[cyan]Pulling model '{model_tag}' via Ollama...[/cyan]")
+    console.print(f"\n[cyan]Pulling model '{model_tag}' via Ollama engine...[/cyan]")
     try:
         cmd = ["ollama", "pull", model_tag]
         process = subprocess.Popen(cmd)

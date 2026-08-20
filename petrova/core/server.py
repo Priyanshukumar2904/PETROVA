@@ -42,17 +42,22 @@ def resolve_model_file() -> Optional[Path]:
     config = get_config()
     configured_path = config.get("model_path")
 
-    if configured_path:
-        p = Path(configured_path).expanduser().resolve()
+    if configured_path and "blobs" not in str(configured_path):
+        p = Path(configured_path).expanduser()
         if p.exists() and p.is_file():
             return p
 
     # Auto-detect available system GGUFs
     found = find_system_gguf_models()
     if found:
-        return Path(found[0]["path"])
+        # Update config with valid path
+        valid_path = found[0]["path"]
+        config.set("model_path", valid_path)
+        config.set("model_name", found[0]["name"])
+        return Path(valid_path)
 
     return None
+
 
 
 def start_server() -> Tuple[bool, str]:
@@ -93,13 +98,17 @@ def start_server() -> Tuple[bool, str]:
                 stderr=subprocess.DEVNULL,
             )
 
-            # Wait up to 5 seconds for server socket to become ready
-            for _ in range(25):
-                time.sleep(0.2)
+            # Wait up to 20 seconds for server socket & model weights to load
+            for _ in range(40):
+                time.sleep(0.5)
                 if is_server_running(host, port):
                     return True, f"llama-server successfully started on http://{host}:{port} ({model_file.stem})"
 
+            if _process.poll() is not None:
+                return False, f"llama-server exited immediately with return code {_process.returncode}"
+
             return True, f"llama-server process spawned (PID: {_process.pid}) on port {port}."
+
 
         except Exception as e:
             return False, f"Failed to launch llama-server: {e}"

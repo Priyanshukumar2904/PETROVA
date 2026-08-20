@@ -38,8 +38,8 @@ def run_onboarding_wizard(force: bool = False) -> bool:
     console.print()
     console.print(
         Panel.fit(
-            "[bold cyan]⚡ PETROVA ONBOARDING & SETUP WIZARD[/bold cyan]\n\n"
-            "Welcome! Let's configure your AI Operating Assistant for your system and preferences.",
+            "[bold cyan]⚡ PETROVA ONE-TIME ONBOARDING & SETUP WIZARD[/bold cyan]\n\n"
+            "Welcome! Let's configure your AI Operating Assistant for your machine.",
             border_style="cyan",
             title="Genesis Setup",
         )
@@ -74,25 +74,24 @@ def run_onboarding_wizard(force: bool = False) -> bool:
 
     options = []
 
-    # 1. Existing System GGUFs if any
+    # 1. Existing System GGUFs already found on this PC!
     if system_ggufs:
-        for g in system_ggufs[:2]:
+        for g in system_ggufs:
             options.append({
                 "type": "existing_gguf",
-                "label": f"Local Disk: {g['name']} ({g['size_mb']} MB)",
+                "label": f"✨ Found on this PC: {g['name']} ({g['size_mb']} MB)",
                 "backend": "llama-server",
                 "model_name": g["name"],
                 "model_path": g["path"],
                 "port": 8080,
             })
 
-    # 2. Preset Tiers (Lightweight, Standard, Powerhouse)
+    # 2. Preset Tiers (Expanded Catalog)
     for key, spec in MODEL_CATALOG.items():
         options.append({
             "type": "preset",
             "key": key,
-            "label": f"{spec['tier']} — {spec['name']}",
-            "description": spec["description"],
+            "label": f"{spec['name']} ({spec['category']})",
             "backend": "llama-server" if has_llama_server else "ollama",
             "model_name": spec["name"],
             "spec": spec,
@@ -101,10 +100,10 @@ def run_onboarding_wizard(force: bool = False) -> bool:
 
     # 3. Ollama local models if running
     if ollama_models:
-        for m in ollama_models[:2]:
+        for m in ollama_models:
             options.append({
                 "type": "ollama_existing",
-                "label": f"Ollama Model: {m}",
+                "label": f"🦙 Ollama Model: {m}",
                 "backend": "ollama",
                 "model_name": m,
                 "model_path": "",
@@ -114,7 +113,7 @@ def run_onboarding_wizard(force: bool = False) -> bool:
     # 4. Custom GGUF File Path
     options.append({
         "type": "custom_path",
-        "label": "Custom GGUF Model Path (llama-server)",
+        "label": "📂 Specify a custom GGUF file path",
         "backend": "llama-server",
         "model_name": "custom-gguf",
         "model_path": "",
@@ -124,7 +123,7 @@ def run_onboarding_wizard(force: bool = False) -> bool:
     # 5. Custom OpenAI-compatible Endpoint
     options.append({
         "type": "custom_api",
-        "label": "Custom Endpoint (LM Studio / vLLM / LocalAI / Cloud)",
+        "label": "🌐 Connect to external endpoint (LM Studio / vLLM / LocalAI)",
         "backend": "openai",
         "model_name": "custom-api-model",
         "model_path": "",
@@ -154,15 +153,15 @@ def run_onboarding_wizard(force: bool = False) -> bool:
         spec = selected["spec"]
         if selected["backend"] == "llama-server":
             target_file = MODELS_DIR / spec["gguf_filename"]
-            # Check if model exists or download
+            # Check if model exists or download with progress bar
             if not target_file.exists():
-                console.print(f"\n[cyan]Model size: ~{spec['approx_size_mb']} MB. Download now?[/cyan]")
-                if Confirm.ask("[green]Download model automatically?[/green]", default=True):
+                console.print(f"\n[cyan]Model size: ~{spec['approx_size_mb']} MB.[/cyan]")
+                if Confirm.ask("[green]Download and link this model now?[/green]", default=True):
                     downloaded = download_gguf_model(spec["url"], spec["gguf_filename"])
                     if downloaded:
                         selected["model_path"] = str(downloaded)
                 else:
-                    console.print("[dim]Download skipped. You can point to an existing file in /config later.[/dim]")
+                    console.print("[dim]Download skipped. You can configure paths in /config anytime.[/dim]")
             else:
                 selected["model_path"] = str(target_file)
         elif selected["backend"] == "ollama":
@@ -244,14 +243,18 @@ def run_onboarding_wizard(force: bool = False) -> bool:
     config.set("memory_storage_mb", quota_map[mem_choice])
     console.print(f"✓ Memory quota set to: [bold green]{quota_map[mem_choice] if quota_map[mem_choice] > 0 else 'Unlimited'} MB[/bold green]\n")
 
+    # Mark as configured so wizard NEVER shows again automatically
+    config.set("configured", True)
+
     # Final Summary
     console.print(
         Panel.fit(
-            f"[bold green]✓ All Initial Setup Completed Successfully![/bold green]\n\n"
+            f"[bold green]✓ Setup Completed Successfully![/bold green]\n\n"
             f"[bold cyan]User Name  :[/bold cyan] {user_name}\n"
             f"[bold cyan]Model Tier :[/bold cyan] {selected['model_name']} ({selected['backend']})\n"
             f"[bold cyan]Permissions:[/bold cyan] {config.get('permission_mode').upper()}\n"
-            f"[bold cyan]Memory Cap :[/bold cyan] {config.get('memory_storage_mb')} MB",
+            f"[bold cyan]Memory Cap :[/bold cyan] {config.get('memory_storage_mb')} MB\n\n"
+            f"[dim]Note: You can reconfigure anytime by typing [green]/config[/green] or [green]/setup[/green].[/dim]",
             border_style="green",
             title="Setup Ready",
         )

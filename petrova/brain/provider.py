@@ -32,12 +32,9 @@ def ensure_server_online() -> bool:
     if config.get("auto_start_server", True):
         ok, msg = start_server()
         if ok:
-            # Poll for readiness
-            for _ in range(15):
-                time.sleep(0.3)
-                if is_server_running(host, port):
-                    return True
+            return is_server_running(host, port)
     return False
+
 
 
 def stream_chat(

@@ -19,6 +19,7 @@ DB_FILE = DATA_DIR / "petrova.db"
 HISTORY_FILE = DATA_DIR / "history"
 
 DEFAULT_CONFIG: Dict[str, Any] = {
+    "configured": False,
     "user_name": "",
     "backend": "llama-server",  # "llama-server", "ollama", "openai"
     "model_name": "Qwen2.5-Coder-7B-Instruct",
@@ -29,12 +30,14 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "stream_output": True,
     "temperature": 0.7,
     "max_context_messages": 12,
+    "permission_mode": "confirm",
+    "memory_storage_mb": 500,
     "theme": "cyan",
 }
 
 
 def find_system_gguf_models() -> list[dict[str, str]]:
-    """Scan common locations for downloaded GGUF models."""
+    """Scan common locations for downloaded GGUF models, skipping internal blob hashes and split duplicates."""
     search_dirs = [
         MODELS_DIR,
         Path.home() / ".cache" / "huggingface" / "hub",
@@ -50,17 +53,28 @@ def find_system_gguf_models() -> list[dict[str, str]]:
         if base_dir.exists():
             try:
                 for gguf in base_dir.rglob("*.gguf"):
+                    # Exclude raw internal blob caches
+                    if "blobs" in str(gguf):
+                        continue
+                    # Skip secondary split parts (-00002-of-, etc.) as llama-server loads from part 1
+                    if "-00002-of-" in gguf.name or "-00003-of-" in gguf.name or "-00004-of-" in gguf.name:
+                        continue
+
                     if gguf.is_file() and gguf.name not in seen:
                         seen.add(gguf.name)
+                        # Clean human name
+                        name = gguf.stem.replace("-00001-of-00002", "").replace("-00001-of-00003", "").replace(".gguf", "")
                         found.append({
-                            "name": gguf.stem,
-                            "path": str(gguf.resolve()),
+                            "name": name,
+                            "filename": gguf.name,
+                            "path": str(gguf.absolute()),
                             "size_mb": round(gguf.stat().st_size / (1024 * 1024), 1),
                         })
             except (PermissionError, OSError):
                 continue
 
     return found
+
 
 
 class Config:
@@ -100,7 +114,7 @@ class Config:
     @property
     def is_configured(self) -> bool:
         """Returns True if the user has completed initial onboarding."""
-        return bool(self.data.get("user_name"))
+        return bool(self.data.get("configured", False)) or bool(self.data.get("user_name"))
 
     @property
     def user_name(self) -> str:
