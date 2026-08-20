@@ -71,7 +71,8 @@ def route_command(user_input: str) -> bool:
         return memory_command(args)
 
     elif primary in ("config", "setup"):
-        return config_command()
+        return config_command(args)
+
 
     # If it was an unrecognized slash command (starts with /), warn the user
     if trimmed.startswith("/"):
