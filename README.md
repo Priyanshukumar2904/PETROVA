@@ -1,78 +1,97 @@
-# ⚡ PETROVA
+<p align="center">
+  <img src="assets/petrova_banner.svg" alt="PETROVA Banner" width="100%" />
+</p>
 
 <p align="center">
   <b>Personal Enhanced Terminal Reasoning & Operations Virtual Assistant</b>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Linux-blue?style=flat-square&logo=linux" alt="Platform" />
-  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python" alt="Python" />
-  <img src="https://img.shields.io/badge/Inference-llama.cpp%20%7C%20Ollama-orange?style=flat-square" alt="Inference" />
-  <img src="https://img.shields.io/badge/Storage-XDG%20%2B%20SQLite-10B981?style=flat-square" alt="Storage" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
+  <a href="https://github.com/Priyanshukumar2904/PETROVA"><img src="https://img.shields.io/badge/Platform-Linux-blue?style=flat-square&logo=linux" alt="Platform" /></a>
+  <a href="https://github.com/Priyanshukumar2904/PETROVA"><img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python" alt="Python" /></a>
+  <a href="https://github.com/Priyanshukumar2904/PETROVA"><img src="https://img.shields.io/badge/Inference-llama.cpp%20%7C%20Ollama-orange?style=flat-square" alt="Inference" /></a>
+  <a href="https://github.com/Priyanshukumar2904/PETROVA"><img src="https://img.shields.io/badge/Storage-XDG%20%2B%20SQLite-10B981?style=flat-square" alt="Storage" /></a>
+  <a href="https://github.com/Priyanshukumar2904/PETROVA"><img src="https://img.shields.io/badge/Privacy-100%25%20Local-purple?style=flat-square" alt="Privacy" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" /></a>
 </p>
 
 ---
 
 ## 🌟 Overview
 
-**PETROVA** is an open-source, privacy-first AI Operating Assistant for Linux. It combines local Large Language Models (LLMs), intelligent system tooling, and persistent long-term memory to help you maintain, troubleshoot, and automate your Linux system.
+**PETROVA** is an open-source, privacy-first AI Operating Assistant designed for Linux. It combines local Large Language Models (LLMs), intelligent system tooling, real-time command execution, and persistent long-term SQLite memory to help you understand, maintain, diagnose, and automate your Linux system.
 
-Unlike cloud chatbots, PETROVA runs **100% locally on your machine**, respects your privacy, keeps your conversation data on your own filesystem, and connects directly to your local AI engine (llama.cpp / Ollama / OpenAI-compatible APIs).
+Unlike cloud chatbots that send your data across the internet, PETROVA runs **100% locally on your machine**, keeps your history private, and directly connects to local inference backends (`llama.cpp`, `Ollama`, or OpenAI-compatible APIs).
+
+---
+
+## 🎬 Live Terminal Demo
+
+<p align="center">
+  <img src="assets/terminal_demo.svg" alt="PETROVA Interactive Terminal Demo" width="100%" />
+</p>
 
 ---
 
 ## ✨ Key Features
 
-- 👤 **Interactive Personalization**: On first launch, PETROVA greets you and asks what name to address you by.
-- 🧠 **Multi-Backend AI Engine**: Works seamlessly with **llama-server (GGUF)**, **Ollama**, or any **OpenAI-compatible local API** (vLLM, LM Studio, LocalAI).
-- 🚀 **Auto-Server Supervisor**: Automatically starts your local model backend in the background upon launching.
-- ⚡ **Real-Time Token Streaming**: Instant token-by-token response rendering without terminal freezing.
-- 💾 **Persistent SQLite Memory**: Remembers user preferences, project notes, and custom instructions across sessions (`~/.local/share/petrova/petrova.db`).
-- ⌨️ **Advanced CLI Experience**: Built with `prompt_toolkit` and `rich`, featuring Up/Down history, Tab auto-completion, and slash commands.
+- 🚀 **1-Command Global Startup**: Launch your assistant from any terminal prompt simply by typing `petrova`.
+- 🧙‍♂️ **One-Time Onboarding Wizard**: Effortlessly choose your preferred name, model tier, terminal permissions, and memory storage quota on first launch.
+- ⚡ **Interactive Command Execution**: Ask PETROVA to perform operations (e.g. *“update my system”*, *“clean disk cache”*, *“diagnose open ports”*). PETROVA proposes the exact bash command and safely prompts `[y/N]` before executing.
+- 🧠 **Persistent SQLite Memory**: Remembers user preferences, project notes, and shell habits across sessions with automated storage quota caps (`~/.local/share/petrova/petrova.db`).
+- 🌐 **Live Web & GitHub Inspector**: Pass any URL or GitHub repo link (`https://github.com/...`) in chat or via `/fetch`, and PETROVA will analyze the live repository structure and README.
+- 🏎️ **Zero-Latency Token Streaming**: Real-time SSE token streaming renders responses instantly token-by-token with zero terminal freezing.
 
 ---
 
 ## 🚀 Quick Start & Installation
 
-### 1. Clone the Repository
+### Option 1: One-Step Automated Install (Recommended)
 ```bash
 git clone https://github.com/Priyanshukumar2904/PETROVA.git
 cd PETROVA
+chmod +x install.sh
+./install.sh
 ```
 
-### 2. Install Dependencies
+### Option 2: Manual Setup
 ```bash
+git clone https://github.com/Priyanshukumar2904/PETROVA.git
+cd PETROVA
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
 
-### 3. Launch PETROVA
+### Launching PETROVA
+From **any terminal window** on your system, simply run:
 ```bash
 petrova
 ```
-> *On first run, PETROVA will automatically launch an interactive setup wizard to configure your preferred name and AI model backend.*
 
 ---
 
 ## 📖 Built-in Slash Commands
 
-| Command | Action |
+| Command | Description |
 | :--- | :--- |
-| `/help` | Show available commands and options |
-| `/status` | View real-time system, AI server, and memory status |
-| `/config` *(or `/setup`)* | Re-run the configuration wizard to change name or model |
-| `/server status` | Check AI inference server status |
-| `/server start` | Launch the local AI inference server |
-| `/server stop` | Terminate the active local AI server |
-| `/memory list` | View all persistent memories stored by PETROVA |
-| `/memory search <q>` | Search memories by relevance keyword |
-| `/memory add <text>` | Manually store a memory item |
-| `/memory delete <id>` | Delete a specific memory item by ID |
-| `/memory clear` | Wipe all stored memories |
-| `/clear` | Clear terminal screen |
-| `/exit` *(or `/quit`)* | Exit PETROVA |
+| **`/help`** | Display complete command reference table |
+| **`/run <command>`** *(or `!<cmd>`)* | Safely execute a Linux shell command with live duration metrics |
+| **`/fetch <url>`** | Fetch and inspect any live web page or GitHub repository |
+| **`/web <query>`** | Search the web without needing external API keys |
+| **`/status`** | View live system health, AI server, permissions, and memory usage |
+| **`/config view`** | View all active configurations and settings |
+| **`/config name <name>`** | Change the name PETROVA addresses you by |
+| **`/config permissions`** | Switch execution mode (`confirm`, `autonomous`, `read_only`) |
+| **`/config memory <mb>`** | Adjust SQLite database storage quota cap in MB |
+| **`/setup`** *(or `/config reset`)* | Re-run the full 4-step onboarding wizard |
+| **`/memory list`** | View all stored persistent memories and preferences |
+| **`/memory search <query>`** | Search stored memories by keyword relevance |
+| **`/memory add <fact>`** | Manually store a persistent memory item |
+| **`/memory delete <id>`** | Delete a specific memory item by ID |
+| **`/server start \| stop \| status`** | Manage local background AI inference supervisor |
+| **`/clear`** | Clear terminal screen |
+| **`/exit`** *(or `/quit`)* | Exit session |
 
 ---
 
@@ -80,38 +99,51 @@ petrova
 
 ```mermaid
 flowchart TD
-    subgraph CLI["🖥️ Interactive CLI Interface"]
+    subgraph Terminal["🖥️ Interactive CLI Interface"]
         A["prompt_toolkit REPL & Shell"]
         B["Rich Terminal & Status UI"]
         C["Slash Command Router"]
     end
 
     subgraph Core["⚙️ PETROVA Brain & Engine"]
-        D["System Context & Prompt Builder"]
+        D["System Context & Action Prompt Builder"]
         E["Token Streaming Provider"]
         F["Process Supervisor (llama-server / Ollama)"]
+        G["Safe Command Executor (Timeout & Safety Rules)"]
+        H["Web & GitHub Inspector"]
     end
 
-    subgraph Storage["💾 XDG Persistent Storage"]
-        G["Config: ~/.config/petrova/config.json"]
-        H["Memory DB: ~/.local/share/petrova/petrova.db"]
-        I["History: ~/.local/share/petrova/history"]
+    subgraph Storage["💾 XDG Storage Standard"]
+        I["Config: ~/.config/petrova/config.json"]
+        J["Memory DB: ~/.local/share/petrova/petrova.db"]
+        K["History: ~/.local/share/petrova/history"]
     end
 
     A --> C
     C -->|Slash Commands| B
-    A -->|AI Query| D
+    C -->|Run Shell Command| G
+    C -->|Web / GitHub Query| H
+    A -->|AI Question| D
     D --> E
-    E <-->|Auto-Start / Inference| F
-    D <-->|Keyword Search / Storage| H
-    A <--> G
+    D <--> H
+    E <-->|Inference| F
+    D <-->|Memory Retrieval| J
     A <--> I
+    A <--> K
 ```
+
+---
+
+## 🛡️ Privacy & Security
+
+* **100% Local Inference**: Your prompts, shell inputs, and file data stay entirely on your device.
+* **Explain-Before-Execute**: High-risk destructive commands (`rm -rf`, `mkfs`, `dd`, `chmod 777`) are automatically flagged with warning prompts regardless of autonomy mode.
+* **Credential Scrubbing**: Passwords, API tokens, and private keys are detected and strictly discarded from persistent memory storage.
 
 ---
 
 ## 📜 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
 Developed with ❤️ by [Priyanshukumar2904](https://github.com/Priyanshukumar2904).
