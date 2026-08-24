@@ -121,6 +121,20 @@ class TestPetrovaGUI(unittest.TestCase):
         notify("Test notice 123", level="info")
         self.assertTrue(any("Test notice 123" in n["text"] for n in bus.history))
 
+    def test_gui_slash_commands(self):
+        from petrova.gui.slash_handler import execute_gui_slash_command
+        is_slash, res = execute_gui_slash_command("/help")
+        self.assertTrue(is_slash)
+        self.assertIn("Slash Commands", res)
+
+        is_slash, res = execute_gui_slash_command("/stats")
+        self.assertTrue(is_slash)
+        self.assertIn("Live System Hardware", res)
+
+        is_slash, res = execute_gui_slash_command("/status")
+        self.assertTrue(is_slash)
+        self.assertIn("PETROVA System Status", res)
+
     def test_main_window_init(self):
         window = PetrovaMainWindow()
         self.assertIsNotNone(window.nav_sidebar)
@@ -133,3 +147,4 @@ class TestPetrovaGUI(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

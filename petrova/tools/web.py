@@ -133,3 +133,8 @@ def search_duckduckgo(query: str, max_results: int = 4) -> str:
 
     except Exception as e:
         return f"Search failed: {e}"
+
+
+# Alias
+search_web = search_duckduckgo
+

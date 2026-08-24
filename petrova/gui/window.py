@@ -2,7 +2,8 @@
 PETROVA Main Desktop Application Window.
 Full implementation of the V1 Monochrome Cyber-HUD with multi-view navigation stack,
 active single-key [H],[A],[S],[F],[T],[G],[Q] and Ctrl+ shortcuts, Bash execution engine,
-secure sudo authentication modal, and voice controls.
+secure sudo authentication modal, full GUI slash commands support (/help, /stats, /memory, /goal, etc.),
+and voice controls.
 """
 
 import sys
@@ -44,6 +45,7 @@ from petrova.gui.settings_view import SettingsViewWidget
 from petrova.gui.terminal_drawer import TerminalDrawerWidget
 from petrova.gui.memory_dialog import MemoryVaultDialog
 from petrova.gui.notifications import notify
+from petrova.gui.slash_handler import execute_gui_slash_command
 
 
 class InferenceWorker(QObject):
@@ -70,6 +72,23 @@ class InferenceWorker(QObject):
             self.finished.emit(complete_text)
         except Exception as e:
             self.error_occurred.emit(str(e))
+
+
+class GoalWorker(QObject):
+    """Worker for executing multi-step agentic goals."""
+    finished = pyqtSignal(str)
+
+    def __init__(self, objective: str):
+        super().__init__()
+        self.objective = objective
+
+    def run(self):
+        try:
+            from petrova.brain.planner import plan_and_execute_goal
+            res = plan_and_execute_goal(self.objective)
+            self.finished.emit(res)
+        except Exception as e:
+            self.finished.emit(f"Goal execution error: {str(e)}")
 
 
 class VoiceWorker(QObject):
@@ -119,6 +138,7 @@ class PetrovaMainWindow(QMainWindow):
         self.inference_thread: QThread = None
         self.voice_thread: QThread = None
         self.command_thread: QThread = None
+        self.goal_thread: QThread = None
         self.is_listening = False
         self.cached_sudo_password: str = None
 
@@ -239,7 +259,7 @@ class PetrovaMainWindow(QMainWindow):
 
         self.prompt_input = QTextEdit()
         self.prompt_input.setObjectName("AiInputText")
-        self.prompt_input.setPlaceholderText("Ask PETROVA anything or enter command...")
+        self.prompt_input.setPlaceholderText("Ask PETROVA anything or enter command (e.g. /help, /stats, /goal)...")
         self.prompt_input.setFixedHeight(38)
         self.prompt_input.installEventFilter(self)
         input_layout.addWidget(self.prompt_input, 1)
@@ -428,18 +448,14 @@ class PetrovaMainWindow(QMainWindow):
             self._execute_proposed_command(action)
 
     def _show_initial_greeting(self):
+        config = get_config()
+        user_name = config.user_name or "Cipher"
         welcome_msg = (
-            "I've analyzed your system.\n\n"
-            "Here are the top 5 largest directories in your system:\n\n"
-            "```text\n"
-            "PATH                              SIZE\n"
-            "/home/cipher/Downloads          14.2 GB\n"
-            "/home/cipher/.cache              8.4 GB\n"
-            "/var/log                         3.1 GB\n"
-            "/var/cache/pacman/pkg            2.8 GB\n"
-            "/usr/lib                         6.1 GB\n"
-            "```\n\n"
-            "Would you like me to inspect or clean any of these?"
+            f"**PETROVA Neural Core Online.** All telemetry streams, memory vaults, and terminal executors are ready.\n\n"
+            f"How can I assist you today, **{user_name}**?\n"
+            f"- Ask questions about your system or code\n"
+            f"- Type `/help` to see built-in slash commands\n"
+            f"- Click `🎙️ Speak` to give voice instructions"
         )
         self.chat_widget.add_assistant_message(welcome_msg)
 
@@ -466,9 +482,37 @@ class PetrovaMainWindow(QMainWindow):
 
         self.prompt_input.clear()
         self.chat_widget.add_user_message(prompt)
-        notify(f"Processing query: {prompt[:30]}...", level="info")
 
-        # Update Petrova Core state to THINKING
+        # 1. Check if input is a built-in slash command
+        is_slash, response_md = execute_gui_slash_command(prompt)
+        if is_slash:
+            if response_md == "__CLEAR_CHAT__":
+                self.chat_widget.clear_chat()
+                self.terminal_drawer.output.clear()
+                return
+            elif response_md == "__TRIGGER_MIC__":
+                self._toggle_mic_listen()
+                return
+            elif response_md == "__EXIT_APP__":
+                self.close()
+                return
+            elif response_md.startswith("__RUN_CMD__"):
+                cmd = response_md.replace("__RUN_CMD__", "")
+                self._execute_proposed_command(cmd)
+                return
+            elif response_md.startswith("__RUN_GOAL__"):
+                objective = response_md.replace("__RUN_GOAL__", "")
+                self._run_goal_planner(objective)
+                return
+            else:
+                self.chat_widget.add_assistant_message(response_md)
+                self._sync_voice_settings()
+                if is_voice_enabled():
+                    speak(response_md)
+                return
+
+        # 2. Standard LLM Inference
+        notify(f"Processing query: {prompt[:30]}...", level="info")
         self.telemetry_sidebar.set_core_status("THINKING")
 
         self.chat_widget.start_assistant_message()
@@ -483,6 +527,29 @@ class PetrovaMainWindow(QMainWindow):
         self.inference_worker.error_occurred.connect(self._on_inference_error)
 
         self.inference_thread.start()
+
+    def _run_goal_planner(self, objective: str):
+        notify(f"Synthesizing autonomous goal: {objective[:30]}...", level="info")
+        self.telemetry_sidebar.set_core_status("PLANNING")
+        card = self.chat_widget.start_assistant_message()
+        card.update_content(f"🎯 **Synthesizing Autonomous Goal:** `{objective}`\n\n*Planning subtasks and verifying dependencies...*")
+
+        self.goal_thread = QThread(self)
+        self.goal_worker = GoalWorker(objective)
+        self.goal_worker.moveToThread(self.goal_thread)
+
+        self.goal_thread.started.connect(self.goal_worker.run)
+        self.goal_worker.finished.connect(self._on_goal_finished)
+        self.goal_thread.start()
+
+    def _on_goal_finished(self, result_text: str):
+        self.chat_widget.finalize_assistant_message(result_text)
+        notify("Goal execution plan ready.", level="success")
+        self._reset_to_ready()
+
+        if self.goal_thread and self.goal_thread.isRunning():
+            self.goal_thread.quit()
+            self.goal_thread.wait()
 
     def _on_token_received(self, token: str):
         self.chat_widget.append_assistant_token(token)
@@ -536,7 +603,7 @@ class PetrovaMainWindow(QMainWindow):
     def _on_voice_transcribed(self, text: str):
         self.is_listening = False
         self.mic_btn.setText("🎙️ Speak")
-        self.prompt_input.setPlaceholderText("Ask PETROVA anything or enter command...")
+        self.prompt_input.setPlaceholderText("Ask PETROVA anything or enter command (e.g. /help, /stats, /goal)...")
 
         if text and text.strip():
             notify(f"Voice recognized: \"{text}\"", level="success")
@@ -561,7 +628,6 @@ class PetrovaMainWindow(QMainWindow):
         # Check if command requires sudo authentication
         sudo_pwd = None
         if "sudo " in cmd:
-            # Check if sudo credentials already cached
             res = subprocess.run("sudo -n true", shell=True, capture_output=True)
             if res.returncode != 0:
                 if self.cached_sudo_password:
@@ -598,7 +664,6 @@ class PetrovaMainWindow(QMainWindow):
     def _on_command_finished(self, code: int, stdout: str, stderr: str):
         out = stdout if stdout else ""
         if stderr:
-            # Check if incorrect password
             if "incorrect password" in stderr.lower():
                 self.cached_sudo_password = None
             out += f"\n[stderr]: {stderr}"

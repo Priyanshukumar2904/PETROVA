@@ -297,3 +297,12 @@ def get_memory_count() -> int:
     with get_db() as connection:
         row = connection.execute("SELECT COUNT(*) FROM memories").fetchone()
         return row[0] if row else 0
+
+
+def get_memory_stats() -> Dict[str, Any]:
+    """Return memory count and database storage stats."""
+    return {
+        "total_memories": get_memory_count(),
+        "storage_mb": get_db_size_mb(),
+    }
+
