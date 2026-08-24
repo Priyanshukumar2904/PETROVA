@@ -1,147 +1,149 @@
-<svg width="1100" height="510" viewBox="0 0 1100 510" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1100" height="520" viewBox="0 0 1100 520" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Card Gradient -->
-    <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0c141a" />
-      <stop offset="100%" stop-color="#06090e" />
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#000000" />
+      <stop offset="100%" stop-color="#060606" />
     </linearGradient>
 
-    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#00f59b" />
-      <stop offset="50%" stop-color="#10b981" />
-      <stop offset="100%" stop-color="#fbbf24" />
-    </linearGradient>
+    <!-- Wireframe Grid Pattern -->
+    <pattern id="cardGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#111111" stroke-width="0.8" />
+    </pattern>
 
-    <!-- Card Shadow Filter -->
-    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="115%">
-      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.5" />
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.6" />
     </filter>
 
     <style>
       .feature-card {
-        cursor: pointer;
-        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), filter 0.28s ease;
-      }
-      .feature-card rect.card-border {
-        transition: stroke 0.25s ease, stroke-width 0.25s ease, fill 0.25s ease;
+        transition: transform 0.25s ease;
       }
       .feature-card:hover {
-        transform: translateY(-4px);
-        filter: drop-shadow(0 10px 20px rgba(16, 185, 129, 0.2));
-      }
-      .feature-card:hover rect.card-border {
-        stroke: #10b981;
-        stroke-width: 1.8px;
-      }
-      .feature-card:active {
-        transform: translateY(0px) scale(0.985);
-        filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.3));
-      }
-      .feature-card:active rect.card-border {
-        stroke: #f59e0b;
-        stroke-width: 2px;
-      }
-      .feature-card:active text.card-title {
-        fill: #fbbf24;
+        transform: translateY(-3px);
       }
     </style>
   </defs>
 
   <!-- Background Base -->
-  <rect width="1100" height="510" rx="16" fill="#070b10" stroke="#13211b" stroke-width="1.5" />
+  <rect width="1100" height="520" rx="4" fill="url(#bgGrad)" stroke="#222222" stroke-width="1.2" />
+  <rect width="1100" height="520" fill="url(#cardGrid)" opacity="0.6" />
 
   <!-- Section Title -->
-  <g transform="translate(550, 48)">
-    <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="url(#headerGrad)" text-anchor="middle" letter-spacing="1.5">
-      ⚡ PETROVA CORE ARCHITECTURE &amp; CAPABILITIES
+  <g transform="translate(550, 42)">
+    <text x="0" y="0" font-family="'JetBrains Mono', monospace" font-size="16" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="3">
+      PETROVA // CORE CAPABILITIES &amp; ARCHITECTURE
+    </text>
+    <text x="0" y="20" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="#777777" text-anchor="middle">
+      Native Linux Systems Engineering • 100% Offline Inference • Autonomous Tooling
     </text>
   </g>
 
   <!-- ==================== ROW 1 ==================== -->
 
-  <!-- Card 1: Dual Desktop GUI & Terminal -->
-  <g class="feature-card" transform="translate(45, 80)" filter="url(#cardShadow)">
-    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
-    <text x="22" y="38" font-family="sans-serif" font-size="20">🖥️</text>
-    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#00f59b">Desktop GUI &amp; Terminal Drawer</text>
-    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
-      <tspan x="22" dy="0">PySide6 native app with live neural</tspan>
-      <tspan x="22" dy="18">canvas visualizer, telemetry gauges,</tspan>
-      <tspan x="22" dy="18">and slide-up embedded shell drawer.</tspan>
-    </text>
-    <rect x="22" y="134" width="130" height="24" rx="5" fill="#0b2419" stroke="#10b981" stroke-width="0.8" />
-    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#34d399">Wayland / X11 Ready</text>
+  <!-- Card 1: Linux PTY Engine -->
+  <g class="feature-card" transform="translate(45, 85)" filter="url(#shadow)">
+    <rect width="315" height="185" rx="2" fill="#050505" stroke="#333333" stroke-width="1" />
+    <!-- Header -->
+    <rect x="0" y="0" width="315" height="32" rx="2" fill="#0A0A0A" />
+    <path d="M 0 32 L 315 32" stroke="#222222" stroke-width="1" />
+    <text x="14" y="21" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">💻 LINUX BASH PTY ENGINE</text>
+
+    <!-- Content -->
+    <text x="14" y="58" font-family="'JetBrains Mono', sans-serif" font-size="11.5" font-weight="600" fill="#FFFFFF">Genuine TTY Subprocess Spawning</text>
+    <text x="14" y="80" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• True Linux PTY (pty.openpty())</text>
+    <text x="14" y="100" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Live stdout &amp; interactive stdin (y/n)</text>
+    <text x="14" y="120" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Graphical secure sudo password modal</text>
+    <text x="14" y="140" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Full environment &amp; $PATH inheritance</text>
+    
+    <rect x="14" y="152" width="287" height="22" rx="1" fill="#000000" stroke="#222222" stroke-width="0.8" />
+    <text x="22" y="167" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#CCCCCC">❯ sudo pacman -Syu --noconfirm</text>
   </g>
 
-  <!-- Card 2: Voice & STT Engine -->
-  <g class="feature-card" transform="translate(390, 80)" filter="url(#cardShadow)">
-    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
-    <text x="22" y="38" font-family="sans-serif" font-size="20">🎙️</text>
-    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#34d399">Voice &amp; Speech Engine</text>
-    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
-      <tspan x="22" dy="0">Offline neural Text-to-Speech (Piper)</tspan>
-      <tspan x="22" dy="18">and microphone STT (Whisper/Vosk)</tspan>
-      <tspan x="22" dy="18">with hands-free push-to-talk.</tspan>
-    </text>
-    <rect x="22" y="134" width="125" height="24" rx="5" fill="#09291b" stroke="#34d399" stroke-width="0.8" />
-    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#6ee7b7">TTS + STT Pipeline</text>
+  <!-- Card 2: Hardware Telemetry -->
+  <g class="feature-card" transform="translate(390, 85)" filter="url(#shadow)">
+    <rect width="315" height="185" rx="2" fill="#050505" stroke="#333333" stroke-width="1" />
+    <rect x="0" y="0" width="315" height="32" rx="2" fill="#0A0A0A" />
+    <path d="M 0 32 L 315 32" stroke="#222222" stroke-width="1" />
+    <text x="14" y="21" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">📊 LIVE HARDWARE TELEMETRY</text>
+
+    <text x="14" y="58" font-family="'JetBrains Mono', sans-serif" font-size="11.5" font-weight="600" fill="#FFFFFF">Kernel Sysfs &amp; Thermal Diagnostics</text>
+    <text x="14" y="80" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Core thermals &amp; load averages</text>
+    <text x="14" y="100" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Top CPU/RAM active process table</text>
+    <text x="14" y="120" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Root disk &amp; directory consumer audits</text>
+    <text x="14" y="140" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Battery charge &amp; network transfer rates</text>
+
+    <rect x="14" y="152" width="287" height="22" rx="1" fill="#000000" stroke="#222222" stroke-width="0.8" />
+    <text x="22" y="167" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#CCCCCC">CPU 18% | RAM 23% | 54.0°C | ⚡ 100%</text>
   </g>
 
-  <!-- Card 3: Deep Distro Precision -->
-  <g class="feature-card" transform="translate(735, 80)" filter="url(#cardShadow)">
-    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
-    <text x="22" y="38" font-family="sans-serif" font-size="20">🐧</text>
-    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#a3e635">Deep Distro Precision</text>
-    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
-      <tspan x="22" dy="0">Automatic OS detection (Arch, CachyOS,</tspan>
-      <tspan x="22" dy="18">Debian, Fedora) with zero package</tspan>
-      <tspan x="22" dy="18">manager hallucination.</tspan>
-    </text>
-    <rect x="22" y="134" width="135" height="24" rx="5" fill="#202b0c" stroke="#a3e635" stroke-width="0.8" />
-    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#bef264">CachyOS / Arch / Deb</text>
+  <!-- Card 3: Voice Subsystem -->
+  <g class="feature-card" transform="translate(735, 85)" filter="url(#shadow)">
+    <rect width="315" height="185" rx="2" fill="#050505" stroke="#333333" stroke-width="1" />
+    <rect x="0" y="0" width="315" height="32" rx="2" fill="#0A0A0A" />
+    <path d="M 0 32 L 315 32" stroke="#222222" stroke-width="1" />
+    <text x="14" y="21" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">🎙️ VOICE INTERACTION SUITE</text>
+
+    <text x="14" y="58" font-family="'JetBrains Mono', sans-serif" font-size="11.5" font-weight="600" fill="#FFFFFF">PipeWire &amp; PulseAudio Audio Loop</text>
+    <text x="14" y="80" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• 2.5x volume normalized microphone capture</text>
+    <text x="14" y="100" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Ambient noise energy calibration</text>
+    <text x="14" y="120" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• 1-click [ 🔊 Voice: ON/OFF ] toggles</text>
+    <text x="14" y="140" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• High-speed offline Text-to-Speech (TTS)</text>
+
+    <rect x="14" y="152" width="287" height="22" rx="1" fill="#000000" stroke="#222222" stroke-width="0.8" />
+    <text x="22" y="167" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#CCCCCC">🔴 Recording (5s)... /speak /listen</text>
   </g>
 
   <!-- ==================== ROW 2 ==================== -->
 
-  <!-- Card 4: Persistent SQLite Memory -->
-  <g class="feature-card" transform="translate(45, 285)" filter="url(#cardShadow)">
-    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
-    <text x="22" y="38" font-family="sans-serif" font-size="20">🧠</text>
-    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#38bdf8">Persistent SQLite Memory</text>
-    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
-      <tspan x="22" dy="0">Remembers user preferences, shell</tspan>
-      <tspan x="22" dy="18">habits, and episodic session notes</tspan>
-      <tspan x="22" dy="18">with automated storage quota caps.</tspan>
-    </text>
-    <rect x="22" y="134" width="120" height="24" rx="5" fill="#08283b" stroke="#38bdf8" stroke-width="0.8" />
-    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#7dd3fc">Zero-Latency DB</text>
+  <!-- Card 4: SQLite Memory Vault -->
+  <g class="feature-card" transform="translate(45, 290)" filter="url(#shadow)">
+    <rect width="315" height="185" rx="2" fill="#050505" stroke="#333333" stroke-width="1" />
+    <rect x="0" y="0" width="315" height="32" rx="2" fill="#0A0A0A" />
+    <path d="M 0 32 L 315 32" stroke="#222222" stroke-width="1" />
+    <text x="14" y="21" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">🧠 SQLITE MEMORY VAULT</text>
+
+    <text x="14" y="58" font-family="'JetBrains Mono', sans-serif" font-size="11.5" font-weight="600" fill="#FFFFFF">Persistent Context &amp; Knowledge</text>
+    <text x="14" y="80" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• User preferences &amp; workflow habits</text>
+    <text x="14" y="100" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Episodic session journals &amp; recall</text>
+    <text x="14" y="120" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Configurable storage quota enforcement</text>
+    <text x="14" y="140" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Full memory dialog manager (Ctrl+M)</text>
+
+    <rect x="14" y="152" width="287" height="22" rx="1" fill="#000000" stroke="#222222" stroke-width="0.8" />
+    <text x="22" y="167" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#CCCCCC">/memory list | /memory add &lt;fact&gt;</text>
   </g>
 
-  <!-- Card 5: Multi-Step Goal Planner -->
-  <g class="feature-card" transform="translate(390, 285)" filter="url(#cardShadow)">
-    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
-    <text x="22" y="38" font-family="sans-serif" font-size="20">🎯</text>
-    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#fbbf24">Multi-Step Goal Planner</text>
-    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
-      <tspan x="22" dy="0">Type /goal &lt;task&gt; to decompose</tspan>
-      <tspan x="22" dy="18">complex objectives into sequenced,</tspan>
-      <tspan x="22" dy="18">interactive execution plans.</tspan>
-    </text>
-    <rect x="22" y="134" width="125" height="24" rx="5" fill="#2d1f08" stroke="#fbbf24" stroke-width="0.8" />
-    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#fde68a">Agentic Planning</text>
+  <!-- Card 5: Autonomous Goal Planner -->
+  <g class="feature-card" transform="translate(390, 290)" filter="url(#shadow)">
+    <rect width="315" height="185" rx="2" fill="#050505" stroke="#333333" stroke-width="1" />
+    <rect x="0" y="0" width="315" height="32" rx="2" fill="#0A0A0A" />
+    <path d="M 0 32 L 315 32" stroke="#222222" stroke-width="1" />
+    <text x="14" y="21" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">🎯 AUTONOMOUS GOAL PLANNER</text>
+
+    <text x="14" y="58" font-family="'JetBrains Mono', sans-serif" font-size="11.5" font-weight="600" fill="#FFFFFF">Agentic Multi-Step Task Synthesis</text>
+    <text x="14" y="80" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Goal decomposition into subtasks</text>
+    <text x="14" y="100" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Automated dependency checking</text>
+    <text x="14" y="120" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Action pill generation ([⚡ RUN], [CLEAN])</text>
+    <text x="14" y="140" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Active background task supervisor</text>
+
+    <rect x="14" y="152" width="287" height="22" rx="1" fill="#000000" stroke="#222222" stroke-width="0.8" />
+    <text x="22" y="167" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#CCCCCC">/goal update system and clean caches</text>
   </g>
 
-  <!-- Card 6: Safety Guardrails & Local Privacy -->
-  <g class="feature-card" transform="translate(735, 285)" filter="url(#cardShadow)">
-    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
-    <text x="22" y="38" font-family="sans-serif" font-size="20">🛡️</text>
-    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#f87171">Safety &amp; Privacy Shield</text>
-    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
-      <tspan x="22" dy="0">100% offline inference, credential</tspan>
-      <tspan x="22" dy="18">scrubbing, and explain-before-execute</tspan>
-      <tspan x="22" dy="18">safeguards for destructive commands.</tspan>
-    </text>
-    <rect x="22" y="134" width="130" height="24" rx="5" fill="#2d1010" stroke="#f87171" stroke-width="0.8" />
-    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#fca5a5">Zero Data Leakage</text>
+  <!-- Card 6: Zero-API Web Intelligence -->
+  <g class="feature-card" transform="translate(735, 290)" filter="url(#shadow)">
+    <rect width="315" height="185" rx="2" fill="#050505" stroke="#333333" stroke-width="1" />
+    <rect x="0" y="0" width="315" height="32" rx="2" fill="#0A0A0A" />
+    <path d="M 0 32 L 315 32" stroke="#222222" stroke-width="1" />
+    <text x="14" y="21" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">🌐 LIVE WEB &amp; GITHUB INSPECTOR</text>
+
+    <text x="14" y="58" font-family="'JetBrains Mono', sans-serif" font-size="11.5" font-weight="600" fill="#FFFFFF">Offline-Friendly Web Extractors</text>
+    <text x="14" y="80" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Lightweight DuckDuckGo search (/web)</text>
+    <text x="14" y="100" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• HTML cleanup to readable markdown</text>
+    <text x="14" y="120" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• GitHub repo README &amp; metadata parser</text>
+    <text x="14" y="140" font-family="'JetBrains Mono', sans-serif" font-size="10.5" fill="#AAAAAA">• Zero external API keys or tokens needed</text>
+
+    <rect x="14" y="152" width="287" height="22" rx="1" fill="#000000" stroke="#222222" stroke-width="0.8" />
+    <text x="22" y="167" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#CCCCCC">/web arch linux wayland | /fetch &lt;url&gt;</text>
   </g>
 </svg>

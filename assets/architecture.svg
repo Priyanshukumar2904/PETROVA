@@ -1,250 +1,162 @@
-<svg width="1100" height="700" viewBox="0 0 1100 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1100" height="720" viewBox="0 0 1100 720" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Background Gradient -->
     <linearGradient id="archBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#070c12" />
-      <stop offset="50%" stop-color="#0b131a" />
-      <stop offset="100%" stop-color="#05080c" />
+      <stop offset="0%" stop-color="#000000" />
+      <stop offset="100%" stop-color="#050505" />
     </linearGradient>
 
-    <!-- Header Gradient -->
-    <linearGradient id="archTitleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#00f59b" />
-      <stop offset="50%" stop-color="#34d399" />
-      <stop offset="100%" stop-color="#fbbf24" />
-    </linearGradient>
+    <pattern id="archGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#111111" stroke-width="0.8" />
+    </pattern>
 
-    <!-- Card Background Gradient -->
-    <linearGradient id="boxBg" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#0e1a22" />
-      <stop offset="100%" stop-color="#080f14" />
-    </linearGradient>
-
-    <!-- Glow Filters -->
-    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="115%">
-      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.6" />
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.6" />
     </filter>
 
-    <filter id="emeraldGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="6" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-
-    <style>
-      .arch-card {
-        cursor: pointer;
-        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s ease;
-      }
-      .arch-card rect.box-border {
-        transition: stroke 0.25s ease, stroke-width 0.25s ease, fill 0.25s ease;
-      }
-      .arch-card:hover {
-        transform: translateY(-3px);
-        filter: drop-shadow(0 8px 16px rgba(16, 185, 129, 0.22));
-      }
-      .arch-card:hover rect.box-border {
-        stroke: #00f59b;
-        stroke-width: 1.6px;
-      }
-      .arch-card:active {
-        transform: translateY(0px) scale(0.985);
-        filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.35));
-      }
-      .arch-card:active rect.box-border {
-        stroke: #f59e0b;
-        stroke-width: 2px;
-      }
-
-      /* Flow pulse line animation */
-      .flow-line {
-        stroke-dasharray: 6, 6;
-        animation: flowDash 2.5s linear infinite;
-      }
-      @keyframes flowDash {
-        to {
-          stroke-dashoffset: -24;
-        }
-      }
-    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#FFFFFF" />
+    </marker>
   </defs>
 
-  <!-- Outer Frame -->
-  <rect width="1100" height="700" rx="16" fill="url(#archBg)" stroke="#14261f" stroke-width="1.5" />
+  <!-- Background Base -->
+  <rect width="1100" height="720" rx="4" fill="url(#archBg)" stroke="#222222" stroke-width="1.2" />
+  <rect width="1100" height="720" fill="url(#archGrid)" opacity="0.6" />
 
-  <!-- Section Title & Subtitle -->
-  <g transform="translate(550, 42)">
-    <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="800" fill="url(#archTitleGrad)" text-anchor="middle" letter-spacing="1.5">
-      🏗️ HOW PETROVA WORKS: THE 4-STAGE ARCHITECTURE
+  <!-- Section Title -->
+  <g transform="translate(550, 40)">
+    <text x="0" y="0" font-family="'JetBrains Mono', monospace" font-size="16" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="3">
+      PETROVA // TECHNICAL SYSTEM ARCHITECTURE
     </text>
-    <text x="0" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12.5" font-weight="500" fill="#94a3b8" text-anchor="middle">
-      A simple, transparent look at how your requests flow from your hands to local intelligence and secure execution
+    <text x="0" y="20" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="#777777" text-anchor="middle">
+      Sensory Input Layer ➔ Central Slash Router ➔ Local AI Inference &amp; Safety Shield ➔ Linux Kernel PTY Execution
     </text>
   </g>
 
-  <!-- ==================== STAGE 1: USER INTERACTION LAYER ==================== -->
-  <g transform="translate(40, 95)">
-    <!-- Stage Header Pill -->
-    <rect width="210" height="26" rx="6" fill="#082216" stroke="#10b981" stroke-width="1" />
-    <text x="14" y="17" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#34d399">1. HOW YOU TALK TO IT</text>
+  <!-- ==================== 1. SENSORY INPUT LAYER ==================== -->
+  <g transform="translate(45, 80)">
+    <rect width="1010" height="110" rx="2" fill="#040404" stroke="#282828" stroke-width="1" />
+    <text x="20" y="24" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#888888" letter-spacing="1">1. MULTI-MODAL USER INTERACTION INTERFACES</text>
 
-    <!-- Card 1A: Desktop GUI -->
-    <g class="arch-card" transform="translate(0, 36)" filter="url(#cardShadow)">
-      <rect class="box-border" width="320" height="90" rx="10" fill="url(#boxBg)" stroke="#1a382a" stroke-width="1.2" />
-      <text x="18" y="32" font-size="20">🖥️</text>
-      <text x="48" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5" font-weight="700" fill="#00f59b">Neural Desktop GUI</text>
-      <text x="18" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" fill="#94a3b8">
-        <tspan x="18" dy="0">Visual synaptic canvas, real-time</tspan>
-        <tspan x="18" dy="16">hardware gauges &amp; terminal drawer</tspan>
-      </text>
+    <!-- Sub-Box A: PyQt6 Desktop GUI -->
+    <g transform="translate(20, 36)" filter="url(#shadow)">
+      <rect width="300" height="60" rx="2" fill="#0A0A0A" stroke="#333333" stroke-width="1" />
+      <text x="14" y="24" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">🖥️ CYBER-HUD DESKTOP GUI</text>
+      <text x="14" y="44" font-family="'JetBrains Mono', sans-serif" font-size="9.5" fill="#AAAAAA">PyQt6 Multi-View Nav • Terminal Drawer</text>
     </g>
 
-    <!-- Card 1B: Terminal REPL -->
-    <g class="arch-card" transform="translate(350, 36)" filter="url(#cardShadow)">
-      <rect class="box-border" width="320" height="90" rx="10" fill="url(#boxBg)" stroke="#1a382a" stroke-width="1.2" />
-      <text x="18" y="32" font-size="20">💻</text>
-      <text x="48" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5" font-weight="700" fill="#34d399">Interactive CLI / REPL</text>
-      <text x="18" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" fill="#94a3b8">
-        <tspan x="18" dy="0">Lightning-fast prompt shell with live</tspan>
-        <tspan x="18" dy="16">token streaming &amp; full TTY pass-through</tspan>
-      </text>
+    <!-- Sub-Box B: CLI REPL -->
+    <g transform="translate(355, 36)" filter="url(#shadow)">
+      <rect width="300" height="60" rx="2" fill="#0A0A0A" stroke="#333333" stroke-width="1" />
+      <text x="14" y="24" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">⚡ FAST TERMINAL REPL</text>
+      <text x="14" y="44" font-family="'JetBrains Mono', sans-serif" font-size="9.5" fill="#AAAAAA">prompt_toolkit • Rich Markdown &amp; TTY</text>
     </g>
 
-    <!-- Card 1C: Voice Engine -->
-    <g class="arch-card" transform="translate(700, 36)" filter="url(#cardShadow)">
-      <rect class="box-border" width="320" height="90" rx="10" fill="url(#boxBg)" stroke="#1a382a" stroke-width="1.2" />
-      <text x="18" y="32" font-size="20">🎙️</text>
-      <text x="48" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5" font-weight="700" fill="#a3e635">Voice &amp; Speech Subsystem</text>
-      <text x="18" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" fill="#94a3b8">
-        <tspan x="18" dy="0">Microphone speech-to-text (Whisper)</tspan>
-        <tspan x="18" dy="16">&amp; offline neural voice synthesis (Piper)</tspan>
-      </text>
+    <!-- Sub-Box C: Voice Audio Subsystem -->
+    <g transform="translate(690, 36)" filter="url(#shadow)">
+      <rect width="300" height="60" rx="2" fill="#0A0A0A" stroke="#333333" stroke-width="1" />
+      <text x="14" y="24" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">🎙️ PIPEWIRE VOICE ENGINE</text>
+      <text x="14" y="44" font-family="'JetBrains Mono', sans-serif" font-size="9.5" fill="#AAAAAA">Offline TTS Synthesis • Mic STT</text>
     </g>
   </g>
 
-  <!-- Flow Arrows 1 -> 2 -->
-  <g stroke="#10b981" stroke-width="1.5" opacity="0.8">
-    <line class="flow-line" x1="200" y1="230" x2="200" y2="265" />
-    <line class="flow-line" x1="550" y1="230" x2="550" y2="265" />
-    <line class="flow-line" x1="900" y1="230" x2="900" y2="265" />
-    <polygon points="550,270 545,260 555,260" fill="#10b981" />
-  </g>
+  <!-- Connective Arrows 1 -> 2 -->
+  <line x1="550" y1="190" x2="550" y2="225" stroke="#FFFFFF" stroke-width="1.2" marker-end="url(#arrow)" />
 
-  <!-- ==================== STAGE 2: THE CENTRAL ROUTER ==================== -->
-  <g transform="translate(40, 275)">
-    <g class="arch-card" filter="url(#cardShadow)">
-      <rect class="box-border" width="1020" height="66" rx="10" fill="#0c1820" stroke="#1c3e30" stroke-width="1.2" />
-      <rect x="18" y="18" width="30" height="30" rx="6" fill="#0b291c" stroke="#10b981" stroke-width="1" />
-      <text x="26" y="39" font-size="16">⚡</text>
-      <text x="60" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700" fill="#00f59b">2. THE CENTRAL INTELLIGENCE ROUTER</text>
-      <text x="60" y="50" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5" fill="#94a3b8">
-        Instantly identifies your intent: Natural Language Query ➔ Local Brain • System Command ➔ Safe Executor • Objective ➔ Goal Planner
-      </text>
-      <rect x="880" y="20" width="120" height="26" rx="5" fill="#182c1f" stroke="#34d399" stroke-width="0.8" />
-      <text x="892" y="37" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#a7f3d0">Zero-Lag Dispatch</text>
+  <!-- ==================== 2. CENTRAL ROUTER LAYER ==================== -->
+  <g transform="translate(45, 230)">
+    <rect width="1010" height="95" rx="2" fill="#060606" stroke="#333333" stroke-width="1.2" />
+    <text x="20" y="24" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#FFFFFF" letter-spacing="1">2. CENTRAL INTELLIGENCE DISPATCHER &amp; SLASH ENGINE</text>
+
+    <g transform="translate(20, 36)">
+      <rect width="225" height="45" rx="1" fill="#0F0F0F" stroke="#222222" stroke-width="0.8" />
+      <text x="12" y="20" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#FFFFFF">/stats &amp; /status</text>
+      <text x="12" y="34" font-family="'JetBrains Mono', monospace" font-size="9" fill="#888888">Sysfs Telemetry Cards</text>
+
+      <rect x="245" y="0" width="225" height="45" rx="1" fill="#0F0F0F" stroke="#222222" stroke-width="0.8" />
+      <text x="12" y="20" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#FFFFFF">/goal &amp; /plan</text>
+      <text x="12" y="34" font-family="'JetBrains Mono', monospace" font-size="9" fill="#888888">Autonomous Task Engine</text>
+
+      <rect x="490" y="0" width="225" height="45" rx="1" fill="#0F0F0F" stroke="#222222" stroke-width="0.8" />
+      <text x="12" y="20" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#FFFFFF">/memory &amp; /vault</text>
+      <text x="12" y="34" font-family="'JetBrains Mono', monospace" font-size="9" fill="#888888">SQLite Persistence</text>
+
+      <rect x="735" y="0" width="235" height="45" rx="1" fill="#0F0F0F" stroke="#222222" stroke-width="0.8" />
+      <text x="12" y="20" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#FFFFFF">/run, /web &amp; /fetch</text>
+      <text x="12" y="34" font-family="'JetBrains Mono', monospace" font-size="9" fill="#888888">Shell &amp; Web Extractors</text>
     </g>
   </g>
 
-  <!-- Flow Arrows 2 -> 3 -->
-  <g stroke="#34d399" stroke-width="1.5" opacity="0.8">
-    <line class="flow-line" x1="165" y1="345" x2="165" y2="380" />
-    <line class="flow-line" x1="420" y1="345" x2="420" y2="380" />
-    <line class="flow-line" x1="675" y1="345" x2="675" y2="380" />
-    <line class="flow-line" x1="930" y1="345" x2="930" y2="380" />
-  </g>
+  <!-- Connective Arrows 2 -> 3 -->
+  <line x1="550" y1="325" x2="550" y2="360" stroke="#FFFFFF" stroke-width="1.2" marker-end="url(#arrow)" />
 
-  <!-- ==================== STAGE 3: ENGINES & SAFETY GUARDRAILS ==================== -->
-  <g transform="translate(40, 385)">
-    <!-- Stage Header Pill -->
-    <rect width="250" height="26" rx="6" fill="#082216" stroke="#10b981" stroke-width="1" />
-    <text x="14" y="17" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#34d399">3. THINKING &amp; DOING ENGINES</text>
+  <!-- ==================== 3. LOCAL AI BRAIN & SAFETY SHIELD ==================== -->
+  <g transform="translate(45, 365)">
+    <rect width="1010" height="130" rx="2" fill="#040404" stroke="#282828" stroke-width="1" />
+    <text x="20" y="24" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#888888" letter-spacing="1">3. OFFLINE AI INFERENCE &amp; PERMISSIONS SAFETY SHIELD</text>
 
-    <!-- Card 3A: Local AI Brain -->
-    <g class="arch-card" transform="translate(0, 36)" filter="url(#cardShadow)">
-      <rect class="box-border" width="240" height="110" rx="10" fill="url(#boxBg)" stroke="#1a382a" stroke-width="1.2" />
-      <text x="16" y="28" font-size="18">🧠</text>
-      <text x="42" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#00f59b">Local AI Brain</text>
-      <text x="16" y="52" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#94a3b8">
-        <tspan x="16" dy="0">100% Offline llama-server</tspan>
-        <tspan x="16" dy="16">or Ollama inference with</tspan>
-        <tspan x="16" dy="16">distro-aware context.</tspan>
-      </text>
-      <rect x="16" y="78" width="95" height="20" rx="4" fill="#09291b" />
-      <text x="22" y="92" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#34d399">GPU / CPU Ready</text>
+    <!-- Box A: Local LLM Engine -->
+    <g transform="translate(20, 36)" filter="url(#shadow)">
+      <rect width="465" height="78" rx="2" fill="#0A0A0A" stroke="#333333" stroke-width="1" />
+      <text x="14" y="22" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">🧠 LOCAL INFERENCE ENGINE (llama-server / Ollama)</text>
+      <text x="14" y="42" font-family="'JetBrains Mono', sans-serif" font-size="10" fill="#AAAAAA">• Qwen2.5-Coder / Llama-3 / DeepSeek GGUF Models</text>
+      <text x="14" y="60" font-family="'JetBrains Mono', sans-serif" font-size="10" fill="#AAAAAA">• 100% On-Device VRAM/RAM Execution • Token Streaming</text>
     </g>
 
-    <!-- Card 3B: Agentic Goal Planner -->
-    <g class="arch-card" transform="translate(260, 36)" filter="url(#cardShadow)">
-      <rect class="box-border" width="240" height="110" rx="10" fill="url(#boxBg)" stroke="#1a382a" stroke-width="1.2" />
-      <text x="16" y="28" font-size="18">🎯</text>
-      <text x="42" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#34d399">Agentic Planner</text>
-      <text x="16" y="52" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#94a3b8">
-        <tspan x="16" dy="0">Decomposes objectives</tspan>
-        <tspan x="16" dy="16">into multi-step ordered</tspan>
-        <tspan x="16" dy="16">execution checklists.</tspan>
-      </text>
-      <rect x="16" y="78" width="95" height="20" rx="4" fill="#09291b" />
-      <text x="22" y="92" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#34d399">/goal Multi-Step</text>
-    </g>
-
-    <!-- Card 3C: Safety Shield & Shell -->
-    <g class="arch-card" transform="translate(520, 36)" filter="url(#cardShadow)">
-      <rect class="box-border" width="240" height="110" rx="10" fill="url(#boxBg)" stroke="#1a382a" stroke-width="1.2" />
-      <text x="16" y="28" font-size="18">🛡️</text>
-      <text x="42" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#fbbf24">Safety Guardrails</text>
-      <text x="16" y="52" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#94a3b8">
-        <tspan x="16" dy="0">Pre-execution warnings for</tspan>
-        <tspan x="16" dy="16">destructive commands,</tspan>
-        <tspan x="16" dy="16">sudo, and disk actions.</tspan>
-      </text>
-      <rect x="16" y="78" width="105" height="20" rx="4" fill="#2d1f08" />
-      <text x="22" y="92" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#fbbf24">Explain-Before-Run</text>
-    </g>
-
-    <!-- Card 3D: Web & Code Inspector -->
-    <g class="arch-card" transform="translate(780, 36)" filter="url(#cardShadow)">
-      <rect class="box-border" width="240" height="110" rx="10" fill="url(#boxBg)" stroke="#1a382a" stroke-width="1.2" />
-      <text x="16" y="28" font-size="18">🌐</text>
-      <text x="42" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#38bdf8">Web &amp; Repo Tools</text>
-      <text x="16" y="52" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#94a3b8">
-        <tspan x="16" dy="0">Zero-API web search and</tspan>
-        <tspan x="16" dy="16">instant GitHub repo tree</tspan>
-        <tspan x="16" dy="16">&amp; code file analysis.</tspan>
-      </text>
-      <rect x="16" y="78" width="95" height="20" rx="4" fill="#08283b" />
-      <text x="22" y="92" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#38bdf8">GitHub + Search</text>
+    <!-- Box B: Safety & Permissions Shield -->
+    <g transform="translate(515, 36)" filter="url(#shadow)">
+      <rect width="475" height="78" rx="2" fill="#0A0A0A" stroke="#333333" stroke-width="1" />
+      <text x="14" y="22" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#FFFFFF">🛡️ SAFETY SHIELD &amp; CREDENTIAL SANITIZATION</text>
+      <text x="14" y="42" font-family="'JetBrains Mono', sans-serif" font-size="10" fill="#AAAAAA">• Explain-Before-Execute on destructive actions (rm -rf, dd)</text>
+      <text x="14" y="60" font-family="'JetBrains Mono', sans-serif" font-size="10" fill="#AAAAAA">• Token/Password scrubbing before SQLite persistence</text>
     </g>
   </g>
 
-  <!-- Flow Arrows 3 -> 4 -->
-  <g stroke="#10b981" stroke-width="1.5" opacity="0.8">
-    <line class="flow-line" x1="550" y1="540" x2="550" y2="575" />
-    <polygon points="550,578 545,568 555,568" fill="#10b981" />
-  </g>
+  <!-- Connective Arrows 3 -> 4 -->
+  <line x1="550" y1="495" x2="550" y2="530" stroke="#FFFFFF" stroke-width="1.2" marker-end="url(#arrow)" />
 
-  <!-- ==================== STAGE 4: STORAGE & MEMORY VAULT ==================== -->
-  <g transform="translate(40, 585)">
-    <!-- Stage Header Pill -->
-    <rect width="260" height="26" rx="6" fill="#082216" stroke="#10b981" stroke-width="1" />
-    <text x="14" y="17" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#34d399">4. LOCAL MEMORY &amp; XDG VAULT</text>
+  <!-- ==================== 4. LINUX OS & KERNEL INTEGRATION ==================== -->
+  <g transform="translate(45, 535)">
+    <rect width="1010" height="150" rx="2" fill="#060606" stroke="#333333" stroke-width="1.2" />
+    <text x="20" y="24" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#FFFFFF" letter-spacing="1">4. DEEP LINUX OS, KERNEL &amp; HARDWARE INTEGRATION</text>
 
-    <!-- Bottom Storage Strip -->
-    <g class="arch-card" transform="translate(0, 34)" filter="url(#cardShadow)">
-      <rect class="box-border" width="1020" height="55" rx="8" fill="#0a1419" stroke="#183628" stroke-width="1.2" />
-      
-      <!-- Vault Item 1 -->
-      <g transform="translate(20, 16)">
-        <text x="0" y="16" font-size="16">💾</text>
-        <text x="26" y="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#00f59b">Persistent SQLite DB</text>
-        <text x="175" y="15" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8">~/.local/share/petrova/petrova.db (Memory, preferences &amp; journals)</text>
-      </g>
+    <!-- Column 1: Bash PTY -->
+    <g transform="translate(20, 36)">
+      <rect width="225" height="96" rx="1" fill="#0A0A0A" stroke="#222222" stroke-width="1" />
+      <text x="12" y="20" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#FFFFFF">⚡ BASH PTY ENGINE</text>
+      <text x="12" y="38" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• /bin/bash execution</text>
+      <text x="12" y="54" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• Live stdout streaming</text>
+      <text x="12" y="70" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• Interactive y/n stdin</text>
+      <text x="12" y="86" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• Graphical sudo modal</text>
+    </g>
 
-      <!-- Vault Item 2 -->
-      <g transform="translate(680, 16)">
-        <text x="0" y="16" font-size="16">⚙️</text>
-        <text x="26" y="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#fbbf24">XDG Settings</text>
-        <text x="125" y="15" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8">~/.config/petrova/config.json</text>
-      </g>
+    <!-- Column 2: Kernel Sysfs -->
+    <g transform="translate(265, 36)">
+      <rect width="225" height="96" rx="1" fill="#0A0A0A" stroke="#222222" stroke-width="1" />
+      <text x="12" y="20" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#FFFFFF">📊 KERNEL SYSFS / PROC</text>
+      <text x="12" y="38" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• Core thermals &amp; loads</text>
+      <text x="12" y="54" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• Active process table</text>
+      <text x="12" y="70" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• Network RX/TX speeds</text>
+      <text x="12" y="86" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• Battery charge cycles</text>
+    </g>
+
+    <!-- Column 3: Package Managers -->
+    <g transform="translate(510, 36)">
+      <rect width="225" height="96" rx="1" fill="#0A0A0A" stroke="#222222" stroke-width="1" />
+      <text x="12" y="20" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#FFFFFF">📦 PACKAGE MANAGERS</text>
+      <text x="12" y="38" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• pacman &amp; paru (Arch)</text>
+      <text x="12" y="54" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• apt &amp; dpkg (Debian)</text>
+      <text x="12" y="70" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• dnf &amp; rpm (Fedora)</text>
+      <text x="12" y="86" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• Non-blocking --noconfirm</text>
+    </g>
+
+    <!-- Column 4: SQLite Vault -->
+    <g transform="translate(755, 36)">
+      <rect width="235" height="96" rx="1" fill="#0A0A0A" stroke="#222222" stroke-width="1" />
+      <text x="12" y="20" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800" fill="#FFFFFF">💾 XDG STORAGE &amp; SQLITE</text>
+      <text x="12" y="38" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• ~/.local/share/petrova.db</text>
+      <text x="12" y="54" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• ~/.config/petrova/config</text>
+      <text x="12" y="70" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• Storage quota pruning</text>
+      <text x="12" y="86" font-family="'JetBrains Mono', monospace" font-size="9" fill="#AAAAAA">• Fast SQLite memory index</text>
     </g>
   </g>
-
 </svg>

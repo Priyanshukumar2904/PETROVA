@@ -1,124 +1,293 @@
-<svg width="1000" height="630" viewBox="0 0 1000 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="740" viewBox="0 0 1200 740" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="termBg" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#0c1218" />
-      <stop offset="100%" stop-color="#05080c" />
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#000000" />
+      <stop offset="100%" stop-color="#050505" />
     </linearGradient>
 
-    <linearGradient id="headerBg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#111c22" />
-      <stop offset="100%" stop-color="#0c1419" />
-    </linearGradient>
+    <pattern id="dotGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#141414" />
+    </pattern>
 
-    <filter id="winShadow" x="-5%" y="-5%" width="110%" height="115%">
-      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#000000" flood-opacity="0.65" />
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.8" />
     </filter>
-
-    <style>
-      .btn-action {
-        cursor: pointer;
-        transition: all 0.25s ease;
-      }
-      .btn-action:hover rect {
-        fill: #064e3b;
-        stroke: #34d399;
-      }
-      .btn-action:active rect {
-        fill: #78350f;
-        stroke: #fbbf24;
-      }
-      .btn-action:active text {
-        fill: #fef08a;
-      }
-      .pulse-caret {
-        animation: blink 1.2s infinite;
-      }
-      @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0; }
-      }
-    </style>
   </defs>
 
-  <!-- Window Container with Drop Shadow -->
-  <rect x="20" y="20" width="960" height="590" rx="14" fill="url(#termBg)" stroke="#162920" stroke-width="1.5" filter="url(#winShadow)" />
+  <!-- Background -->
+  <rect width="1200" height="740" fill="url(#bgGrad)" />
+  <rect width="1200" height="740" fill="url(#dotGrid)" />
 
-  <!-- Header Bar -->
-  <rect x="20" y="20" width="960" height="42" rx="14" fill="url(#headerBg)" />
-  <rect x="20" y="50" width="960" height="12" fill="url(#headerBg)" />
-  <line x1="20" y1="62" x2="980" y2="62" stroke="#162920" stroke-width="1" />
+  <!-- Main Window Container -->
+  <g transform="translate(40, 30)" filter="url(#shadow)">
+    <!-- Outer Window Border -->
+    <rect x="0" y="0" width="1120" height="680" rx="3" fill="#000000" stroke="#333333" stroke-width="1.2" />
 
-  <!-- Window Traffic Lights (Interactive Style) -->
-  <circle cx="48" cy="41" r="6" fill="#f87171" />
-  <circle cx="68" cy="41" r="6" fill="#fbbf24" />
-  <circle cx="88" cy="41" r="6" fill="#34d399" />
-
-  <!-- Window Title -->
-  <text x="500" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', monospace" font-size="12.5" font-weight="600" fill="#94a3b8" text-anchor="middle">
-    cipher@archlinux: ~ (PETROVA Interactive AI Session)
-  </text>
-
-  <!-- Terminal Content Area -->
-  <g transform="translate(45, 90)" font-family="'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="13.5" xml:space="preserve">
+    <!-- 1. TOP SYSTEM BAR -->
+    <rect x="0" y="0" width="1120" height="42" fill="#000000" />
+    <path d="M 0 42 L 1120 42" stroke="#222222" stroke-width="1" />
     
-    <!-- Step 1: User Launch -->
-    <text x="0" y="0" fill="#34d399" font-weight="bold">cipher@archlinux <tspan fill="#fbbf24">~</tspan> <tspan fill="#00f59b">❯</tspan> <tspan fill="#f1f5f9" font-weight="normal">petrova</tspan></text>
+    <text x="20" y="26" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="900" letter-spacing="2">PETROVA</text>
+    <text x="96" y="26" fill="#555555" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="bold">//</text>
+    <text x="118" y="26" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="500">Personal Enhanced Terminal Reasoning &amp; Operations Virtual Assistant</text>
 
-    <!-- Step 2: System Status Header -->
-    <g transform="translate(0, 26)">
-      <text x="0" y="0" fill="#a7f3d0" font-weight="bold">Good Afternoon, Cipher.</text>
+    <!-- Top Bar Right Info -->
+    <g transform="translate(730, 10)">
+      <rect x="0" y="0" width="130" height="22" rx="2" fill="#0A0A0A" stroke="#333333" stroke-width="0.8" />
+      <text x="10" y="15" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">🔊 Voice: ON</text>
+
+      <text x="145" y="16" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700">[LOCK] LOCAL PRIVACY</text>
+      <text x="290" y="16" fill="#555555" font-family="'JetBrains Mono', monospace" font-size="11">|</text>
+      <text x="305" y="16" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">2026-08-25 01:22</text>
+    </g>
+
+    <!-- 2. LEFT NAVIGATION PANEL (x=0 to 190) -->
+    <g transform="translate(0, 42)">
+      <rect x="0" y="0" width="190" height="606" fill="#000000" />
+      <path d="M 190 0 L 190 606" stroke="#222222" stroke-width="1" />
+
+      <!-- Brand Logo / Sub -->
+      <text x="20" y="28" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="900" letter-spacing="2">PETROVA</text>
+      <text x="20" y="44" fill="#666666" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700">CYBER-HUD v0.1.0</text>
+      <text x="20" y="60" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">● ONLINE</text>
+
+      <path d="M 15 72 L 175 72" stroke="#1A1A1A" stroke-width="1" />
+
+      <!-- Nav Items -->
+      <!-- Item 1: HOME (Active) -->
+      <rect x="15" y="84" width="160" height="32" rx="2" fill="#FFFFFF" />
+      <text x="28" y="105" fill="#000000" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="900">⌂ HOME</text>
+
+      <!-- Item 2: AI CHAT -->
+      <rect x="15" y="122" width="160" height="30" rx="2" fill="transparent" stroke="#222222" stroke-width="0.8" />
+      <text x="28" y="142" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">💬 AI CHAT</text>
+
+      <!-- Item 3: SYSTEM -->
+      <rect x="15" y="158" width="160" height="30" rx="2" fill="transparent" stroke="#222222" stroke-width="0.8" />
+      <text x="28" y="178" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">📈 SYSTEM</text>
+
+      <!-- Item 4: FILES -->
+      <rect x="15" y="194" width="160" height="30" rx="2" fill="transparent" stroke="#222222" stroke-width="0.8" />
+      <text x="28" y="214" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">📁 FILES</text>
+
+      <!-- Item 5: TASKS -->
+      <rect x="15" y="230" width="160" height="30" rx="2" fill="transparent" stroke="#222222" stroke-width="0.8" />
+      <text x="28" y="250" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">📋 TASKS</text>
+
+      <!-- Item 6: SETTINGS -->
+      <rect x="15" y="266" width="160" height="30" rx="2" fill="transparent" stroke="#222222" stroke-width="0.8" />
+      <text x="28" y="286" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">⚙️ SETTINGS</text>
+
+      <!-- Shortcuts Card -->
+      <g transform="translate(15, 340)">
+        <rect x="0" y="0" width="160" height="230" rx="2" fill="#050505" stroke="#222222" stroke-width="1" />
+        <text x="14" y="22" fill="#666666" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" letter-spacing="1">KEY SHORTCUTS</text>
+        <path d="M 10 30 L 150 30" stroke="#1A1A1A" stroke-width="0.8" />
+
+        <text x="14" y="48" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="10.5">[H] Home</text>
+        <text x="14" y="68" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="10.5">[A] AI Chat</text>
+        <text x="14" y="88" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="10.5">[S] System</text>
+        <text x="14" y="108" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="10.5">[F] Files</text>
+        <text x="14" y="128" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="10.5">[T] Tasks</text>
+        <text x="14" y="148" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="10.5">[G] Settings</text>
+        <text x="14" y="168" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="10.5">[Q] Quit</text>
+        <text x="14" y="194" fill="#666666" font-family="'JetBrains Mono', monospace" font-size="9.5">Ctrl+T Terminal</text>
+        <text x="14" y="210" fill="#666666" font-family="'JetBrains Mono', monospace" font-size="9.5">Ctrl+M Memory</text>
+      </g>
+    </g>
+
+    <!-- 3. CENTRAL WORKSPACE (x=202 to 820) -->
+    <g transform="translate(202, 52)">
+      <!-- Greeting Panel -->
+      <rect x="0" y="0" width="628" height="58" rx="2" fill="#050505" stroke="#222222" stroke-width="1" />
+      <text x="18" y="26" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="14" font-weight="800">Good evening, Cipher.</text>
+      <text x="18" y="44" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="11.5">PETROVA is at your service. All telemetry streams are nominal.</text>
+
+      <!-- AI Assistant Panel -->
+      <g transform="translate(0, 68)">
+        <rect x="0" y="0" width="628" height="340" rx="2" fill="#030303" stroke="#222222" stroke-width="1" />
+        
+        <!-- Header -->
+        <path d="M 0 32 L 628 32" stroke="#1A1A1A" stroke-width="1" />
+        <text x="16" y="21" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" letter-spacing="1">AI ASSISTANT</text>
+        <text x="470" y="21" fill="#666666" font-family="'JetBrains Mono', monospace" font-size="10.5">CONVERSATION #260825</text>
+
+        <!-- User Message -->
+        <text x="16" y="55" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">[YOU]</text>
+        <text x="16" y="74" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="12">Check available system updates and inspect package disk cache.</text>
+
+        <!-- Assistant Message -->
+        <text x="16" y="106" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="900">[PETROVA]</text>
+        <text x="16" y="125" fill="#DDDDDD" font-family="'JetBrains Mono', sans-serif" font-size="12">
+          I've synchronized with your package databases. 6 packages are ready to update:
+        </text>
+
+        <!-- Code Block -->
+        <g transform="translate(16, 138)">
+          <rect x="0" y="0" width="596" height="74" rx="2" fill="#0A0A0A" stroke="#282828" stroke-width="1" />
+          <text x="14" y="20" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="10">PACKAGE                       OLD             NEW             SIZE</text>
+          <text x="14" y="38" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10.5">cachyos/cachyos-ananicy-rules 1:1.1.47-1      1:1.1.48-1      0.34 MiB</text>
+          <text x="14" y="54" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10.5">cachyos-extra-v3/vim          9.2.0849-1.1    9.2.1001-1.1    3.09 MiB</text>
+        </g>
+
+        <!-- Action Pills -->
+        <g transform="translate(16, 224)">
+          <rect x="0" y="0" width="190" height="26" rx="2" fill="#FFFFFF" />
+          <text x="12" y="17" fill="#000000" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="900">[ ⚡ RUN: sudo pacman -Syu ]</text>
+
+          <rect x="200" y="0" width="90" height="26" rx="2" fill="#0F0F0F" stroke="#333333" stroke-width="1" />
+          <text x="214" y="17" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700">[ INSPECT ]</text>
+
+          <rect x="300" y="0" width="80" height="26" rx="2" fill="#0F0F0F" stroke="#333333" stroke-width="1" />
+          <text x="316" y="17" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700">[ CLEAN ]</text>
+        </g>
+      </g>
+
+      <!-- Input Bar -->
+      <g transform="translate(0, 418)">
+        <rect x="0" y="0" width="628" height="42" rx="2" fill="#080808" stroke="#333333" stroke-width="1" />
+        <text x="16" y="26" fill="#777777" font-family="'JetBrains Mono', monospace" font-size="12">Ask PETROVA anything or enter command (e.g. /help, /stats, /goal)...</text>
+        
+        <rect x="440" y="6" width="88" height="30" rx="2" fill="#0F0F0F" stroke="#333333" stroke-width="1" />
+        <text x="452" y="25" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700">🎙️ Speak</text>
+
+        <rect x="536" y="6" width="80" height="30" rx="2" fill="#FFFFFF" />
+        <text x="550" y="25" fill="#000000" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="900">➤ Send</text>
+      </g>
+
+      <!-- Lower Horizon 3-Panel Dock -->
+      <g transform="translate(0, 470)">
+        <!-- Panel A: Quick Actions -->
+        <rect x="0" y="0" width="202" height="114" rx="2" fill="#050505" stroke="#222222" stroke-width="1" />
+        <text x="12" y="20" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800">QUICK ACTIONS</text>
+        
+        <rect x="10" y="32" width="86" height="22" rx="1" fill="#0E0E0E" stroke="#282828" stroke-width="0.8" />
+        <text x="16" y="47" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="9">[System Scan]</text>
+
+        <rect x="104" y="32" width="86" height="22" rx="1" fill="#0E0E0E" stroke="#282828" stroke-width="0.8" />
+        <text x="110" y="47" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="9">[Clean Cache]</text>
+
+        <rect x="10" y="60" width="86" height="22" rx="1" fill="#0E0E0E" stroke="#282828" stroke-width="0.8" />
+        <text x="16" y="75" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="9">[Check Updates]</text>
+
+        <rect x="104" y="60" width="86" height="22" rx="1" fill="#0E0E0E" stroke="#282828" stroke-width="0.8" />
+        <text x="110" y="75" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="9">[Disk Analysis]</text>
+
+        <!-- Panel B: Tasks -->
+        <rect x="212" y="0" width="202" height="114" rx="2" fill="#050505" stroke="#222222" stroke-width="1" />
+        <text x="224" y="20" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800">ACTIVE TASKS</text>
+        <text x="224" y="42" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="9.5">● Monitoring System  Running</text>
+        <text x="224" y="60" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="9.5">● Telemetry Stream   Active</text>
+        <path d="M 224 72 L 398 72" stroke="#1A1A1A" stroke-width="0.8" />
+        <text x="224" y="90" fill="#666666" font-family="'JetBrains Mono', monospace" font-size="9.5">✓ Local Inference Ready</text>
+
+        <!-- Panel C: Notifications -->
+        <rect x="424" y="0" width="204" height="114" rx="2" fill="#050505" stroke="#222222" stroke-width="1" />
+        <text x="436" y="20" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="800">NOTIFICATIONS</text>
+        <text x="436" y="42" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="9.5">[01:22] System synced</text>
+        <text x="436" y="60" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="9.5">[01:20] Voice recognized: "status"</text>
+        <text x="436" y="78" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="9.5">[01:15] SQLite memory loaded</text>
+      </g>
+    </g>
+
+    <!-- 4. RIGHT TELEMETRY MONITOR (x=840 to 1110) -->
+    <g transform="translate(840, 52)">
+      <rect x="0" y="0" width="270" height="584" rx="2" fill="#030303" stroke="#222222" stroke-width="1" />
       
-      <!-- Status Table Box -->
-      <g transform="translate(0, 14)">
-        <rect x="0" y="0" width="870" height="82" rx="8" fill="#091216" stroke="#183628" stroke-width="1" />
-        
-        <text x="20" y="24" fill="#64748b" font-weight="600">User Profile   <tspan fill="#34d399" font-weight="bold">Cipher</tspan></text>
-        <text x="20" y="46" fill="#64748b" font-weight="600">AI Model       <tspan fill="#6ee7b7">Qwen2.5-Coder-7B-Instruct</tspan></text>
-        <text x="20" y="68" fill="#64748b" font-weight="600">AI Server      <tspan fill="#00f59b" font-weight="bold">ONLINE</tspan> <tspan fill="#475569">(llama-server @ :8080)</tspan></text>
+      <!-- Core Reticle & Wave Indicator -->
+      <g transform="translate(135, 76)">
+        <circle cx="0" cy="0" r="54" fill="none" stroke="#222222" stroke-width="1" stroke-dasharray="3 3" />
+        <circle cx="0" cy="0" r="42" fill="none" stroke="#444444" stroke-width="1" />
+        <circle cx="0" cy="0" r="28" fill="none" stroke="#888888" stroke-width="1.2" />
+        <circle cx="0" cy="0" r="14" fill="#0A0A0A" stroke="#FFFFFF" stroke-width="1.5" />
+        <circle cx="0" cy="0" r="4" fill="#FFFFFF" />
 
-        <text x="450" y="24" fill="#64748b" font-weight="600">Permissions    <tspan fill="#fbbf24" font-weight="bold">CONFIRM</tspan></text>
-        <text x="450" y="46" fill="#64748b" font-weight="600">Memory DB      <tspan fill="#34d399" font-weight="bold">READY</tspan> <tspan fill="#475569">(18 items / 500 MB)</tspan></text>
-        <text x="450" y="68" fill="#64748b" font-weight="600">Environment    <tspan fill="#475569">Arch Linux 6.12.7 (x86_64)</tspan></text>
-      </g>
-    </g>
-
-    <!-- Step 3: Interactive Prompt & Command Request -->
-    <g transform="translate(0, 150)">
-      <text x="0" y="0" fill="#00f59b" font-weight="bold">PETROVA <tspan fill="#fbbf24">❯</tspan> <tspan fill="#f1f5f9" font-weight="normal">Check system thermals, memory pressure &amp; clean package cache</tspan></text>
-    </g>
-
-    <!-- Step 4: AI Response Streaming -->
-    <g transform="translate(0, 185)">
-      <text x="0" y="0" fill="#34d399" font-weight="bold">PETROVA</text>
-      <text x="0" y="22" fill="#cbd5e1">I've analyzed your system: CPU is running at 46°C, RAM is at 34% utilization.</text>
-      <text x="0" y="42" fill="#cbd5e1">Here is the safe command to clear uninstalled packages from your pacman cache:</text>
-
-      <!-- Proposed Command Box -->
-      <g transform="translate(0, 56)">
-        <rect x="0" y="0" width="870" height="66" rx="8" fill="#091216" stroke="#10b981" stroke-width="1.2" />
-        <text x="16" y="22" fill="#34d399" font-size="11" font-weight="bold">⚡ PROPOSED SYSTEM COMMAND</text>
-        <text x="16" y="48" fill="#fbbf24" font-weight="bold">sudo pacman -Sc --noconfirm &amp;&amp; free -h</text>
+        <text x="0" y="72" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1.5">PETROVA CORE</text>
+        <text x="0" y="88" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" text-anchor="middle">STATE: READY</text>
       </g>
 
-      <!-- Execution Prompt with Interactive Button -->
-      <g transform="translate(0, 140)">
-        <text x="0" y="0" fill="#a7f3d0">Run this command now? <tspan fill="#fbbf24">[y/N]</tspan>: <tspan fill="#f1f5f9" font-weight="bold">y</tspan></text>
-        
-        <!-- Output Box -->
-        <g transform="translate(0, 18)">
-          <rect x="0" y="0" width="870" height="68" rx="8" fill="#060c0f" stroke="#163828" stroke-width="1" />
-          <text x="16" y="20" fill="#34d399" font-size="11" font-weight="bold">OUTPUT (exit code 0 in 0.38s)</text>
-          <text x="16" y="38" fill="#cbd5e1" font-size="12.5">Packages to keep: All locally installed packages. Cache cleaned: 1.42 GiB freed.</text>
-          <text x="16" y="54" fill="#94a3b8" font-size="12.5">Mem: Total 31Gi | Used 10.4Gi | Free 18.2Gi | Available 20.1Gi</text>
+      <path d="M 15 186 L 255 186" stroke="#1A1A1A" stroke-width="1" />
+
+      <!-- Segmented Hardware Metrics -->
+      <g transform="translate(18, 204)">
+        <!-- CPU Gauge -->
+        <text x="0" y="0" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800">CPU LOAD (8 CORES)</text>
+        <text x="195" y="0" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800">18%</text>
+        <!-- Segmented Bar -->
+        <g transform="translate(0, 8)">
+          <rect x="0" y="0" width="18" height="6" fill="#FFFFFF" />
+          <rect x="22" y="0" width="18" height="6" fill="#FFFFFF" />
+          <rect x="44" y="0" width="18" height="6" fill="#FFFFFF" />
+          <rect x="66" y="0" width="18" height="6" fill="#FFFFFF" />
+          <rect x="88" y="0" width="18" height="6" fill="#222222" />
+          <rect x="110" y="0" width="18" height="6" fill="#222222" />
+          <rect x="132" y="0" width="18" height="6" fill="#222222" />
+          <rect x="154" y="0" width="18" height="6" fill="#222222" />
+          <rect x="176" y="0" width="18" height="6" fill="#222222" />
+          <rect x="198" y="0" width="18" height="6" fill="#222222" />
+        </g>
+
+        <!-- Memory Gauge -->
+        <g transform="translate(0, 36)">
+          <text x="0" y="0" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800">RAM (7.2 / 31.0 GB)</text>
+          <text x="195" y="0" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800">23%</text>
+          <g transform="translate(0, 8)">
+            <rect x="0" y="0" width="18" height="6" fill="#FFFFFF" />
+            <rect x="22" y="0" width="18" height="6" fill="#FFFFFF" />
+            <rect x="44" y="0" width="18" height="6" fill="#FFFFFF" />
+            <rect x="66" y="0" width="18" height="6" fill="#222222" />
+            <rect x="88" y="0" width="18" height="6" fill="#222222" />
+            <rect x="110" y="0" width="18" height="6" fill="#222222" />
+            <rect x="132" y="0" width="18" height="6" fill="#222222" />
+            <rect x="154" y="0" width="18" height="6" fill="#222222" />
+            <rect x="176" y="0" width="18" height="6" fill="#222222" />
+            <rect x="198" y="0" width="18" height="6" fill="#222222" />
+          </g>
+        </g>
+
+        <!-- Disk Partition Gauge -->
+        <g transform="translate(0, 72)">
+          <text x="0" y="0" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800">ROOT DISK (70.2 / 211 GB)</text>
+          <text x="195" y="0" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800">33%</text>
+          <g transform="translate(0, 8)">
+            <rect x="0" y="0" width="18" height="6" fill="#FFFFFF" />
+            <rect x="22" y="0" width="18" height="6" fill="#FFFFFF" />
+            <rect x="44" y="0" width="18" height="6" fill="#FFFFFF" />
+            <rect x="66" y="0" width="18" height="6" fill="#FFFFFF" />
+            <rect x="88" y="0" width="18" height="6" fill="#222222" />
+            <rect x="110" y="0" width="18" height="6" fill="#222222" />
+            <rect x="132" y="0" width="18" height="6" fill="#222222" />
+            <rect x="154" y="0" width="18" height="6" fill="#222222" />
+            <rect x="176" y="0" width="18" height="6" fill="#222222" />
+            <rect x="198" y="0" width="18" height="6" fill="#222222" />
+          </g>
+        </g>
+
+        <!-- Telemetry Table Info -->
+        <g transform="translate(0, 115)">
+          <path d="M 0 0 L 234 0" stroke="#1A1A1A" stroke-width="0.8" />
+          <text x="0" y="20" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="10">CPU THERMALS</text>
+          <text x="180" y="20" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800">54.0°C</text>
+
+          <text x="0" y="42" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="10">BATTERY &amp; POWER</text>
+          <text x="180" y="42" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800">⚡ 100%</text>
+
+          <text x="0" y="64" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="10">NETWORK SPEED</text>
+          <text x="140" y="64" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800">↓2.4 ↑0.8 MB/s</text>
+
+          <text x="0" y="86" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="10">KERNEL BUILD</text>
+          <text x="140" y="86" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="9.5">7.2.0-cachyos</text>
         </g>
       </g>
     </g>
 
-    <!-- Step 5: Active Prompt with pulsing cursor -->
-    <g transform="translate(0, 460)">
-      <text x="0" y="0" fill="#00f59b" font-weight="bold">PETROVA <tspan fill="#fbbf24">❯</tspan> </text>
-      <rect x="102" y="-13" width="8" height="17" fill="#00f59b" class="pulse-caret" />
+    <!-- 5. BOTTOM STATUS BAR -->
+    <g transform="translate(0, 648)">
+      <rect x="0" y="0" width="1120" height="32" fill="#000000" />
+      <path d="M 0 0 L 1120 0" stroke="#222222" stroke-width="1" />
+      
+      <text x="20" y="20" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">PETROVA v0.1.0  |  LOCAL MODE  |  OFFLINE  |  SECURE</text>
+      <text x="740" y="20" fill="#AAAAAA" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">CPU 18%  |  RAM 23%  |  TEMP 54°C  |  BAT 100%  |  NET ↓2.4 MB/s ↑0.8 MB/s</text>
     </g>
-
   </g>
 </svg>

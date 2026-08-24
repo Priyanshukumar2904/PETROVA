@@ -2,181 +2,104 @@
   <defs>
     <!-- Background Gradient -->
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#06090e" />
-      <stop offset="50%" stop-color="#0a1017" />
-      <stop offset="100%" stop-color="#04070a" />
+      <stop offset="0%" stop-color="#000000" />
+      <stop offset="50%" stop-color="#080808" />
+      <stop offset="100%" stop-color="#020202" />
     </linearGradient>
 
-    <!-- Sparkling Amber-Green Brand Gradient -->
-    <linearGradient id="emeraldAmberGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#00f59b" />
-      <stop offset="35%" stop-color="#10b981" />
-      <stop offset="70%" stop-color="#34d399" />
-      <stop offset="100%" stop-color="#fbbf24" />
-    </linearGradient>
+    <!-- Wireframe Grid Pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#181818" stroke-width="0.8" />
+    </pattern>
 
-    <!-- Warm Amber Glow -->
-    <linearGradient id="amberGlow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b" />
-      <stop offset="100%" stop-color="#fbbf24" />
-    </linearGradient>
-
-    <!-- Ambient Radial Glow -->
-    <radialGradient id="ambientEmerald" cx="50%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#10b981" stop-opacity="0.14" />
-      <stop offset="50%" stop-color="#059669" stop-opacity="0.04" />
-      <stop offset="100%" stop-color="#06090e" stop-opacity="0" />
-    </radialGradient>
-
-    <radialGradient id="ambientAmber" cx="85%" cy="30%" r="40%">
-      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.09" />
-      <stop offset="100%" stop-color="#06090e" stop-opacity="0" />
-    </radialGradient>
-
-    <!-- Drop Shadows -->
-    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.6" />
-    </filter>
-
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="6" result="blur" />
+    <!-- Subtle Glow Filter -->
+    <filter id="whiteGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
       <feComposite in="SourceGraphic" in2="blur" operator="over" />
     </filter>
 
-    <!-- Embedded CSS for Interactive Hover & Active Feedback -->
     <style>
-      .tag-btn {
-        cursor: pointer;
-        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s ease;
+      .mono-card {
+        transition: transform 0.25s ease, stroke 0.25s ease;
       }
-      .tag-btn rect {
-        transition: fill 0.25s ease, stroke 0.25s ease, stroke-width 0.25s ease;
-      }
-      .tag-btn text {
-        transition: fill 0.25s ease;
-      }
-      .tag-btn:hover {
-        transform: translateY(-3px);
-        filter: drop-shadow(0 6px 12px rgba(16, 185, 129, 0.25));
-      }
-      .tag-btn:hover rect {
-        fill: #0f231c;
-        stroke: #10b981;
-        stroke-width: 1.5px;
-      }
-      .tag-btn:hover text {
-        fill: #ffffff;
-      }
-      .tag-btn:active {
-        transform: translateY(0px) scale(0.98);
-        filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.35));
-      }
-      .tag-btn:active rect {
-        fill: #261b0c;
-        stroke: #f59e0b;
-        stroke-width: 2px;
-      }
-      .tag-btn:active text {
-        fill: #fef08a;
-      }
-
-      .pulse-dot {
-        animation: pulseAnimation 2s infinite;
-      }
-      @keyframes pulseAnimation {
-        0% { opacity: 0.6; transform: scale(0.95); }
-        50% { opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px #00f59b); }
-        100% { opacity: 0.6; transform: scale(0.95); }
+      .mono-card:hover {
+        transform: translateY(-2px);
       }
     </style>
   </defs>
 
-  <!-- Background Base -->
-  <rect width="1200" height="380" rx="18" fill="url(#bgGrad)" />
-  <rect width="1196" height="376" x="2" y="2" rx="16" fill="none" stroke="#16231e" stroke-width="1.5" />
-  <rect width="1200" height="380" rx="18" fill="url(#ambientEmerald)" />
-  <rect width="1200" height="380" rx="18" fill="url(#ambientAmber)" />
+  <!-- Background -->
+  <rect width="1200" height="380" fill="url(#bgGrad)" />
+  <rect width="1200" height="380" fill="url(#grid)" opacity="0.75" />
 
-  <!-- Subtle Minimalist Circuit Grid Pattern -->
-  <g opacity="0.07" stroke="#34d399" stroke-width="1">
-    <line x1="0" y1="65" x2="1200" y2="65" />
-    <line x1="0" y1="140" x2="1200" y2="140" />
-    <line x1="0" y1="215" x2="1200" y2="215" />
-    <line x1="0" y1="290" x2="1200" y2="290" />
-    <line x1="180" y1="0" x2="180" y2="380" />
-    <line x1="380" y1="0" x2="380" y2="380" />
-    <line x1="580" y1="0" x2="580" y2="380" />
-    <line x1="780" y1="0" x2="780" y2="380" />
-    <line x1="980" y1="0" x2="980" y2="380" />
-  </g>
+  <!-- Outer Wireframe Frame -->
+  <rect x="20" y="20" width="1160" height="340" rx="4" fill="#050505" fill-opacity="0.9" stroke="#333333" stroke-width="1.2" />
 
-  <!-- Geometric Neural Node Elements (Right Side Decorative) -->
-  <g opacity="0.3" transform="translate(1010, 150)">
-    <circle cx="0" cy="0" r="100" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="4,8" />
-    <circle cx="0" cy="0" r="70" fill="none" stroke="#34d399" stroke-width="1.5" opacity="0.6" />
-    <circle cx="0" cy="0" r="40" fill="#10b981" fill-opacity="0.08" stroke="#fbbf24" stroke-width="1" stroke-dasharray="2,4" />
-    <circle cx="0" cy="0" r="6" fill="#00f59b" filter="url(#glow)" />
-    
-    <!-- Constellation points -->
-    <circle cx="-50" cy="-40" r="3.5" fill="#34d399" />
-    <circle cx="55" cy="-30" r="3.5" fill="#fbbf24" />
-    <circle cx="45" cy="50" r="3.5" fill="#10b981" />
-    <circle cx="-40" cy="45" r="3.5" fill="#34d399" />
-    <line x1="-50" y1="-40" x2="0" y2="0" stroke="#10b981" stroke-width="1" opacity="0.5" />
-    <line x1="55" y1="-30" x2="0" y2="0" stroke="#fbbf24" stroke-width="1" opacity="0.5" />
-    <line x1="45" y1="50" x2="0" y2="0" stroke="#10b981" stroke-width="1" opacity="0.5" />
-    <line x1="-40" y1="45" x2="0" y2="0" stroke="#34d399" stroke-width="1" opacity="0.5" />
-  </g>
+  <!-- Top System Header Bar -->
+  <path d="M 20 64 L 1180 64" stroke="#222222" stroke-width="1" />
+  <circle cx="45" cy="42" r="4" fill="#FFFFFF" />
+  <circle cx="62" cy="42" r="4" fill="#555555" />
+  <circle cx="79" cy="42" r="4" fill="#333333" />
+  <text x="105" y="46" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" letter-spacing="1.5">PETROVA // V1 MONOCHROME CYBER-HUD COMMAND CENTER</text>
+  <text x="1000" y="46" fill="#CCCCCC" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" letter-spacing="1">[LOCK] LOCAL • 100% PRIVATE</text>
 
-  <!-- Left Header Status Pill -->
-  <g transform="translate(70, 42)">
-    <rect width="236" height="30" rx="15" fill="#0b1b15" fill-opacity="0.9" stroke="#10b981" stroke-width="1.2" />
-    <circle cx="16" cy="15" r="4.5" fill="#00f59b" class="pulse-dot" />
-    <text x="29" y="19.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#a7f3d0" letter-spacing="1.8">LINUX AI OPERATING AGENT</text>
-  </g>
+  <!-- Central Hero Brand -->
+  <g transform="translate(60, 100)">
+    <!-- Brand Title -->
+    <text x="0" y="55" fill="#FFFFFF" font-family="'JetBrains Mono', -apple-system, monospace" font-size="52" font-weight="900" letter-spacing="6" filter="url(#whiteGlow)">PETROVA</text>
+    <text x="320" y="55" fill="#555555" font-family="'JetBrains Mono', monospace" font-size="52" font-weight="300">//</text>
+    <text x="375" y="40" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="18" font-weight="800" letter-spacing="2">AI OPERATING COMMAND CENTER</text>
+    <text x="375" y="62" fill="#888888" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="500">Personal Enhanced Terminal Reasoning &amp; Operations Virtual Assistant</text>
 
-  <!-- Brand Title -->
-  <text x="68" y="145" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Ubuntu', 'Inter', sans-serif" font-size="74" font-weight="900" fill="url(#emeraldAmberGrad)" letter-spacing="3.5" filter="url(#cardShadow)">
-    PETROVA
-  </text>
-
-  <!-- Subtitle -->
-  <text x="72" y="186" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14.5" font-weight="600" fill="#94a3b8" letter-spacing="1.2">
-    PERSONAL ENHANCED TERMINAL REASONING &amp; OPERATIONS VIRTUAL ASSISTANT
-  </text>
-
-  <!-- Interactive Tag Buttons (Guaranteed Wide Boxes with Generous Padding) -->
-  <g transform="translate(70, 226)">
-    <!-- Tag 1: Local Inference (Width: 215) -->
-    <g class="tag-btn" transform="translate(0, 0)">
-      <rect width="215" height="38" rx="8" fill="#0d1714" stroke="#1e382b" stroke-width="1" />
-      <text x="18" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', monospace" font-size="12.5" font-weight="600" fill="#34d399">🔒 100% Local Inference</text>
-    </g>
-
-    <!-- Tag 2: Neural Desktop GUI (Width: 215) -->
-    <g class="tag-btn" transform="translate(230, 0)">
-      <rect width="215" height="38" rx="8" fill="#0d1714" stroke="#1e382b" stroke-width="1" />
-      <text x="18" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', monospace" font-size="12.5" font-weight="600" fill="#6ee7b7">🖥️ Neural Desktop GUI</text>
-    </g>
-
-    <!-- Tag 3: Voice Subsystem (Width: 215) -->
-    <g class="tag-btn" transform="translate(460, 0)">
-      <rect width="215" height="38" rx="8" fill="#0d1714" stroke="#1e382b" stroke-width="1" />
-      <text x="18" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', monospace" font-size="12.5" font-weight="600" fill="#a3e635">🎙️ Voice &amp; STT Subsystem</text>
-    </g>
-
-    <!-- Tag 4: Distro Intelligence (Width: 215) -->
-    <g class="tag-btn" transform="translate(690, 0)">
-      <rect width="215" height="38" rx="8" fill="#0d1714" stroke="#1e382b" stroke-width="1" />
-      <text x="18" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', monospace" font-size="12.5" font-weight="600" fill="#fbbf24">🐧 Deep Distro Intelligence</text>
-    </g>
-  </g>
-
-  <!-- Bottom Command Bar Hint -->
-  <g transform="translate(70, 316)">
-    <rect width="905" height="34" rx="6" fill="#09100d" stroke="#15261e" stroke-width="1" />
-    <text x="16" y="22" font-family="'JetBrains Mono', 'Fira Code', monospace" font-size="13" fill="#64748b">
-      <tspan fill="#00f59b" font-weight="bold">$ </tspan><tspan fill="#f1f5f9" font-weight="bold">petrova</tspan> <tspan fill="#94a3b8">— Proactive System Health Briefings, Safe Shell Execution &amp; Memory</tspan>
+    <!-- Description -->
+    <text x="0" y="112" fill="#CCCCCC" font-family="'JetBrains Mono', sans-serif" font-size="14.5" font-weight="400">
+      Engineered natively for Linux. Bridges local LLMs directly with the kernel, real-time Bash PTY execution,
     </text>
+    <text x="0" y="136" fill="#CCCCCC" font-family="'JetBrains Mono', sans-serif" font-size="14.5" font-weight="400">
+      hardware telemetry monitoring, hands-free voice interaction, and long-term SQLite memory vaults.
+    </text>
+
+    <!-- Monochrome Pills & Badges -->
+    <g transform="translate(0, 168)">
+      <!-- Badge 1 -->
+      <g class="mono-card">
+        <rect x="0" y="0" width="165" height="34" rx="2" fill="#0F0F0F" stroke="#444444" stroke-width="1" />
+        <text x="14" y="21" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="800">⚡ BASH PTY ENGINE</text>
+      </g>
+
+      <!-- Badge 2 -->
+      <g class="mono-card" transform="translate(180, 0)">
+        <rect x="0" y="0" width="195" height="34" rx="2" fill="#0F0F0F" stroke="#444444" stroke-width="1" />
+        <text x="14" y="21" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="800">📊 LINUX TELEMETRY</text>
+      </g>
+
+      <!-- Badge 3 -->
+      <g class="mono-card" transform="translate(390, 0)">
+        <rect x="0" y="0" width="180" height="34" rx="2" fill="#0F0F0F" stroke="#444444" stroke-width="1" />
+        <text x="14" y="21" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="800">🎙️ HANDS-FREE VOICE</text>
+      </g>
+
+      <!-- Badge 4 -->
+      <g class="mono-card" transform="translate(585, 0)">
+        <rect x="0" y="0" width="185" height="34" rx="2" fill="#0F0F0F" stroke="#444444" stroke-width="1" />
+        <text x="14" y="21" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="800">🧠 SQLITE MEMORY</text>
+      </g>
+
+      <!-- Badge 5 -->
+      <g class="mono-card" transform="translate(785, 0)">
+        <rect x="0" y="0" width="180" height="34" rx="2" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1" />
+        <text x="18" y="21" fill="#000000" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="900">🛡️ 100% LOCAL &amp; OFFLINE</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Right Decorative Core Ring Widget -->
+  <g transform="translate(1070, 190)">
+    <circle cx="0" cy="0" r="60" fill="none" stroke="#222222" stroke-width="1" stroke-dasharray="4 4" />
+    <circle cx="0" cy="0" r="45" fill="none" stroke="#444444" stroke-width="1.2" />
+    <circle cx="0" cy="0" r="30" fill="none" stroke="#888888" stroke-width="1" stroke-dasharray="8 4" />
+    <circle cx="0" cy="0" r="14" fill="#111111" stroke="#FFFFFF" stroke-width="1.5" />
+    <circle cx="0" cy="0" r="5" fill="#FFFFFF" />
+    <text x="0" y="80" fill="#666666" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" text-anchor="middle" letter-spacing="1">CORE INDICATOR</text>
   </g>
 </svg>
