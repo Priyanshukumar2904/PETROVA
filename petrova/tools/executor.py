@@ -1,6 +1,6 @@
 """
 Safe Linux Terminal Command Execution Engine for PETROVA.
-Supports interactive TUI applications, background subprocess execution, GUI bypass, and diagnostics.
+Runs native Linux shell commands in Bash with complete user PATH and environment inheritance.
 """
 
 import os
@@ -8,6 +8,7 @@ import sys
 import time
 import shutil
 import subprocess
+from pathlib import Path
 from typing import Tuple, Optional
 from rich.prompt import Confirm
 from rich.panel import Panel
@@ -32,7 +33,7 @@ SAFE_READONLY_COMMANDS = [
     "echo", "printf", "stat", "tree", "ls", "dir", "pwd", "uname", "whoami", "id", "uptime", "date",
     "df", "free", "cat", "head", "tail", "grep", "find", "ps", "top",
     "htop", "btop", "neofetch", "fastfetch", "lscpu", "lsblk", "ip", "ifconfig",
-    "ping", "curl", "which", "whereis", "file", "systemctl status", "sensors", "checkupdates"
+    "ping", "curl", "which", "whereis", "file", "systemctl status", "sensors", "checkupdates", "pacman -Q"
 ]
 
 
@@ -81,6 +82,50 @@ def normalize_command(command: str) -> str:
     return cmd
 
 
+def get_execution_env() -> dict:
+    """Prepare complete execution environment with full user PATH."""
+    env = os.environ.copy()
+    home = str(Path.home())
+    extra_paths = [
+        f"{home}/.local/bin",
+        f"{home}/.cargo/bin",
+        "/usr/local/bin",
+        "/usr/bin",
+        "/bin",
+        "/usr/local/sbin",
+        "/usr/sbin",
+        "/sbin",
+    ]
+    current_path = env.get("PATH", "")
+    for p in extra_paths:
+        if p not in current_path and os.path.exists(p):
+            current_path = f"{p}:{current_path}"
+    env["PATH"] = current_path
+    env["TERM"] = "xterm-256color"
+    return env
+
+
+def launch_in_terminal_emulator(command: str) -> bool:
+    """Launch interactive or root command in user's GUI terminal emulator."""
+    terminals = [
+        ("kitty", ["kitty", "-e", "bash", "-c", f"{command}; echo; read -p 'Press Enter to close...'"]),
+        ("alacritty", ["alacritty", "-e", "bash", "-c", f"{command}; echo; read -p 'Press Enter to close...'"]),
+        ("konsole", ["konsole", "-e", "bash", "-c", f"{command}; echo; read -p 'Press Enter to close...'"]),
+        ("gnome-terminal", ["gnome-terminal", "--", "bash", "-c", f"{command}; echo; read -p 'Press Enter to close...'"]),
+        ("xfce4-terminal", ["xfce4-terminal", "-e", f"bash -c '{command}; echo; read -p \"Press Enter to close...\"'"]),
+        ("xterm", ["xterm", "-e", f"bash -c '{command}; echo; read -p \"Press Enter to close...\"'"]),
+    ]
+
+    for term_name, term_cmd in terminals:
+        if shutil.which(term_name):
+            try:
+                subprocess.Popen(term_cmd, start_new_session=True)
+                return True
+            except Exception:
+                continue
+    return False
+
+
 def execute_command(
     command: str,
     explanation: Optional[str] = None,
@@ -88,7 +133,7 @@ def execute_command(
     bypass_confirm: bool = False,
 ) -> Tuple[int, str, str]:
     """
-    Execute a Linux shell command safely.
+    Execute a Linux shell command safely in Bash with full environment inheritance.
     Returns: (exit_code, stdout, stderr)
     """
     command = normalize_command(command)
@@ -111,20 +156,29 @@ def execute_command(
         except Exception:
             pass
 
-    # 3. INTERACTIVE TUI EXECUTION
-    if is_tui and is_tty:
-        try:
-            res = subprocess.run(command, shell=True)
-            return res.returncode, "[Interactive session completed]", ""
-        except Exception as e:
-            return 1, "", str(e)
+    # 3. INTERACTIVE TUI EXECUTION (In real TTY or spawn emulator)
+    if is_tui:
+        if is_tty:
+            try:
+                res = subprocess.run(command, shell=True, executable="/bin/bash", env=get_execution_env())
+                return res.returncode, "[Interactive session completed]", ""
+            except Exception as e:
+                return 1, "", str(e)
+        else:
+            launched = launch_in_terminal_emulator(command)
+            if launched:
+                return 0, f"[Launched interactive session '{command}' in terminal emulator]", ""
 
-    # 4. STANDARD EXECUTION
-    start_time = time.time()
+    # 4. STANDARD EXECUTION IN BASH
+    env = get_execution_env()
+    shell_bin = "/bin/bash" if os.path.exists("/bin/bash") else "/bin/sh"
+
     try:
         process = subprocess.Popen(
             command,
             shell=True,
+            executable=shell_bin,
+            env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,

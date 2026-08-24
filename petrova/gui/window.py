@@ -1,13 +1,13 @@
 """
 PETROVA Main Desktop Application Window.
 Full implementation of the V1 Monochrome Cyber-HUD with multi-view navigation stack,
-thread-safe asynchronous command executor, prominent voice controls, and microphone STT.
+active single-key [H],[A],[S],[F],[T],[G],[Q] and Ctrl+ shortcuts, Bash execution engine, and voice controls.
 """
 
 import sys
 from datetime import datetime
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QObject, QTimer
-from PyQt6.QtGui import QFont, QKeySequence, QShortcut
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QObject, QTimer, QEvent
+from PyQt6.QtGui import QFont, QKeySequence, QShortcut, QKeyEvent
 from PyQt6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -16,6 +16,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QPushButton,
     QTextEdit,
+    QLineEdit,
     QFrame,
     QStackedWidget,
     QApplication,
@@ -27,7 +28,7 @@ from petrova.linux.stats import get_distro_info, get_cpu_temp, get_ram_usage, ge
 from petrova.voice import speak, is_voice_enabled, set_voice_enabled
 from petrova.voice.stt import listen_and_transcribe
 from petrova.brain.brain import stream_ask
-from petrova.tools.executor import execute_command
+from petrova.tools.executor import execute_command, launch_in_terminal_emulator
 
 from petrova.gui.styles import MONOCHROME_THEME_QSS, COLORS
 from petrova.gui.nav_sidebar import NavSidebarWidget
@@ -86,7 +87,6 @@ class VoiceWorker(QObject):
 
 class CommandWorker(QObject):
     """Thread-safe worker for executing shell commands without freezing or crashing GUI."""
-    output_ready = pyqtSignal(str)
     finished = pyqtSignal(int, str, str)
 
     def __init__(self, cmd: str):
@@ -225,7 +225,7 @@ class PetrovaMainWindow(QMainWindow):
         self.terminal_drawer.setFixedHeight(210)
         home_layout.addWidget(self.terminal_drawer)
 
-        # AI Input Bar (Prominent & Clear)
+        # AI Input Bar
         self.input_frame = QFrame()
         self.input_frame.setObjectName("AiInputFrame")
         input_layout = QHBoxLayout(self.input_frame)
@@ -352,14 +352,55 @@ class PetrovaMainWindow(QMainWindow):
             pass
 
     def _setup_shortcuts(self):
+        # Global shortcuts with Ctrl+
         QShortcut(QKeySequence("Ctrl+H"), self, lambda: self.nav_sidebar._set_active_tab("HOME"))
         QShortcut(QKeySequence("Ctrl+A"), self, lambda: self.nav_sidebar._set_active_tab("AI_CHAT"))
         QShortcut(QKeySequence("Ctrl+S"), self, lambda: self.nav_sidebar._set_active_tab("SYSTEM"))
         QShortcut(QKeySequence("Ctrl+F"), self, lambda: self.nav_sidebar._set_active_tab("FILES"))
+        QShortcut(QKeySequence("Ctrl+T"), self, lambda: self.nav_sidebar._set_active_tab("TASKS"))
         QShortcut(QKeySequence("Ctrl+G"), self, lambda: self.nav_sidebar._set_active_tab("SETTINGS"))
         QShortcut(QKeySequence("Ctrl+Q"), self, self.close)
-        QShortcut(QKeySequence("Ctrl+T"), self, self._toggle_terminal_drawer)
+        QShortcut(QKeySequence("Ctrl+`"), self, self._toggle_terminal_drawer)
         QShortcut(QKeySequence("Ctrl+M"), self, self._open_memory_vault)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        """
+        Handle single-key shortcuts [H], [A], [S], [F], [T], [G], [Q]
+        when not actively typing inside a text input field.
+        """
+        focus_widget = QApplication.focusWidget()
+        is_typing = isinstance(focus_widget, (QTextEdit, QLineEdit))
+
+        if not is_typing:
+            key = event.key()
+            if key == Qt.Key.Key_H:
+                self.nav_sidebar._set_active_tab("HOME")
+                return
+            elif key == Qt.Key.Key_A:
+                self.nav_sidebar._set_active_tab("AI_CHAT")
+                self.prompt_input.setFocus()
+                return
+            elif key == Qt.Key.Key_S:
+                self.nav_sidebar._set_active_tab("SYSTEM")
+                return
+            elif key == Qt.Key.Key_F:
+                self.nav_sidebar._set_active_tab("FILES")
+                return
+            elif key == Qt.Key.Key_T:
+                self.nav_sidebar._set_active_tab("TASKS")
+                return
+            elif key == Qt.Key.Key_G:
+                self.nav_sidebar._set_active_tab("SETTINGS")
+                return
+            elif key == Qt.Key.Key_Q:
+                self.close()
+                return
+            elif key == Qt.Key.Key_Escape:
+                if focus_widget:
+                    focus_widget.clearFocus()
+                return
+
+        super().keyPressEvent(event)
 
     def _on_nav_tab_changed(self, tab: str):
         if tab in ("HOME", "AI_CHAT"):
@@ -413,6 +454,9 @@ class PetrovaMainWindow(QMainWindow):
                 if not (event.modifiers() & Qt.KeyboardModifier.ShiftModifier):
                     self._on_submit_prompt()
                     return True
+            elif event.key() == Qt.Key.Key_Escape:
+                self.prompt_input.clearFocus()
+                return True
         return super().eventFilter(obj, event)
 
     def _on_submit_prompt(self):
@@ -508,7 +552,7 @@ class PetrovaMainWindow(QMainWindow):
             self.voice_thread.wait()
 
     def _execute_proposed_command(self, cmd: str):
-        """Thread-safe command execution into terminal drawer."""
+        """Thread-safe command execution into terminal drawer with Bash environment."""
         self.terminal_drawer.setVisible(True)
         self.telemetry_sidebar.set_core_status("EXECUTING")
         self.terminal_drawer.append_output(f"\n[Executing]: {cmd}\n")
@@ -531,12 +575,14 @@ class PetrovaMainWindow(QMainWindow):
         out = stdout if stdout else ""
         if stderr:
             out += f"\n[stderr]: {stderr}"
-        self.terminal_drawer.append_output(f"{out}\n[Exit code: {code}]\n")
+        if not out.strip():
+            out = f"[Process exited with code {code}]"
+        self.terminal_drawer.append_output(f"{out}\n")
         
         if code == 0:
             notify("Command executed successfully.", level="success")
         else:
-            notify(f"Command returned exit code {code}", level="warning")
+            notify(f"Command finished with code {code}", level="warning")
 
         self._reset_to_ready()
 
