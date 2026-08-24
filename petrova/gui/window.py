@@ -1,7 +1,8 @@
 """
 PETROVA Main Desktop Application Window.
-Integrates Interactive Neural Cognitive Topology, Minimalist Resource Telemetry,
-Translucent Glass Chat View, Terminal Drawer, and Asynchronous AI Streaming.
+Expansive modern workspace layout integrating Horizontal Telemetry HUD Capsules,
+Full-Width Neural Cognitive Visualizer, High-Readability Chat Stream,
+Quick Action Deck, and Interactive Slide-Up Terminal Drawer.
 """
 
 import sys
@@ -16,7 +17,6 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QTextEdit,
     QFrame,
-    QSplitter,
     QApplication,
     QMessageBox,
 )
@@ -86,8 +86,8 @@ class PetrovaMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PETROVA — AI Operating Assistant")
-        self.resize(1180, 780)
-        self.setMinimumSize(850, 580)
+        self.resize(1200, 800)
+        self.setMinimumSize(900, 600)
         self.setStyleSheet(SPARKLING_AMBER_GREEN_THEME)
 
         self.inference_thread: QThread = None
@@ -105,12 +105,12 @@ class PetrovaMainWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # 1. Top Header Bar (Frameless & Translucent)
+        # 1. Top Header & Dynamic Telemetry Ribbon
         self.header_bar = QFrame()
         self.header_bar.setObjectName("HeaderBar")
         header_layout = QHBoxLayout(self.header_bar)
-        header_layout.setContentsMargins(18, 10, 18, 10)
-        header_layout.setSpacing(12)
+        header_layout.setContentsMargins(20, 10, 20, 10)
+        header_layout.setSpacing(14)
 
         # Brand Title
         title_lbl = QLabel("PETROVA")
@@ -128,10 +128,14 @@ class PetrovaMainWindow(QMainWindow):
         header_layout.addWidget(title_lbl)
         header_layout.addWidget(self.distro_badge)
         header_layout.addWidget(self.state_badge)
-        header_layout.addStretch()
+        header_layout.addSpacing(16)
 
-        # Action Buttons in Header (Translucent icon chips)
-        self.mem_btn = QPushButton("🧠 Memory Vault")
+        # Integrated Horizontal Telemetry Capsule HUD
+        self.telemetry_sidebar = TelemetryDashboardWidget(self)
+        header_layout.addWidget(self.telemetry_sidebar, 1)
+
+        # Right Action Buttons
+        self.mem_btn = QPushButton("🧠 Memory")
         self.mem_btn.clicked.connect(self._open_memory_vault)
         header_layout.addWidget(self.mem_btn)
 
@@ -139,85 +143,82 @@ class PetrovaMainWindow(QMainWindow):
         self.voice_toggle_btn.clicked.connect(self._toggle_voice_output)
         header_layout.addWidget(self.voice_toggle_btn)
 
-        self.term_toggle_btn = QPushButton("💻 Terminal Drawer")
+        self.term_toggle_btn = QPushButton("💻 Terminal")
         self.term_toggle_btn.clicked.connect(self._toggle_terminal_drawer)
         header_layout.addWidget(self.term_toggle_btn)
 
-        self.telemetry_toggle_btn = QPushButton("⚡ Telemetry HUD")
-        self.telemetry_toggle_btn.clicked.connect(self._toggle_telemetry_sidebar)
-        header_layout.addWidget(self.telemetry_toggle_btn)
-
         main_layout.addWidget(self.header_bar)
 
-        # 2. Main Splitter (Left: Neural Canvas + Chat + Drawer | Right: Minimalist Telemetry)
-        self.main_splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.main_splitter.setHandleWidth(1)
-
-        # Left Column Container
-        left_container = QWidget()
-        left_layout = QVBoxLayout(left_container)
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(0)
-
-        # Interactive Neural Cognitive Visualizer (Accurate Layered Topology)
+        # 2. Upper Hero Section: Full-Width Interactive Neural Cognitive Canvas
         self.neural_canvas = NeuralVisualizerWidget(self)
-        left_layout.addWidget(self.neural_canvas)
+        main_layout.addWidget(self.neural_canvas)
 
-        # Translucent Chat Stream View
+        # 3. Center Workspace: Expansive High-Readability Chat Stream
         self.chat_widget = ChatWidget(self)
         self.chat_widget.run_command_requested.connect(self._execute_proposed_command)
-        left_layout.addWidget(self.chat_widget, 1)
+        main_layout.addWidget(self.chat_widget, 1)
 
-        # Embedded Terminal Drawer (Slide-up)
+        # 4. Embedded Terminal Drawer (Slide-up)
         self.terminal_drawer = TerminalDrawerWidget(self)
         self.terminal_drawer.close_btn.clicked.connect(lambda: self.terminal_drawer.setVisible(False))
         self.terminal_drawer.command_executed.connect(self._on_terminal_command_done)
         self.terminal_drawer.setVisible(False)
-        self.terminal_drawer.setFixedHeight(230)
-        left_layout.addWidget(self.terminal_drawer)
+        self.terminal_drawer.setFixedHeight(240)
+        main_layout.addWidget(self.terminal_drawer)
 
-        # Input Frame (Translucent glass floating bar)
+        # 5. Bottom Action Deck & Floating Input Frame
         self.input_frame = QFrame()
         self.input_frame.setObjectName("InputFrame")
-        input_layout = QHBoxLayout(self.input_frame)
-        input_layout.setContentsMargins(18, 12, 18, 12)
-        input_layout.setSpacing(10)
+        input_vbox = QVBoxLayout(self.input_frame)
+        input_vbox.setContentsMargins(20, 10, 20, 14)
+        input_vbox.setSpacing(8)
 
-        # Voice Mic Button
+        # Quick Action Chips Row
+        chips_row = QHBoxLayout()
+        chips_row.setSpacing(8)
+        quick_chips = [
+            ("⚡ Live Thermals", "Check CPU temperature and hardware thermal status"),
+            ("🧠 Memory Usage", "Check current RAM usage and active processes"),
+            ("🎯 /goal Update System", "/goal optimize package cache and check system updates"),
+            ("🧹 Clean Cache", "sudo pacman -Sc --noconfirm"),
+            ("📂 Git Status", "git status"),
+        ]
+        for label, prompt_txt in quick_chips:
+            chip = QPushButton(label)
+            chip.setObjectName("ChipBtn")
+            chip.clicked.connect(lambda checked, p=prompt_txt: self._submit_chip_prompt(p))
+            chips_row.addWidget(chip)
+        chips_row.addStretch()
+        input_vbox.addLayout(chips_row)
+
+        # Main Input Row
+        input_row = QHBoxLayout()
+        input_row.setSpacing(12)
+
+        # Large Voice Mic Button
         self.mic_btn = QPushButton("🎙️")
         self.mic_btn.setObjectName("VoiceButton")
         self.mic_btn.setToolTip("Click to Speak (Microphone Speech Recognition)")
         self.mic_btn.clicked.connect(self._toggle_mic_listen)
-        input_layout.addWidget(self.mic_btn)
+        input_row.addWidget(self.mic_btn)
 
-        # Text Input
+        # Spacious Text Prompt Input
         self.prompt_input = QTextEdit()
         self.prompt_input.setObjectName("PromptInput")
-        self.prompt_input.setPlaceholderText("Type a question, system task, or /goal objective (Press Enter to Send)...")
-        self.prompt_input.setFixedHeight(48)
+        self.prompt_input.setPlaceholderText("Ask PETROVA anything or request system tasks (e.g. 'Optimize memory', '/goal', 'Check thermals')...")
+        self.prompt_input.setFixedHeight(54)
         self.prompt_input.installEventFilter(self)
-        input_layout.addWidget(self.prompt_input, 1)
+        input_row.addWidget(self.prompt_input, 1)
 
-        # Send Button
+        # Send Action Button
         self.send_btn = QPushButton("Send ❯")
         self.send_btn.setObjectName("PrimaryButton")
-        self.send_btn.setFixedHeight(48)
+        self.send_btn.setFixedHeight(54)
         self.send_btn.clicked.connect(self._on_submit_prompt)
-        input_layout.addWidget(self.send_btn)
+        input_row.addWidget(self.send_btn)
 
-        left_layout.addWidget(self.input_frame)
-
-        self.main_splitter.addWidget(left_container)
-
-        # Right Column: Minimalist Telemetry HUD
-        self.telemetry_sidebar = TelemetryDashboardWidget(self)
-        self.main_splitter.addWidget(self.telemetry_sidebar)
-
-        # Initial splitter proportions
-        self.main_splitter.setStretchFactor(0, 3)
-        self.main_splitter.setStretchFactor(1, 1)
-
-        main_layout.addWidget(self.main_splitter, 1)
+        input_vbox.addLayout(input_row)
+        main_layout.addWidget(self.input_frame)
 
     def _setup_shortcuts(self):
         QShortcut(QKeySequence("Ctrl+T"), self, self._toggle_terminal_drawer)
@@ -231,16 +232,19 @@ class PetrovaMainWindow(QMainWindow):
         user_name = config.user_name
 
         welcome_msg = (
-            f"### Welcome, {user_name}!\n\n"
+            f"### Welcome back, {user_name}!\n\n"
             f"{greeting_text}\n\n"
-            f"**PETROVA Synaptic Core** is running 100% locally on your machine with direct Linux kernel access. "
-            f"You can ask me questions, execute automated tasks (`/goal`), speak via microphone, "
-            f"or slide out the **Terminal Drawer** anytime (`Ctrl+T`)."
+            f"**PETROVA Synaptic Core** is active with direct Linux kernel & sysfs telemetry. "
+            f"You can ask questions, run commands, plan multi-step objectives (`/goal`), speak via microphone, "
+            f"or slide open the **Terminal Drawer** anytime (`Ctrl+T`)."
         )
         self.chat_widget.add_assistant_message(welcome_msg)
 
+    def _submit_chip_prompt(self, text: str):
+        self.prompt_input.setPlainText(text)
+        self._on_submit_prompt()
+
     def eventFilter(self, obj, event):
-        # Enter submits, Shift+Enter makes newline
         if obj == self.prompt_input and event.type() == event.Type.KeyPress:
             if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
                 if not (event.modifiers() & Qt.KeyboardModifier.ShiftModifier):
@@ -256,7 +260,7 @@ class PetrovaMainWindow(QMainWindow):
         self.prompt_input.clear()
         self.chat_widget.add_user_message(prompt)
 
-        # Set Neural Canvas state to Thinking
+        # Set Neural Canvas to Thinking
         self.neural_canvas.set_state(NeuralState.THINKING, "Analyzing Context & Synthesizing Response...")
         self.state_badge.setText("● THINKING")
         self.state_badge.setStyleSheet("background-color: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #f59e0b;")
@@ -295,7 +299,6 @@ class PetrovaMainWindow(QMainWindow):
             self.state_badge.setStyleSheet("background-color: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #0284c7;")
             speak(full_response)
 
-        # Reset to IDLE after brief cooldown
         QTimer.singleShot(1400, self._reset_to_idle)
 
         if self.inference_thread and self.inference_thread.isRunning():
@@ -310,10 +313,9 @@ class PetrovaMainWindow(QMainWindow):
     def _reset_to_idle(self):
         self.neural_canvas.set_state(NeuralState.IDLE)
         self.state_badge.setText("● IDLE")
-        self.state_badge.setStyleSheet("background-color: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3);")
+        self.state_badge.setStyleSheet("background-color: rgba(52, 211, 153, 0.14); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.35);")
 
     def _toggle_mic_listen(self):
-        """Start or stop speech recognition from microphone."""
         if self.is_listening:
             return
 
@@ -351,7 +353,6 @@ class PetrovaMainWindow(QMainWindow):
             self.voice_thread.wait()
 
     def _execute_proposed_command(self, cmd: str):
-        """Execute command from proposed card and show output in terminal drawer."""
         self.terminal_drawer.setVisible(True)
         self.neural_canvas.set_state(NeuralState.COMMAND_EXEC)
         self.terminal_drawer.append_output(f"\n[Executing Proposed Command]: {cmd}\n")
@@ -375,10 +376,6 @@ class PetrovaMainWindow(QMainWindow):
         self.terminal_drawer.setVisible(visible)
         if visible:
             self.terminal_drawer.input_field.setFocus()
-
-    def _toggle_telemetry_sidebar(self):
-        visible = not self.telemetry_sidebar.isVisible()
-        self.telemetry_sidebar.setVisible(visible)
 
     def _toggle_voice_output(self):
         new_state = not is_voice_enabled()
