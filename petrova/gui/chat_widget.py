@@ -1,6 +1,6 @@
 """
-PETROVA Central Workspace Components: Greeting Panel with embedded Compact Neural Canvas,
-System Metric Strip, Technical AI Chat Panel, AI Input Bar, and Lower 3-Panel Horizon Dock.
+PETROVA Central Workspace Components: Clean Greeting Panel,
+Technical AI Chat Panel with Action Pills, AI Input Bar, and Lower 3-Panel Horizon Dock.
 """
 
 import html
@@ -25,15 +25,14 @@ from petrova.config.settings import get_config
 from petrova.linux.stats import get_system_telemetry
 from petrova.voice.tts import speak
 from petrova.gui.styles import COLORS
-from petrova.gui.neural_canvas import CompactNeuralWidget, NeuralState
 from petrova.gui.notifications import NotificationManager, notify
 
 
 class GreetingPanelWidget(QFrame):
     """
-    Section 8: Dynamic Greeting Panel with embedded right-hand Compact Neural Canvas.
-    Left: Good evening / Good night, <User>. PETROVA is at your service.
-    Right: Interactive real-time cognitive neural lattice.
+    Section 8: Clean Minimal Dynamic Greeting Panel.
+    Good morning/afternoon/evening/night, <User>.
+    PETROVA is at your service.
     """
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -41,14 +40,9 @@ class GreetingPanelWidget(QFrame):
         self._setup_ui()
 
     def _setup_ui(self):
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(18, 10, 18, 10)
-        layout.setSpacing(14)
-
-        # Left Column: Greeting Text
-        text_col = QVBoxLayout()
-        text_col.setContentsMargins(0, 0, 0, 0)
-        text_col.setSpacing(2)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 14, 18, 14)
+        layout.setSpacing(4)
 
         hour = datetime.now().hour
         if 5 <= hour < 12:
@@ -69,15 +63,8 @@ class GreetingPanelWidget(QFrame):
         self.sub_lbl = QLabel("PETROVA is at your service.")
         self.sub_lbl.setObjectName("GreetingSubtitle")
 
-        text_col.addWidget(self.title_lbl)
-        text_col.addWidget(self.sub_lbl)
-        layout.addLayout(text_col)
-
-        layout.addStretch()
-
-        # Right Column: Embedded Compact Neural Canvas (fills empty right space)
-        self.neural_canvas = CompactNeuralWidget(self)
-        layout.addWidget(self.neural_canvas)
+        layout.addWidget(self.title_lbl)
+        layout.addWidget(self.sub_lbl)
 
 
 class MetricStripWidget(QFrame):
@@ -191,15 +178,15 @@ class TechnicalMessageCard(QFrame):
 
         if self.role == "assistant":
             speak_btn = QPushButton("🔊")
-            speak_btn.setFixedSize(20, 20)
-            speak_btn.setStyleSheet(f"background: transparent; border: none; font-size: 11px; color: {COLORS['muted']};")
+            speak_btn.setFixedSize(22, 22)
+            speak_btn.setStyleSheet(f"background: transparent; border: none; font-size: 12px; color: {COLORS['muted']};")
             speak_btn.setToolTip("Read aloud")
             speak_btn.clicked.connect(lambda: speak(self.raw_content))
             header.addWidget(speak_btn)
 
         copy_btn = QPushButton("📋")
-        copy_btn.setFixedSize(20, 20)
-        copy_btn.setStyleSheet(f"background: transparent; border: none; font-size: 11px; color: {COLORS['muted']};")
+        copy_btn.setFixedSize(22, 22)
+        copy_btn.setStyleSheet(f"background: transparent; border: none; font-size: 12px; color: {COLORS['muted']};")
         copy_btn.setToolTip("Copy text")
         copy_btn.clicked.connect(self._on_copy)
         header.addWidget(copy_btn)
@@ -233,13 +220,13 @@ class TechnicalMessageCard(QFrame):
             code = match.group(2)
             return (
                 f"<div style='background-color:{COLORS['surface']}; border:1px solid {COLORS['border']}; border-radius:2px; padding:8px 12px; margin:6px 0;'>"
-                f"<pre style='color:{COLORS['foreground']}; font-family:\"JetBrains Mono\", monospace; font-size:12.5px; margin:0; line-height:1.4;'>{code}</pre>"
+                f"<pre style='color:{COLORS['foreground']}; font-family:\"JetBrains Mono\", monospace; font-size:13px; margin:0; line-height:1.4;'>{code}</pre>"
                 f"</div>"
             )
         formatted = code_block_pattern.sub(replace_code_block, escaped)
 
         inline_code_pattern = re.compile(r"`([^`]+)`")
-        formatted = inline_code_pattern.sub(r"<code style='background-color:#111111; color:#FFFFFF; padding:1px 5px; border-radius:2px; font-family:monospace;'>\1</code>", formatted)
+        formatted = inline_code_pattern.sub(r"<code style='background-color:#111111; color:#FFFFFF; padding:2px 6px; border-radius:2px; font-family:monospace;'>\1</code>", formatted)
 
         formatted = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", formatted)
         formatted = formatted.replace("\n", "<br>")
@@ -312,14 +299,14 @@ class ChatWidget(QWidget):
         conv_id.setObjectName("ChatHeaderId")
 
         del_btn = QPushButton("🗑️")
-        del_btn.setFixedSize(20, 20)
-        del_btn.setStyleSheet("background: transparent; border: none; font-size: 11px;")
+        del_btn.setFixedSize(22, 22)
+        del_btn.setStyleSheet("background: transparent; border: none; font-size: 12px;")
         del_btn.setToolTip("Clear Conversation")
         del_btn.clicked.connect(self.clear_chat)
 
         more_btn = QPushButton("⋯")
-        more_btn.setFixedSize(20, 20)
-        more_btn.setStyleSheet("background: transparent; border: none; font-size: 13px; font-weight: bold;")
+        more_btn.setFixedSize(22, 22)
+        more_btn.setStyleSheet("background: transparent; border: none; font-size: 14px; font-weight: bold;")
 
         h_layout.addWidget(title)
         h_layout.addStretch()
@@ -397,7 +384,7 @@ class LowerCentralHorizonDock(QWidget):
     Section 14: Lower Central Panels (3-Card Horizontal Row):
     Panel A: QUICK ACTIONS
     Panel B: TASKS
-    Panel C: NOTIFICATIONS (Connected to live event bus)
+    Panel C: NOTIFICATIONS
     """
     action_triggered = pyqtSignal(str)
 
@@ -405,7 +392,6 @@ class LowerCentralHorizonDock(QWidget):
         super().__init__(parent)
         self._setup_ui()
 
-        # Connect to Notification Bus
         notif_bus = NotificationManager.get_instance()
         notif_bus.notification_added.connect(self._on_notice_added)
         notif_bus.cleared.connect(self._on_notices_cleared)
@@ -431,10 +417,10 @@ class LowerCentralHorizonDock(QWidget):
         quick_actions = [
             ("[System Scan]", "journalctl -p 3 -xb -n 15"),
             ("[Clean Cache]", "sudo pacman -Sc --noconfirm"),
-            ("[Update System]", "checkupdates"),
+            ("[Check Updates]", "checkupdates"),
             ("[Disk Analysis]", "df -h"),
             ("[Process Monitor]", "ps aux --sort=-%cpu | head -n 10"),
-            ("[Network Monitor]", "ip -br addr"),
+            ("[Network Info]", "ip -br addr"),
         ]
         for i, (lbl, cmd) in enumerate(quick_actions):
             btn = QPushButton(lbl)
@@ -474,7 +460,7 @@ class LowerCentralHorizonDock(QWidget):
         comp_lbl.setStyleSheet(f"color: {COLORS['muted']}; font-family: 'JetBrains Mono'; font-size: 10px; font-weight: bold;")
         t_layout.addWidget(comp_lbl)
 
-        self.t_line3 = QLabel("✓ Neural Synapse Ready")
+        self.t_line3 = QLabel("✓ Local Inference Ready")
         self.t_line3.setStyleSheet(f"color: {COLORS['muted']}; font-family: 'JetBrains Mono'; font-size: 11px;")
         t_layout.addWidget(self.t_line3)
 
@@ -500,7 +486,6 @@ class LowerCentralHorizonDock(QWidget):
         self.notif_container.setSpacing(2)
         self.n_layout.addLayout(self.notif_container)
 
-        # Populate current history
         for note in NotificationManager.get_instance().history[-4:]:
             lbl = QLabel(f"[{note['time']}] {note['text']}")
             lbl.setStyleSheet(f"color: {COLORS['secondary']}; font-family: 'JetBrains Mono'; font-size: 11px;")

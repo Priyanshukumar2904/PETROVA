@@ -33,7 +33,6 @@ from petrova.gui.styles import MONOCHROME_THEME_QSS, COLORS
 from petrova.gui.nav_sidebar import NavSidebarWidget
 from petrova.gui.telemetry_widget import TelemetryDashboardWidget
 from petrova.gui.chat_widget import ChatWidget, GreetingPanelWidget, MetricStripWidget, LowerCentralHorizonDock
-from petrova.gui.neural_canvas import NeuralState
 from petrova.gui.system_view import SystemViewWidget
 from petrova.gui.files_view import FilesViewWidget
 from petrova.gui.tasks_view import TasksViewWidget
@@ -186,7 +185,6 @@ class PetrovaMainWindow(QMainWindow):
         home_layout.setSpacing(8)
 
         self.greeting_panel = GreetingPanelWidget(self)
-        self.neural_canvas = self.greeting_panel.neural_canvas
         home_layout.addWidget(self.greeting_panel)
 
         self.chat_widget = ChatWidget(self)
@@ -201,28 +199,30 @@ class PetrovaMainWindow(QMainWindow):
         self.terminal_drawer.setFixedHeight(210)
         home_layout.addWidget(self.terminal_drawer)
 
-        # AI Input Bar
+        # AI Input Bar (Prominent & Clear)
         self.input_frame = QFrame()
         self.input_frame.setObjectName("AiInputFrame")
         input_layout = QHBoxLayout(self.input_frame)
-        input_layout.setContentsMargins(10, 4, 10, 4)
-        input_layout.setSpacing(8)
+        input_layout.setContentsMargins(12, 6, 12, 6)
+        input_layout.setSpacing(10)
 
         self.prompt_input = QTextEdit()
         self.prompt_input.setObjectName("AiInputText")
-        self.prompt_input.setPlaceholderText("Ask PETROVA anything...")
-        self.prompt_input.setFixedHeight(36)
+        self.prompt_input.setPlaceholderText("Ask PETROVA anything or enter command...")
+        self.prompt_input.setFixedHeight(38)
         self.prompt_input.installEventFilter(self)
         input_layout.addWidget(self.prompt_input, 1)
 
-        self.mic_btn = QPushButton("[MIC]")
-        self.mic_btn.setObjectName("InputIconBtn")
-        self.mic_btn.setToolTip("Click to Speak (Microphone)")
+        # Prominent Microphone Button
+        self.mic_btn = QPushButton("🎙️ Speak")
+        self.mic_btn.setObjectName("MonochromePill")
+        self.mic_btn.setToolTip("Click to Speak into Microphone")
         self.mic_btn.clicked.connect(self._toggle_mic_listen)
         input_layout.addWidget(self.mic_btn)
 
-        self.send_btn = QPushButton("[→]")
-        self.send_btn.setObjectName("InputIconBtn")
+        # Prominent Send Button
+        self.send_btn = QPushButton("➤ Send")
+        self.send_btn.setObjectName("MonochromePill")
         self.send_btn.setToolTip("Send Prompt (Enter)")
         self.send_btn.clicked.connect(self._on_submit_prompt)
         input_layout.addWidget(self.send_btn)
@@ -306,13 +306,13 @@ class PetrovaMainWindow(QMainWindow):
             pass
 
     def _setup_shortcuts(self):
-        QShortcut(QKeySequence("H"), self, lambda: self.nav_sidebar._set_active_tab("HOME"))
-        QShortcut(QKeySequence("A"), self, lambda: self.nav_sidebar._set_active_tab("AI_CHAT"))
-        QShortcut(QKeySequence("S"), self, lambda: self.nav_sidebar._set_active_tab("SYSTEM"))
-        QShortcut(QKeySequence("F"), self, lambda: self.nav_sidebar._set_active_tab("FILES"))
-        QShortcut(QKeySequence("T"), self, lambda: self.nav_sidebar._set_active_tab("TASKS"))
-        QShortcut(QKeySequence("G"), self, lambda: self.nav_sidebar._set_active_tab("SETTINGS"))
-        QShortcut(QKeySequence("Q"), self, self.close)
+        # Use Ctrl+ combinations to prevent accidental trigger during typing or viewing
+        QShortcut(QKeySequence("Ctrl+H"), self, lambda: self.nav_sidebar._set_active_tab("HOME"))
+        QShortcut(QKeySequence("Ctrl+A"), self, lambda: self.nav_sidebar._set_active_tab("AI_CHAT"))
+        QShortcut(QKeySequence("Ctrl+S"), self, lambda: self.nav_sidebar._set_active_tab("SYSTEM"))
+        QShortcut(QKeySequence("Ctrl+F"), self, lambda: self.nav_sidebar._set_active_tab("FILES"))
+        QShortcut(QKeySequence("Ctrl+G"), self, lambda: self.nav_sidebar._set_active_tab("SETTINGS"))
+        QShortcut(QKeySequence("Ctrl+Q"), self, self.close)
         QShortcut(QKeySequence("Ctrl+T"), self, self._toggle_terminal_drawer)
         QShortcut(QKeySequence("Ctrl+M"), self, self._open_memory_vault)
 
@@ -381,7 +381,6 @@ class PetrovaMainWindow(QMainWindow):
 
         # Update Petrova Core state to THINKING
         self.telemetry_sidebar.set_core_status("THINKING")
-        self.neural_canvas.set_state(NeuralState.THINKING)
 
         self.chat_widget.start_assistant_message()
 
@@ -398,17 +397,13 @@ class PetrovaMainWindow(QMainWindow):
 
     def _on_token_received(self, token: str):
         self.chat_widget.append_assistant_token(token)
-        self.neural_canvas.fire_token_pulse()
-        if self.neural_canvas.state != NeuralState.STREAMING:
-            self.neural_canvas.set_state(NeuralState.STREAMING)
-            self.telemetry_sidebar.set_core_status("PROCESSING")
+        self.telemetry_sidebar.set_core_status("PROCESSING")
 
     def _on_inference_finished(self, full_response: str):
         self.chat_widget.finalize_assistant_message(full_response)
         notify("Response generated.", level="success")
 
         if is_voice_enabled() and full_response:
-            self.neural_canvas.set_state(NeuralState.SPEAKING)
             self.telemetry_sidebar.set_core_status("SPEAKING")
             speak(full_response)
             QTimer.singleShot(1800, self._reset_to_ready)
@@ -427,7 +422,6 @@ class PetrovaMainWindow(QMainWindow):
         self._reset_to_ready()
 
     def _reset_to_ready(self):
-        self.neural_canvas.set_state(NeuralState.IDLE)
         self.telemetry_sidebar.set_core_status("READY")
 
     def _toggle_mic_listen(self):
@@ -435,9 +429,9 @@ class PetrovaMainWindow(QMainWindow):
             return
 
         self.is_listening = True
-        self.mic_btn.setText("[REC]")
+        self.mic_btn.setText("🔴 Listening...")
+        self.prompt_input.setPlaceholderText("Listening to your voice... Speak now.")
         self.telemetry_sidebar.set_core_status("LISTENING")
-        self.neural_canvas.set_state(NeuralState.INPUT_ACTIVE)
         notify("Listening to microphone...", level="info")
 
         self.voice_thread = QThread()
@@ -452,7 +446,8 @@ class PetrovaMainWindow(QMainWindow):
 
     def _on_voice_transcribed(self, text: str):
         self.is_listening = False
-        self.mic_btn.setText("[MIC]")
+        self.mic_btn.setText("🎙️ Speak")
+        self.prompt_input.setPlaceholderText("Ask PETROVA anything or enter command...")
 
         if text.strip():
             notify(f"Voice recognized: \"{text}\"", level="success")
@@ -469,12 +464,11 @@ class PetrovaMainWindow(QMainWindow):
     def _execute_proposed_command(self, cmd: str):
         self.terminal_drawer.setVisible(True)
         self.telemetry_sidebar.set_core_status("EXECUTING")
-        self.neural_canvas.set_state(NeuralState.COMMAND_EXEC)
         self.terminal_drawer.append_output(f"\n[Executing]: {cmd}\n")
         notify(f"Executing: {cmd}", level="info")
         
         def run():
-            code, stdout, stderr = execute_command(cmd)
+            code, stdout, stderr = execute_command(cmd, bypass_confirm=True)
             out = stdout if stdout else ""
             if stderr:
                 out += f"\n[stderr]: {stderr}"
@@ -482,7 +476,7 @@ class PetrovaMainWindow(QMainWindow):
             if code == 0:
                 notify(f"Command completed: {cmd}", level="success")
             else:
-                notify(f"Command failed (exit {code}): {cmd}", level="error")
+                notify(f"Command finished with code {code}: {cmd}", level="warning")
             QTimer.singleShot(800, self._reset_to_ready)
 
         import threading
