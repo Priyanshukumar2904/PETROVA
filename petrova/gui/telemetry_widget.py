@@ -1,14 +1,14 @@
 """
 PETROVA V1 Monochrome System Overview & Hardware Monitor Widget.
-Exact implementation of Sections 15 to 22:
-Segmented LED progress bars (████░░░░), dynamic CPU, Memory/Swap, GPU, Storage, Network I/O,
-Petrova Core state indicator, and System Info block.
+Featuring realistic multi-harmonic wave pattern Petrova Core visualizer,
+segmented LED bars, real-time hardware telemetry, and dynamic network I/O.
 """
 
 import math
+import random
 from typing import Dict, Any
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QPointF
-from PyQt6.QtGui import QPainter, QColor, QPen, QBrush, QFont
+from PyQt6.QtGui import QPainter, QColor, QPen, QBrush, QFont, QPolygonF
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -32,52 +32,103 @@ def make_led_bar(percent: int, total_blocks: int = 20) -> str:
 
 
 class PetrovaCoreIndicator(QWidget):
-    """Subtle monochrome animated core indicator."""
+    """
+    Realistic multi-harmonic acoustic & holographic core wave visualizer.
+    Generates radiating frequency wave patterns when speaking/listening,
+    high-frequency orbital flux when thinking, and calm breathing waves when idle.
+    """
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(50, 50)
+        self.setFixedSize(90, 90)
         self.phase = 0.0
         self.status = "READY"
+        self.audio_level = 0.0
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self._on_tick)
-        self.timer.start(50)
+        self.timer.start(24)  # ~40 FPS smooth wave rendering
 
     def set_status(self, status: str):
         self.status = status
         self.update()
 
+    def set_audio_level(self, level: float):
+        self.audio_level = max(0.0, min(1.0, level))
+
     def _on_tick(self):
-        speed = 0.15 if self.status in ("THINKING", "PROCESSING", "EXECUTING") else 0.04
-        self.phase += speed
+        # Update wave phase based on current state
+        if self.status in ("SPEAKING", "LISTENING"):
+            self.phase += 0.12
+            # Simulate dynamic speech amplitude waveform if not provided
+            self.audio_level = 0.4 + 0.5 * math.sin(self.phase * 2.5) ** 2
+        elif self.status in ("THINKING", "PROCESSING", "EXECUTING"):
+            self.phase += 0.16
+            self.audio_level = 0.3 + 0.3 * math.sin(self.phase * 4.0) ** 2
+        else:
+            self.phase += 0.04
+            self.audio_level = 0.1 + 0.05 * math.sin(self.phase)
+
         self.update()
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        center = QPointF(25, 25)
-        r_outer = 18 + math.sin(self.phase) * 2.0
-        r_inner = 10 + math.cos(self.phase) * 1.5
+        cx, cy = 45.0, 45.0
+        center = QPointF(cx, cy)
 
-        # Outer ring
-        painter.setPen(QPen(QColor(COLORS["secondary"]), 1.2))
+        # Draw outer subtle boundary circle
+        painter.setPen(QPen(QColor(COLORS["border"]), 1.0))
         painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.drawEllipse(center, r_outer, r_outer)
+        painter.drawEllipse(center, 42.0, 42.0)
 
-        # Concentric dotted ring
-        pen_dotted = QPen(QColor(COLORS["muted"]), 1.0, Qt.PenStyle.DashLine)
-        painter.setPen(pen_dotted)
-        painter.drawEllipse(center, r_inner + 4, r_inner + 4)
+        # 1. Concentric Multi-Harmonic Acoustic Waveform Rings
+        num_rings = 4 if self.status in ("SPEAKING", "LISTENING") else 3
+        is_speaking = self.status in ("SPEAKING", "LISTENING")
 
-        # Inner solid core
+        for ring_i in range(num_rings):
+            base_r = 14.0 + ring_i * 8.0
+            amp = (4.5 + ring_i * 2.5) * self.audio_level if is_speaking else 1.5
+            freq = 6 if ring_i % 2 == 0 else 8
+            
+            wave_points = []
+            num_points = 64
+            for pt_i in range(num_points):
+                theta = (pt_i / float(num_points)) * math.pi * 2
+                # Multi-harmonic radial displacement: sin + cos harmonics
+                disp = amp * math.sin(freq * theta + self.phase * (1.0 + ring_i * 0.4))
+                if is_speaking:
+                    disp += (amp * 0.5) * math.cos((freq * 2) * theta - self.phase * 1.5)
+                
+                r = max(4.0, base_r + disp)
+                x = cx + r * math.cos(theta)
+                y = cy + r * math.sin(theta)
+                wave_points.append(QPointF(x, y))
+
+            # Draw polygon wave ring
+            poly = QPolygonF(wave_points)
+            alpha = int(255 - ring_i * 45) if is_speaking else int(180 - ring_i * 40)
+            pen_w = 1.6 if (ring_i == 0 or is_speaking) else 1.0
+            painter.setPen(QPen(QColor(255, 255, 255, alpha), pen_w))
+            painter.drawPolygon(poly)
+
+        # 2. Orbital Reticle Ticks (Compass alignment ticks)
+        painter.setPen(QPen(QColor(COLORS["muted"]), 1.0))
+        for tick_i in range(8):
+            ang = (tick_i / 8.0) * math.pi * 2 + (self.phase * 0.2 if self.status == "THINKING" else 0)
+            p1 = QPointF(cx + 38.0 * math.cos(ang), cy + 38.0 * math.sin(ang))
+            p2 = QPointF(cx + 42.0 * math.cos(ang), cy + 42.0 * math.sin(ang))
+            painter.drawLine(p1, p2)
+
+        # 3. Inner Solid Core Iris
+        core_r = 6.0 + (3.0 * self.audio_level if is_speaking else 1.0 * math.sin(self.phase))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(QColor(COLORS["foreground"])))
-        painter.drawEllipse(center, r_inner, r_inner)
+        painter.drawEllipse(center, core_r, core_r)
 
-        # Center dot
+        # Center Void Dot
         painter.setBrush(QBrush(QColor(COLORS["background"])))
-        painter.drawEllipse(center, 3.5, 3.5)
+        painter.drawEllipse(center, core_r * 0.45, core_r * 0.45)
 
 
 class TelemetryDashboardWidget(QFrame):
@@ -92,7 +143,6 @@ class TelemetryDashboardWidget(QFrame):
         self.setFixedWidth(320)
         self._setup_ui()
 
-        # Telemetry refresh timer (every 1.5s)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_telemetry)
         self.timer.start(1500)
@@ -161,9 +211,9 @@ class TelemetryDashboardWidget(QFrame):
         net_layout.addLayout(net_top)
 
         self.net_rates = QLabel("↓ 2.4 MB/s       ↑ 0.8 MB/s")
-        self.net_rates.setStyleSheet(f"color: {COLORS['foreground']}; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: bold;")
+        self.net_rates.setStyleSheet(f"color: {COLORS['foreground']}; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: bold;")
         self.net_sparkline = QLabel("∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿")
-        self.net_sparkline.setStyleSheet(f"color: {COLORS['secondary']}; font-family: 'JetBrains Mono', monospace; font-size: 11px;")
+        self.net_sparkline.setStyleSheet(f"color: {COLORS['secondary']}; font-family: 'JetBrains Mono', monospace; font-size: 11.5px;")
         net_layout.addWidget(self.net_rates)
         net_layout.addWidget(self.net_sparkline)
         c_layout.addWidget(self.net_frame)
@@ -232,7 +282,6 @@ class TelemetryDashboardWidget(QFrame):
         b_layout.setContentsMargins(0, 4, 0, 4)
         b_layout.setSpacing(2)
 
-        # Top row: Label + Percentage
         top = QHBoxLayout()
         lbl = QLabel(label)
         lbl.setObjectName("BlockLabel")
@@ -243,12 +292,10 @@ class TelemetryDashboardWidget(QFrame):
         top.addWidget(val)
         b_layout.addLayout(top)
 
-        # Segmented LED Bar
         bar = QLabel(make_led_bar(0))
         bar.setObjectName("LedProgressBar")
         b_layout.addWidget(bar)
 
-        # Sub line 1 & 2
         sub1 = QLabel("--")
         sub1.setObjectName("BlockSubDetail")
         sub2 = QLabel("--")
@@ -259,7 +306,7 @@ class TelemetryDashboardWidget(QFrame):
         return frame, val, bar, sub1, sub2
 
     def set_core_status(self, status: str):
-        """Update core state (READY, THINKING, PROCESSING, EXECUTING, WAITING, ERROR)."""
+        """Update core state (READY, THINKING, PROCESSING, EXECUTING, WAITING, SPEAKING, ERROR)."""
         self.core_status_lbl.setText(status)
         self.core_anim.set_status(status)
 

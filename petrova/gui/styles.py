@@ -1,10 +1,9 @@
 """
 PETROVA Monochrome Cyber-HUD Stylesheet & Theme System.
-Exact implementation of the V1 Monochrome Specification:
-#000000 (Black background), #FFFFFF (Primary Text), #BDBDBD (Secondary Text), #555555 / #333333 (Borders).
+High-readability typography (14.5px+ base), high-contrast monochrome palette,
+rectangular panels, thin 1px wireframe borders, and zero clutter.
 """
 
-# Centralized Theme Dictionary (allowing future color themes without changing component code)
 COLORS = {
     "background": "#000000",
     "surface": "#050505",
@@ -23,14 +22,14 @@ COLORS = {
 
 MONOCHROME_THEME_QSS = f"""
 /* ============================================================================
-   PETROVA V1 Monochrome Cyber-HUD Theme
+   PETROVA V1 Monochrome High-Readability Cyber-HUD Theme
    ============================================================================ */
 
 QWidget {{
     background-color: {COLORS["background"]};
     color: {COLORS["foreground"]};
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Ubuntu", "JetBrains Mono", monospace, sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     selection-background-color: {COLORS["foreground"]};
     selection-color: {COLORS["background"]};
 }}
@@ -44,30 +43,30 @@ QFrame#TopSystemBar {{
     background-color: {COLORS["background"]};
     border: none;
     border-bottom: 1px solid {COLORS["border"]};
-    min-height: 42px;
-    max-height: 48px;
-    padding: 4px 16px;
+    min-height: 46px;
+    max-height: 50px;
+    padding: 4px 18px;
 }}
 
 QLabel#TopBarBrand {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", "Courier New", monospace;
-    font-size: 13px;
+    font-size: 14.5px;
     font-weight: 900;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
 }}
 
 QLabel#TopBarSub {{
     color: {COLORS["muted"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
 }}
 
 QLabel#TopBarPrivacy {{
     color: {COLORS["secondary"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
 }}
@@ -75,8 +74,8 @@ QLabel#TopBarPrivacy {{
 QLabel#TopBarClock {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
 }}
 
 /* --- Left Navigation Panel --- */
@@ -84,14 +83,14 @@ QFrame#NavSidebar {{
     background-color: {COLORS["background"]};
     border: none;
     border-right: 1px solid {COLORS["border"]};
-    min-width: 205px;
-    max-width: 220px;
+    min-width: 210px;
+    max-width: 225px;
 }}
 
 QLabel#NavLogoText {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 900;
     letter-spacing: 3px;
 }}
@@ -99,16 +98,16 @@ QLabel#NavLogoText {{
 QLabel#NavSubText {{
     color: {COLORS["muted"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
 }}
 
 QLabel#NavOnlineText {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 800;
 }}
 
 QPushButton#NavItem {{
@@ -116,10 +115,10 @@ QPushButton#NavItem {{
     color: {COLORS["secondary"]};
     border: 1px solid transparent;
     border-radius: 2px;
-    padding: 8px 14px;
+    padding: 9px 16px;
     font-family: "JetBrains Mono", "Segoe UI", monospace;
     font-weight: 700;
-    font-size: 12.5px;
+    font-size: 13.5px;
     text-align: left;
     letter-spacing: 1px;
 }}
@@ -141,13 +140,13 @@ QFrame#ShortcutsPanel {{
     background-color: {COLORS["background"]};
     border: 1px solid {COLORS["border"]};
     border-radius: 2px;
-    padding: 8px 10px;
+    padding: 10px 12px;
 }}
 
 QLabel#ShortcutsHeader {{
     color: {COLORS["muted"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 1.5px;
 }}
@@ -155,7 +154,7 @@ QLabel#ShortcutsHeader {{
 QLabel#ShortcutLine {{
     color: {COLORS["secondary"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
+    font-size: 12px;
 }}
 
 /* --- Central Workspace: Greeting Panel --- */
@@ -163,20 +162,20 @@ QFrame#GreetingPanel {{
     background-color: {COLORS["background"]};
     border: 1px solid {COLORS["border"]};
     border-radius: 2px;
-    padding: 14px 18px;
+    padding: 14px 20px;
 }}
 
 QLabel#GreetingTitle {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 16px;
+    font-size: 17.5px;
     font-weight: 700;
 }}
 
 QLabel#GreetingSubtitle {{
     color: {COLORS["secondary"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 12.5px;
+    font-size: 13.5px;
 }}
 
 /* --- Central Workspace: System Metric Strip --- */
@@ -184,28 +183,28 @@ QFrame#MetricStrip {{
     background-color: {COLORS["background"]};
     border: 1px solid {COLORS["border"]};
     border-radius: 2px;
-    padding: 4px 6px;
+    padding: 6px 8px;
 }}
 
 QFrame#MetricCell {{
     background-color: transparent;
     border-right: 1px solid {COLORS["border"]};
-    padding: 2px 8px;
+    padding: 3px 10px;
 }}
 
 QLabel#MetricCellTitle {{
     color: {COLORS["muted"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
 }}
 
 QLabel#MetricCellValue {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 800;
 }}
 
 /* --- Central Workspace: AI Assistant Panel --- */
@@ -218,13 +217,13 @@ QFrame#ChatMainFrame {{
 QFrame#ChatHeaderBar {{
     background-color: {COLORS["background"]};
     border-bottom: 1px solid {COLORS["border"]};
-    padding: 6px 14px;
+    padding: 7px 16px;
 }}
 
 QLabel#ChatHeaderTitle {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 800;
     letter-spacing: 1px;
 }}
@@ -232,7 +231,7 @@ QLabel#ChatHeaderTitle {{
 QLabel#ChatHeaderId {{
     color: {COLORS["muted"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
+    font-size: 12px;
 }}
 
 QScrollArea#ChatScrollArea {{
@@ -248,13 +247,13 @@ QWidget#ChatContentWidget {{
 QFrame#TechnicalMessageBlock {{
     background-color: transparent;
     border: none;
-    padding: 4px 0px;
+    padding: 6px 0px;
 }}
 
 QLabel#LabelYou {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11.5px;
+    font-size: 12.5px;
     font-weight: 800;
     letter-spacing: 1px;
 }}
@@ -262,7 +261,7 @@ QLabel#LabelYou {{
 QLabel#LabelPetrova {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11.5px;
+    font-size: 12.5px;
     font-weight: 900;
     letter-spacing: 1px;
 }}
@@ -270,8 +269,8 @@ QLabel#LabelPetrova {{
 QLabel#MessageBody {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", "Segoe UI", monospace;
-    font-size: 13.5px;
-    line-height: 1.5;
+    font-size: 14.5px;
+    line-height: 1.55;
 }}
 
 /* Structured Table Output */
@@ -279,8 +278,8 @@ QFrame#StructureTableBox {{
     background-color: {COLORS["surface"]};
     border: 1px solid {COLORS["border"]};
     border-radius: 2px;
-    padding: 8px 12px;
-    margin: 6px 0px;
+    padding: 10px 14px;
+    margin: 8px 0px;
 }}
 
 QPushButton#MonochromePill {{
@@ -288,9 +287,9 @@ QPushButton#MonochromePill {{
     color: {COLORS["foreground"]};
     border: 1px solid {COLORS["border"]};
     border-radius: 2px;
-    padding: 4px 12px;
+    padding: 6px 14px;
     font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.5px;
 }}
@@ -311,7 +310,7 @@ QFrame#AiInputFrame {{
     background-color: {COLORS["background"]};
     border: 1px solid {COLORS["border"]};
     border-radius: 2px;
-    padding: 6px 12px;
+    padding: 8px 14px;
 }}
 
 QTextEdit#AiInputText {{
@@ -319,7 +318,7 @@ QTextEdit#AiInputText {{
     color: {COLORS["foreground"]};
     border: none;
     font-family: "JetBrains Mono", "Segoe UI", monospace;
-    font-size: 13.5px;
+    font-size: 14.5px;
 }}
 
 QPushButton#InputIconBtn {{
@@ -328,11 +327,12 @@ QPushButton#InputIconBtn {{
     border-radius: 2px;
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 13px;
-    min-width: 32px;
-    min-height: 32px;
-    max-width: 32px;
-    max-height: 32px;
+    font-size: 13.5px;
+    font-weight: bold;
+    min-width: 36px;
+    min-height: 36px;
+    max-width: 36px;
+    max-height: 36px;
 }}
 
 QPushButton#InputIconBtn:hover {{
@@ -346,13 +346,13 @@ QFrame#LowerCard {{
     background-color: {COLORS["background"]};
     border: 1px solid {COLORS["border"]};
     border-radius: 2px;
-    padding: 8px 12px;
+    padding: 10px 14px;
 }}
 
 QLabel#LowerCardTitle {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     letter-spacing: 1px;
 }}
@@ -362,29 +362,29 @@ QFrame#RightSystemMonitor {{
     background-color: {COLORS["background"]};
     border: none;
     border-left: 1px solid {COLORS["border"]};
-    min-width: 300px;
-    max-width: 340px;
-    padding: 10px 14px;
+    min-width: 310px;
+    max-width: 345px;
+    padding: 12px 16px;
 }}
 
 QLabel#OverviewHeaderTitle {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 900;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
 }}
 
 QFrame#MonitorBlock {{
     background-color: transparent;
     border-bottom: 1px solid {COLORS["border"]};
-    padding: 6px 0px 8px 0px;
+    padding: 7px 0px 9px 0px;
 }}
 
 QLabel#BlockLabel {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.5px;
 }}
@@ -392,14 +392,14 @@ QLabel#BlockLabel {{
 QLabel#BlockValue {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 800;
 }}
 
 QLabel#LedProgressBar {{
     color: {COLORS["led_filled"]};
     font-family: "JetBrains Mono", "Courier New", monospace;
-    font-size: 12px;
+    font-size: 12.5px;
     letter-spacing: 1.5px;
     font-weight: bold;
 }}
@@ -407,7 +407,7 @@ QLabel#LedProgressBar {{
 QLabel#BlockSubDetail {{
     color: {COLORS["secondary"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 10.5px;
+    font-size: 11px;
 }}
 
 /* PETROVA CORE Panel */
@@ -415,28 +415,28 @@ QFrame#PetrovaCoreFrame {{
     background-color: {COLORS["background"]};
     border: 1px solid {COLORS["border"]};
     border-radius: 2px;
-    padding: 10px;
+    padding: 12px;
 }}
 
 QLabel#CoreTitle {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 800;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
 }}
 
 QLabel#CoreKey {{
     color: {COLORS["muted"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
+    font-size: 11px;
 }}
 
 QLabel#CoreVal {{
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 800;
 }}
 
 /* --- Bottom Status Bar --- */
@@ -444,22 +444,22 @@ QFrame#BottomStatusBar {{
     background-color: {COLORS["background"]};
     border: none;
     border-top: 1px solid {COLORS["border"]};
-    min-height: 28px;
-    max-height: 32px;
-    padding: 2px 14px;
+    min-height: 30px;
+    max-height: 34px;
+    padding: 2px 18px;
 }}
 
 QLabel#StatusTextLeft {{
     color: {COLORS["muted"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 10.5px;
+    font-size: 11.5px;
     font-weight: 600;
 }}
 
 QLabel#StatusTextRight {{
     color: {COLORS["secondary"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 10.5px;
+    font-size: 11.5px;
     font-weight: 600;
 }}
 
@@ -473,9 +473,9 @@ QPlainTextEdit#TerminalOutput {{
     background-color: {COLORS["background"]};
     color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", "Fira Code", monospace;
-    font-size: 12.5px;
+    font-size: 13.5px;
     border: none;
-    padding: 8px;
+    padding: 10px;
 }}
 
 QLineEdit#TerminalInput {{
@@ -483,9 +483,9 @@ QLineEdit#TerminalInput {{
     color: {COLORS["foreground"]};
     border: 1px solid {COLORS["border"]};
     border-radius: 2px;
-    padding: 6px 10px;
+    padding: 7px 12px;
     font-family: "JetBrains Mono", monospace;
-    font-size: 12.5px;
+    font-size: 13.5px;
 }}
 
 QLineEdit#TerminalInput:focus {{

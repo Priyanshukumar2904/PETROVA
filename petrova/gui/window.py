@@ -1,8 +1,8 @@
 """
 PETROVA Main Desktop Application Window.
 Exact implementation of the V1 Monochrome Cyber-HUD specification:
-Top System Bar, Left Navigation Sidebar, Central Workspace (Greeting + Metric Strip + AI Chat + Input + Lower Dock),
-Right System Monitor (Segmented LEDs + Petrova Core), and Bottom Status Bar.
+Top System Bar, Left Navigation Sidebar, Central Workspace (Greeting + Metric Strip + Interactive Neural Canvas + AI Chat + Input + Lower Dock),
+Right System Monitor (Segmented LEDs + Wave Pattern Petrova Core), and Bottom Status Bar.
 """
 
 import sys
@@ -33,9 +33,9 @@ from petrova.gui.styles import MONOCHROME_THEME_QSS, COLORS
 from petrova.gui.nav_sidebar import NavSidebarWidget
 from petrova.gui.telemetry_widget import TelemetryDashboardWidget
 from petrova.gui.chat_widget import ChatWidget, GreetingPanelWidget, MetricStripWidget, LowerCentralHorizonDock
+from petrova.gui.neural_canvas import NeuralVisualizerWidget, NeuralState
 from petrova.gui.terminal_drawer import TerminalDrawerWidget
 from petrova.gui.memory_dialog import MemoryVaultDialog
-from petrova.gui.neural_canvas import NeuralVisualizerWidget, NeuralState
 
 
 class InferenceWorker(QObject):
@@ -87,8 +87,8 @@ class PetrovaMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PETROVA // Personal Enhanced Terminal Reasoning & Operations Virtual Assistant")
-        self.resize(1340, 860)
-        self.setMinimumSize(1080, 700)
+        self.resize(1360, 880)
+        self.setMinimumSize(1100, 720)
         self.setStyleSheet(MONOCHROME_THEME_QSS)
 
         self.inference_thread: QThread = None
@@ -99,7 +99,7 @@ class PetrovaMainWindow(QMainWindow):
         self._setup_shortcuts()
         self._show_initial_greeting()
 
-        # Timers
+        # Dynamic clock & telemetry timer
         self.clock_timer = QTimer(self)
         self.clock_timer.timeout.connect(self._update_clock_and_status)
         self.clock_timer.start(1000)
@@ -120,7 +120,6 @@ class PetrovaMainWindow(QMainWindow):
         tb_layout.setContentsMargins(18, 0, 18, 0)
         tb_layout.setSpacing(10)
 
-        # Left: PETROVA // Personal Enhanced Terminal Reasoning & Operations Virtual Assistant
         left_title_box = QHBoxLayout()
         left_title_box.setSpacing(8)
         
@@ -140,7 +139,6 @@ class PetrovaMainWindow(QMainWindow):
 
         tb_layout.addStretch()
 
-        # Right: [LOCK] LOCAL MODE • FULL PRIVACY    |    SYSTEM TIME
         right_info_box = QHBoxLayout()
         right_info_box.setSpacing(14)
 
@@ -161,7 +159,7 @@ class PetrovaMainWindow(QMainWindow):
         root_layout.addWidget(self.top_bar)
 
         # =========================================================================
-        # 2. MAIN 3-COLUMN WORKSPACE (Sections 2, 4, 7, 15)
+        # 2. MAIN 3-COLUMN WORKSPACE
         # =========================================================================
         body = QWidget()
         body_layout = QHBoxLayout(body)
@@ -183,9 +181,13 @@ class PetrovaMainWindow(QMainWindow):
         self.greeting_panel = GreetingPanelWidget(self)
         center_layout.addWidget(self.greeting_panel)
 
-        # Section 9: System Metric Strip (CPU, RAM, GPU, TEMP, BATTERY, UPTIME)
+        # Section 9: System Metric Strip
         self.metric_strip = MetricStripWidget(self)
         center_layout.addWidget(self.metric_strip)
+
+        # Interactive Cognitive Neural Visualizer Canvas
+        self.neural_canvas = NeuralVisualizerWidget(self)
+        center_layout.addWidget(self.neural_canvas)
 
         # Sections 10-12: AI Assistant Conversation Panel
         self.chat_widget = ChatWidget(self)
@@ -247,7 +249,7 @@ class PetrovaMainWindow(QMainWindow):
         self.bottom_status_bar = QFrame()
         self.bottom_status_bar.setObjectName("BottomStatusBar")
         bs_layout = QHBoxLayout(self.bottom_status_bar)
-        bs_layout.setContentsMargins(16, 2, 16, 2)
+        bs_layout.setContentsMargins(18, 2, 18, 2)
         bs_layout.setSpacing(10)
 
         self.status_left = QLabel("PETROVA v0.1.0  |  LOCAL MODE  |  OFFLINE  |  SECURE")
@@ -262,16 +264,10 @@ class PetrovaMainWindow(QMainWindow):
 
         root_layout.addWidget(self.bottom_status_bar)
 
-        # Neural visualizer instance for tests/token handling
-        self.neural_canvas = NeuralVisualizerWidget(self)
-        self.neural_canvas.setVisible(False)
-
     def _update_clock_and_status(self):
-        # 1. Update Clock
         now_str = datetime.now().strftime("%Y-%m-%d  %H:%M:%S")
         self.clock_lbl.setText(now_str)
 
-        # 2. Update Bottom Status Bar
         try:
             data = get_system_telemetry()
             load = data.get("load_avg", "")
@@ -350,6 +346,7 @@ class PetrovaMainWindow(QMainWindow):
 
         # Update Petrova Core state to THINKING
         self.telemetry_sidebar.set_core_status("THINKING")
+        self.neural_canvas.set_state(NeuralState.THINKING)
 
         self.chat_widget.start_assistant_message()
 
@@ -367,14 +364,20 @@ class PetrovaMainWindow(QMainWindow):
     def _on_token_received(self, token: str):
         self.chat_widget.append_assistant_token(token)
         self.neural_canvas.fire_token_pulse()
-        self.telemetry_sidebar.set_core_status("PROCESSING")
+        if self.neural_canvas.state != NeuralState.STREAMING:
+            self.neural_canvas.set_state(NeuralState.STREAMING)
+            self.telemetry_sidebar.set_core_status("PROCESSING")
 
     def _on_inference_finished(self, full_response: str):
         self.chat_widget.finalize_assistant_message(full_response)
-        self.telemetry_sidebar.set_core_status("READY")
 
         if is_voice_enabled() and full_response:
+            self.neural_canvas.set_state(NeuralState.SPEAKING)
+            self.telemetry_sidebar.set_core_status("SPEAKING")
             speak(full_response)
+            QTimer.singleShot(1800, self._reset_to_ready)
+        else:
+            self._reset_to_ready()
 
         if self.inference_thread and self.inference_thread.isRunning():
             self.inference_thread.quit()
@@ -384,6 +387,11 @@ class PetrovaMainWindow(QMainWindow):
         self.chat_widget.append_assistant_token(f"\n\n**Error:** `{error}`")
         self.chat_widget.finalize_assistant_message(f"Error: {error}")
         self.telemetry_sidebar.set_core_status("ERROR")
+        self._reset_to_ready()
+
+    def _reset_to_ready(self):
+        self.neural_canvas.set_state(NeuralState.IDLE)
+        self.telemetry_sidebar.set_core_status("READY")
 
     def _toggle_mic_listen(self):
         if self.is_listening:
@@ -391,7 +399,8 @@ class PetrovaMainWindow(QMainWindow):
 
         self.is_listening = True
         self.mic_btn.setText("[REC]")
-        self.telemetry_sidebar.set_core_status("WAITING")
+        self.telemetry_sidebar.set_core_status("LISTENING")
+        self.neural_canvas.set_state(NeuralState.INPUT_ACTIVE)
 
         self.voice_thread = QThread()
         self.voice_worker = VoiceWorker()
@@ -411,7 +420,7 @@ class PetrovaMainWindow(QMainWindow):
             self.prompt_input.setPlainText(text)
             self._on_submit_prompt()
         else:
-            self.telemetry_sidebar.set_core_status("READY")
+            self._reset_to_ready()
 
         if self.voice_thread and self.voice_thread.isRunning():
             self.voice_thread.quit()
@@ -420,6 +429,7 @@ class PetrovaMainWindow(QMainWindow):
     def _execute_proposed_command(self, cmd: str):
         self.terminal_drawer.setVisible(True)
         self.telemetry_sidebar.set_core_status("EXECUTING")
+        self.neural_canvas.set_state(NeuralState.COMMAND_EXEC)
         self.terminal_drawer.append_output(f"\n[Executing]: {cmd}\n")
         
         def run():
@@ -428,7 +438,7 @@ class PetrovaMainWindow(QMainWindow):
             if stderr:
                 out += f"\n[stderr]: {stderr}"
             self.terminal_drawer.append_output(f"{out}\n[Exit code: {code}]\n")
-            QTimer.singleShot(800, lambda: self.telemetry_sidebar.set_core_status("READY"))
+            QTimer.singleShot(800, self._reset_to_ready)
 
         import threading
         threading.Thread(target=run, daemon=True).start()
