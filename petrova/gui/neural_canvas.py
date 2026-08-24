@@ -1,7 +1,7 @@
 """
-PETROVA Neural Activity & Synaptic Thought Visualizer.
-Renders an animated, organic neural constellation with synaptic pulses,
-showing real-time thinking states, voice waveforms, and idle breathing.
+PETROVA Interactive Cognitive Neural Visualizer.
+Accurate multi-layer transformer & cognitive topology with real-time token firing,
+live audio resonance, spring-damper physics, and mouse interactivity.
 """
 
 import math
@@ -23,13 +23,14 @@ from PyQt6.QtWidgets import QWidget
 
 
 class SynapticPulse:
-    """An electrical action-potential pulse traveling along a synapse."""
-    def __init__(self, start_idx: int, end_idx: int, speed: float = 0.04, color: QColor = None):
-        self.start_idx = start_idx
-        self.end_idx = end_idx
+    """An electrical action-potential pulse traveling across neural layers."""
+    def __init__(self, start_pos: QPointF, end_pos: QPointF, speed: float = 0.05, color: QColor = None, size: float = 3.0):
+        self.start_pos = start_pos
+        self.end_pos = end_pos
         self.progress = 0.0  # 0.0 to 1.0
         self.speed = speed
-        self.color = color or QColor(0, 240, 255, 220)
+        self.color = color or QColor(0, 245, 155, 230)
+        self.size = size
         self.finished = False
 
     def update(self):
@@ -37,306 +38,361 @@ class SynapticPulse:
         if self.progress >= 1.0:
             self.finished = True
 
+    def current_position(self) -> QPointF:
+        x = self.start_pos.x() + (self.end_pos.x() - self.start_pos.x()) * self.progress
+        y = self.start_pos.y() + (self.end_pos.y() - self.start_pos.y()) * self.progress
+        return QPointF(x, y)
 
-class NeuralNode:
-    """A neuron node in the neural network."""
-    def __init__(self, x: float, y: float, radius: float = 3.5):
+
+class NeuronNode:
+    """A functional computational neuron inside the cognitive topology."""
+    def __init__(self, layer_type: str, layer_idx: int, x: float, y: float, radius: float = 4.0):
+        self.layer_type = layer_type  # 'input', 'core', 'output'
+        self.layer_idx = layer_idx
         self.x = x
         self.y = y
         self.base_x = x
         self.base_y = y
-        self.vx = (random.random() - 0.5) * 0.4
-        self.vy = (random.random() - 0.5) * 0.4
+        self.vx = 0.0
+        self.vy = 0.0
         self.radius = radius
-        self.energy = random.random() * 0.5
-        self.pulse_phase = random.random() * math.pi * 2
+        self.energy = random.uniform(0.15, 0.4)
+        self.activation = random.uniform(0.1, 0.5)
+        self.phase = random.random() * math.pi * 2
+        self.is_hovered = False
+        self.is_dragged = False
+
+    def update_physics(self, spring: float = 0.03, damping: float = 0.85):
+        if self.is_dragged:
+            return
+        # Spring force back to base position
+        fx = (self.base_x - self.x) * spring
+        fy = (self.base_y - self.y) * spring
+        self.vx = (self.vx + fx) * damping
+        self.vy = (self.vy + fy) * damping
+        self.x += self.vx
+        self.y += self.vy
+        # Energy decay
+        self.energy = max(0.1, self.energy * 0.96)
 
 
 class NeuralState:
     IDLE = "IDLE"
-    LISTENING = "LISTENING"
+    INPUT_ACTIVE = "INPUT_ACTIVE"
     THINKING = "THINKING"
+    STREAMING = "STREAMING"
     SPEAKING = "SPEAKING"
+    COMMAND_EXEC = "COMMAND_EXEC"
 
 
 class NeuralVisualizerWidget(QWidget):
     """
-    Custom animated QWidget displaying PETROVA's internal neural thinking patterns.
+    Accurate, Interactive Cognitive Neural Topology Widget.
     """
-    def __init__(self, parent=None, num_nodes: int = 36):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.num_nodes = num_nodes
-        self.nodes: List[NeuralNode] = []
+        self.nodes: List[NeuronNode] = []
         self.pulses: List[SynapticPulse] = []
+        self.connections: List[Tuple[int, int, float]] = []  # (node_a_idx, node_b_idx, weight)
         self.state = NeuralState.IDLE
-        self.status_text = "PETROVA Synaptic Core: Idle"
+        self.status_title = "COGNITIVE ARCHITECTURE"
+        self.status_sub = "Idle • Alpha-Wave Monitoring"
         self.phase_text = ""
         
-        # Audio / resonance reactivity
-        self.audio_level = 0.0  # 0.0 to 1.0
-        self.time_offset = 0.0
+        # Audio resonance
+        self.audio_level = 0.0
+        self.time_val = 0.0
 
+        # Mouse tracking & Dragging
         self.mouse_pos: Optional[QPointF] = None
+        self.hovered_node: Optional[NeuronNode] = None
+        self.dragged_node: Optional[NeuronNode] = None
         self.setMouseTracking(True)
 
-        self.setMinimumHeight(110)
-        self.setMaximumHeight(140)
+        self.setMinimumHeight(115)
+        self.setMaximumHeight(135)
 
         # 60 FPS animation timer
         self.timer = QTimer(self)
         self.timer.timeout.connect(self._on_tick)
         self.timer.start(16)
 
-        self._init_nodes()
+        self._build_topology()
 
-    def _init_nodes(self):
-        w = max(self.width(), 600)
+    def _build_topology(self):
+        """Construct a 3-stage cognitive topology (Perception -> Latent Core -> Action)."""
+        w = max(self.width(), 800)
         h = max(self.height(), 120)
         self.nodes.clear()
-        for _ in range(self.num_nodes):
-            x = random.uniform(20, w - 20)
-            y = random.uniform(15, h - 15)
-            r = random.uniform(2.5, 4.5)
-            self.nodes.append(NeuralNode(x, y, r))
+        self.connections.clear()
+
+        # 1. Perception / Input Cluster (Left: x ~ 10% to 22%)
+        input_x = w * 0.14
+        num_inputs = 5
+        for i in range(num_inputs):
+            y = h * (0.2 + 0.6 * (i / (num_inputs - 1)))
+            node = NeuronNode("input", i, input_x + random.uniform(-15, 15), y, radius=4.5)
+            self.nodes.append(node)
+
+        # 2. Cognitive Latent Core (Center Transformer Lattice: x ~ 35% to 65%)
+        core_layers = 3
+        nodes_per_layer = 4
+        core_start_idx = len(self.nodes)
+        for col in range(core_layers):
+            layer_x = w * (0.35 + 0.15 * col)
+            for row in range(nodes_per_layer):
+                y = h * (0.22 + 0.56 * (row / (nodes_per_layer - 1))) + (10 if col % 2 == 1 else -10)
+                node = NeuronNode("core", col, layer_x + random.uniform(-10, 10), y, radius=4.0)
+                self.nodes.append(node)
+
+        # 3. Action / Output Cluster (Right: x ~ 82% to 88%)
+        output_x = w * 0.86
+        num_outputs = 4
+        output_start_idx = len(self.nodes)
+        for i in range(num_outputs):
+            y = h * (0.25 + 0.5 * (i / (num_outputs - 1)))
+            node = NeuronNode("output", i, output_x + random.uniform(-15, 15), y, radius=4.5)
+            self.nodes.append(node)
+
+        # 4. Form functional synaptic links between layers
+        # Inputs -> First Core Layer
+        for inp_i in range(num_inputs):
+            for c_i in range(core_start_idx, core_start_idx + nodes_per_layer):
+                if random.random() < 0.7:
+                    self.connections.append((inp_i, c_i, random.uniform(0.4, 0.9)))
+
+        # Inter-Core Lattice Links
+        for col in range(core_layers - 1):
+            col1_start = core_start_idx + col * nodes_per_layer
+            col2_start = core_start_idx + (col + 1) * nodes_per_layer
+            for i in range(nodes_per_layer):
+                for j in range(nodes_per_layer):
+                    if random.random() < 0.55:
+                        self.connections.append((col1_start + i, col2_start + j, random.uniform(0.3, 0.85)))
+
+        # Last Core Layer -> Outputs
+        last_core_start = core_start_idx + (core_layers - 1) * nodes_per_layer
+        for c_i in range(last_core_start, last_core_start + nodes_per_layer):
+            for out_i in range(output_start_idx, len(self.nodes)):
+                if random.random() < 0.65:
+                    self.connections.append((c_i, out_i, random.uniform(0.4, 0.95)))
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        w = self.width()
-        h = self.height()
-        for node in self.nodes:
-            node.x = max(10, min(w - 10, node.x))
-            node.y = max(10, min(h - 10, node.y))
-            node.base_x = node.x
-            node.base_y = node.y
+        self._build_topology()
 
     def set_state(self, state: str, phase_text: str = ""):
-        """Update neural operational state."""
+        """Update operational cognitive state."""
         self.state = state
         self.phase_text = phase_text
         if state == NeuralState.IDLE:
-            self.status_text = "PETROVA Synaptic Core: Idle & Listening"
-        elif state == NeuralState.LISTENING:
-            self.status_text = "🎙️ Neural Audio Receptor Active: Listening to Voice..."
+            self.status_title = "COGNITIVE SYNAPSE: IDLE"
+            self.status_sub = "Listening & Ready • 100% Local Inference"
+        elif state == NeuralState.INPUT_ACTIVE:
+            self.status_title = "PERCEPTION ACTIVE"
+            self.status_sub = "Processing Natural Language Query..."
         elif state == NeuralState.THINKING:
-            self.status_text = f"⚡ Neural Synthesis Active: {phase_text or 'Reasoning & Evaluating Context'}"
+            self.status_title = "REASONING & CONTEXT SYNTHESIS"
+            self.status_sub = phase_text or "Evaluating System Context & Formulating Plan..."
+        elif state == NeuralState.STREAMING:
+            self.status_title = "TOKEN STREAM GENERATION"
+            self.status_sub = "Active Inference • Zero-Latency Stream"
         elif state == NeuralState.SPEAKING:
-            self.status_text = "🔊 Synaptic Speech Stream: Responding..."
+            self.status_title = "NEURAL SPEECH ACTIVE"
+            self.status_sub = "High-Fidelity Neural Voice Synthesis"
+        elif state == NeuralState.COMMAND_EXEC:
+            self.status_title = "ACTION ENGINE: EXECUTION"
+            self.status_sub = "Running Native Linux Shell Command"
         self.update()
 
+    def fire_token_pulse(self):
+        """Called in real-time on every LLM token streamed."""
+        # Find input, core, and output node to send genuine token pulse through
+        inputs = [i for i, n in enumerate(self.nodes) if n.layer_type == "input"]
+        cores = [i for i, n in enumerate(self.nodes) if n.layer_type == "core"]
+        outputs = [i for i, n in enumerate(self.nodes) if n.layer_type == "output"]
+
+        if inputs and cores and outputs:
+            inp = random.choice(inputs)
+            core = random.choice(cores)
+            out = random.choice(outputs)
+
+            self.nodes[core].energy = 1.0
+            self.nodes[out].energy = 1.0
+
+            # Pulse from Core to Output
+            color = QColor(0, 245, 155, 240) if random.random() > 0.3 else QColor(251, 191, 36, 240)
+            p1 = QPointF(self.nodes[core].x, self.nodes[core].y)
+            p2 = QPointF(self.nodes[out].x, self.nodes[out].y)
+            self.pulses.append(SynapticPulse(p1, p2, speed=0.08, color=color, size=3.5))
+
     def set_audio_level(self, level: float):
-        """Set voice microphone loudness level for audio reactivity."""
+        """Microphone volume reactivity."""
         self.audio_level = max(0.0, min(1.0, level))
 
     def mouseMoveEvent(self, event):
         self.mouse_pos = event.position()
+        if self.dragged_node:
+            self.dragged_node.x = self.mouse_pos.x()
+            self.dragged_node.y = self.mouse_pos.y()
+            return
+
+        # Check node hover
+        hovered = None
+        for node in self.nodes:
+            d = math.hypot(node.x - self.mouse_pos.x(), node.y - self.mouse_pos.y())
+            if d < 18:
+                hovered = node
+                node.is_hovered = True
+            else:
+                node.is_hovered = False
+        self.hovered_node = hovered
+
+    def mousePressEvent(self, event):
+        pos = event.position()
+        # Check if clicking on a node to drag
+        for node in self.nodes:
+            d = math.hypot(node.x - pos.x(), node.y - pos.y())
+            if d < 20:
+                node.is_dragged = True
+                self.dragged_node = node
+                break
+
+        # Radial synaptic pulse burst on click
+        for i, node in enumerate(self.nodes):
+            dist = math.hypot(node.x - pos.x(), node.y - pos.y())
+            if dist < 140:
+                node.energy = 1.0
+                for j, other in enumerate(self.nodes):
+                    if i != j and math.hypot(node.x - other.x, node.y - other.y) < 100:
+                        p1 = QPointF(node.x, node.y)
+                        p2 = QPointF(other.x, other.y)
+                        color = QColor(251, 191, 36, 240) if random.random() > 0.5 else QColor(0, 245, 155, 240)
+                        self.pulses.append(SynapticPulse(p1, p2, speed=0.06, color=color))
+
+    def mouseReleaseEvent(self, event):
+        if self.dragged_node:
+            self.dragged_node.is_dragged = False
+            self.dragged_node = None
 
     def leaveEvent(self, event):
         self.mouse_pos = None
-
-    def mousePressEvent(self, event):
-        # Trigger an interactive burst of synaptic pulses on click
-        w = self.width()
-        h = self.height()
-        pos = event.position()
-        for i, node in enumerate(self.nodes):
-            dist = math.hypot(node.x - pos.x(), node.y - pos.y())
-            if dist < 120:
-                node.energy = 1.0
-                # Spawn pulses to neighboring nodes
-                for j, other in enumerate(self.nodes):
-                    if i != j and math.hypot(node.x - other.x, node.y - other.y) < 90:
-                        self.pulses.append(SynapticPulse(i, j, speed=0.06, color=QColor(0, 255, 180, 240)))
+        self.hovered_node = None
+        if self.dragged_node:
+            self.dragged_node.is_dragged = False
+            self.dragged_node = None
 
     def _on_tick(self):
-        self.time_offset += 0.025
-        w = max(self.width(), 100)
-        h = max(self.height(), 60)
+        self.time_val += 0.03
 
-        # 1. Update nodes
-        speed_multiplier = 1.0
-        if self.state == NeuralState.THINKING:
-            speed_multiplier = 2.4
-        elif self.state == NeuralState.LISTENING:
-            speed_multiplier = 1.6
+        # Update nodes with smooth spring physics
+        for node in self.nodes:
+            node.phase += 0.04
+            # Organic subtle breath oscillation
+            if not node.is_dragged:
+                osc = math.sin(node.phase) * 1.2
+                node.y = node.base_y + osc
+            node.update_physics()
 
-        for i, node in enumerate(self.nodes):
-            node.pulse_phase += 0.04 * speed_multiplier
-            node.x += node.vx * speed_multiplier
-            node.y += node.vy * speed_multiplier
-
-            # Bounce off edges
-            if node.x < 15 or node.x > w - 15:
-                node.vx *= -1
-            if node.y < 15 or node.y > h - 15:
-                node.vy *= -1
-
-            # Mouse interaction gravity
-            if self.mouse_pos:
-                dx = self.mouse_pos.x() - node.x
-                dy = self.mouse_pos.y() - node.y
-                d = math.hypot(dx, dy)
-                if d < 100 and d > 2:
-                    node.x += (dx / d) * 0.4
-                    node.y += (dy / d) * 0.4
-
-            # Energy decay
-            node.energy = max(0.1, node.energy * 0.98)
-
-        # 2. Spawn random synaptic pulses based on state
-        if self.state == NeuralState.THINKING and random.random() < 0.35:
-            start = random.randint(0, len(self.nodes) - 1)
-            # Find close neighbor
-            neighbors = []
-            for idx, other in enumerate(self.nodes):
-                if idx != start:
-                    d = math.hypot(self.nodes[start].x - other.x, self.nodes[start].y - other.y)
-                    if d < 110:
-                        neighbors.append(idx)
-            if neighbors:
-                end = random.choice(neighbors)
-                color = QColor(168, 85, 247, 240) if random.random() > 0.5 else QColor(0, 240, 255, 240)
-                self.pulses.append(SynapticPulse(start, end, speed=random.uniform(0.04, 0.08), color=color))
-
-        elif self.state == NeuralState.LISTENING and random.random() < 0.2:
-            start = random.randint(0, len(self.nodes) - 1)
-            neighbors = [idx for idx, other in enumerate(self.nodes) if idx != start and math.hypot(self.nodes[start].x - other.x, self.nodes[start].y - other.y) < 90]
-            if neighbors:
-                self.pulses.append(SynapticPulse(start, random.choice(neighbors), speed=0.05, color=QColor(0, 255, 175, 230)))
-
-        elif self.state == NeuralState.IDLE and random.random() < 0.04:
-            start = random.randint(0, len(self.nodes) - 1)
-            neighbors = [idx for idx, other in enumerate(self.nodes) if idx != start and math.hypot(self.nodes[start].x - other.x, self.nodes[start].y - other.y) < 80]
-            if neighbors:
-                self.pulses.append(SynapticPulse(start, random.choice(neighbors), speed=0.03, color=QColor(0, 240, 255, 160)))
-
-        # 3. Update pulses
+        # Update active pulses
         for pulse in self.pulses:
             pulse.update()
         self.pulses = [p for p in self.pulses if not p.finished]
+
+        # Autonomous thinking pulses when active
+        if self.state in (NeuralState.THINKING, NeuralState.INPUT_ACTIVE) and random.random() < 0.25:
+            if self.connections:
+                a_idx, b_idx, weight = random.choice(self.connections)
+                p1 = QPointF(self.nodes[a_idx].x, self.nodes[a_idx].y)
+                p2 = QPointF(self.nodes[b_idx].x, self.nodes[b_idx].y)
+                color = QColor(0, 245, 155, 220) if random.random() > 0.4 else QColor(251, 191, 36, 220)
+                self.pulses.append(SynapticPulse(p1, p2, speed=0.05 + 0.03 * weight, color=color))
 
         self.update()
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
         w = self.width()
         h = self.height()
 
-        # Background Gradient
+        # 1. Subtle Translucent Backdrop
         bg_grad = QLinearGradient(0, 0, w, h)
-        bg_grad.setColorAt(0.0, QColor(10, 14, 23))
-        bg_grad.setColorAt(0.5, QColor(14, 20, 32))
-        bg_grad.setColorAt(1.0, QColor(8, 11, 18))
-        painter.fillRect(0, 0, w, h, bg_grad)
+        bg_grad.setColorAt(0.0, QColor(8, 14, 20, 220))
+        bg_grad.setColorAt(1.0, QColor(4, 7, 10, 240))
+        painter.fillRect(self.rect(), bg_grad)
 
-        # Border
-        painter.setPen(QPen(QColor(30, 41, 59, 180), 1))
-        painter.drawRect(0, 0, w - 1, h - 1)
+        # 2. Draw Synaptic Interconnection Lines
+        for a_idx, b_idx, weight in self.connections:
+            na = self.nodes[a_idx]
+            nb = self.nodes[b_idx]
 
-        # Draw Synaptic Connections (Lines)
-        max_dist = 95
-        if self.state == NeuralState.THINKING:
-            max_dist = 115
-        elif self.state == NeuralState.LISTENING:
-            max_dist = 105
+            # Line opacity increases if connected nodes have high energy or are hovered
+            energy_factor = max(na.energy, nb.energy)
+            alpha = int(25 + energy_factor * 120 + (100 if (na.is_hovered or nb.is_hovered) else 0))
+            
+            pen_color = QColor(16, 185, 129, min(230, alpha))
+            if energy_factor > 0.6:
+                pen_color = QColor(0, 245, 155, min(240, alpha))
+            
+            pen = QPen(pen_color, 1.0 + weight * 0.8)
+            painter.setPen(pen)
+            painter.drawLine(QPointF(na.x, na.y), QPointF(nb.x, nb.y))
 
-        for i in range(len(self.nodes)):
-            n1 = self.nodes[i]
-            for j in range(i + 1, len(self.nodes)):
-                n2 = self.nodes[j]
-                dist = math.hypot(n1.x - n2.x, n1.y - n2.y)
-                if dist < max_dist:
-                    alpha = int((1.0 - (dist / max_dist)) * 140)
-                    
-                    if self.state == NeuralState.THINKING:
-                        line_color = QColor(140, 70, 255, min(255, alpha + 50))
-                    elif self.state == NeuralState.LISTENING:
-                        line_color = QColor(0, 255, 175, min(255, alpha + 40))
-                    else:
-                        line_color = QColor(0, 200, 255, alpha)
-
-                    painter.setPen(QPen(line_color, 1.2))
-                    painter.drawLine(QPointF(n1.x, n1.y), QPointF(n2.x, n2.y))
-
-        # Draw Synaptic Pulses (Action Potential Sparks)
+        # 3. Draw Traveling Electrical Pulses
         for pulse in self.pulses:
-            if pulse.start_idx < len(self.nodes) and pulse.end_idx < len(self.nodes):
-                n1 = self.nodes[pulse.start_idx]
-                n2 = self.nodes[pulse.end_idx]
-                px = n1.x + (n2.x - n1.x) * pulse.progress
-                py = n1.y + (n2.y - n1.y) * pulse.progress
-
-                # Glowing spark
-                spark_grad = QRadialGradient(px, py, 8)
-                spark_grad.setColorAt(0.0, pulse.color)
-                spark_grad.setColorAt(1.0, QColor(0, 0, 0, 0))
-                painter.setBrush(QBrush(spark_grad))
-                painter.setPen(Qt.PenStyle.NoPen)
-                painter.drawEllipse(QPointF(px, py), 6, 6)
-
-                # Bright center core
-                painter.setBrush(QBrush(QColor(255, 255, 255, 230)))
-                painter.drawEllipse(QPointF(px, py), 2, 2)
-
-        # Draw Neural Nodes
-        for node in self.nodes:
-            breath = math.sin(node.pulse_phase) * 1.5
-            rad = max(2.0, node.radius + breath + (node.energy * 3.0))
-
-            if self.state == NeuralState.THINKING:
-                core_color = QColor(192, 132, 252)
-                glow_color = QColor(147, 51, 234, 180)
-            elif self.state == NeuralState.LISTENING:
-                core_color = QColor(52, 211, 153)
-                glow_color = QColor(16, 185, 129, 180)
-            elif self.state == NeuralState.SPEAKING:
-                core_color = QColor(56, 189, 248)
-                glow_color = QColor(14, 165, 233, 200)
-            else:
-                core_color = QColor(0, 240, 255)
-                glow_color = QColor(0, 180, 255, 140)
-
-            # Outer glow
-            glow_grad = QRadialGradient(node.x, node.y, rad * 2.5)
-            glow_grad.setColorAt(0.0, glow_color)
-            glow_grad.setColorAt(1.0, QColor(0, 0, 0, 0))
-            painter.setBrush(QBrush(glow_grad))
+            pos = pulse.current_position()
+            # Pulse glow
+            glow = QRadialGradient(pos, pulse.size * 3)
+            glow.setColorAt(0.0, pulse.color)
+            glow.setColorAt(1.0, QColor(0, 0, 0, 0))
+            painter.setBrush(QBrush(glow))
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawEllipse(QPointF(node.x, node.y), rad * 2.5, rad * 2.5)
+            painter.drawEllipse(pos, pulse.size * 2.5, pulse.size * 2.5)
 
-            # Core
-            painter.setBrush(QBrush(core_color))
-            painter.drawEllipse(QPointF(node.x, node.y), rad, rad)
+            # Core dot
+            painter.setBrush(QBrush(QColor(255, 255, 255, 250)))
+            painter.drawEllipse(pos, pulse.size * 0.8, pulse.size * 0.8)
 
-            # Center white sparkle
-            painter.setBrush(QBrush(QColor(255, 255, 255, 200)))
-            painter.drawEllipse(QPointF(node.x, node.y), max(1.0, rad * 0.4), max(1.0, rad * 0.4))
+        # 4. Draw Neuron Nodes
+        for node in self.nodes:
+            pos = QPointF(node.x, node.y)
+            r = node.radius + (node.energy * 2.0)
 
-        # Bottom Status Overlay Bar
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QBrush(QColor(10, 14, 22, 210)))
-        painter.drawRect(0, h - 26, w, 26)
+            # Outer glow halo
+            if node.energy > 0.3 or node.is_hovered:
+                halo_color = QColor(251, 191, 36, 160) if node.energy > 0.8 else QColor(0, 245, 155, 140)
+                halo = QRadialGradient(pos, r * 3.5)
+                halo.setColorAt(0.0, halo_color)
+                halo.setColorAt(1.0, QColor(0, 0, 0, 0))
+                painter.setBrush(QBrush(halo))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawEllipse(pos, r * 3, r * 3)
 
-        painter.setPen(QPen(QColor(0, 240, 255, 60), 1))
-        painter.drawLine(0, h - 26, w, h - 26)
+            # Node body
+            body_color = QColor(0, 245, 155) if node.layer_type == "input" else \
+                         QColor(16, 185, 129) if node.layer_type == "core" else \
+                         QColor(251, 191, 36)
+            
+            painter.setBrush(QBrush(body_color))
+            painter.setPen(QPen(QColor(255, 255, 255, 180), 1.2))
+            painter.drawEllipse(pos, r, r)
 
-        # Render Status Text
-        painter.setPen(QColor(200, 220, 240))
-        font = QFont("-apple-system", 9, QFont.Weight.Medium)
-        font.setStyleHint(QFont.StyleHint.SansSerif)
-        painter.setFont(font)
-        painter.drawText(16, h - 8, self.status_text)
+        # 5. Draw Clean Minimalist Header Overlay (Top Center)
+        painter.setPen(QColor(0, 245, 155))
+        font_title = QFont("-apple-system", 10, QFont.Weight.Bold)
+        painter.setFont(font_title)
+        painter.drawText(20, 24, self.status_title)
 
-        # Pulse indicator dot
-        pulse_alpha = int((math.sin(self.time_offset * 4) + 1.0) * 110) + 35
-        if self.state == NeuralState.THINKING:
-            dot_color = QColor(192, 132, 252, pulse_alpha)
-        elif self.state == NeuralState.LISTENING:
-            dot_color = QColor(52, 211, 153, pulse_alpha)
-        else:
-            dot_color = QColor(0, 240, 255, pulse_alpha)
+        painter.setPen(QColor(148, 163, 184))
+        font_sub = QFont("-apple-system", 9, QFont.Weight.Normal)
+        painter.setFont(font_sub)
+        painter.drawText(20, 40, self.status_sub)
 
-        painter.setBrush(QBrush(dot_color))
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawEllipse(w - 22, h - 17, 8, 8)
+        # Layer Labels along Bottom
+        painter.setPen(QColor(100, 116, 139))
+        font_layer = QFont("monospace", 8, QFont.Weight.DemiBold)
+        painter.setFont(font_layer)
+        painter.drawText(int(w * 0.10), h - 10, "PERCEPTION")
+        painter.drawText(int(w * 0.46), h - 10, "TRANSFORMER CORE")
+        painter.drawText(int(w * 0.82), h - 10, "ACTION / MOTOR")

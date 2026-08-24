@@ -3,6 +3,8 @@ PETROVA Interactive Embedded Terminal Drawer Widget.
 Provides an integrated command console for shell execution and slash commands.
 """
 
+import io
+import contextlib
 import subprocess
 import threading
 from typing import List
@@ -38,32 +40,32 @@ class TerminalDrawerWidget(QFrame):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setContentsMargins(12, 8, 12, 8)
         layout.setSpacing(6)
 
         # Header Bar
         header = QHBoxLayout()
         title = QLabel("💻 INTERACTIVE LINUX TERMINAL DRAWER")
-        title.setStyleSheet("color: #00f0ff; font-weight: 700; font-size: 11px; letter-spacing: 1px;")
+        title.setStyleSheet("color: #00f59b; font-weight: 800; font-size: 11.5px; letter-spacing: 1px;")
 
         # Quick Action Chips
         chips_layout = QHBoxLayout()
-        chips_layout.setSpacing(4)
+        chips_layout.setSpacing(6)
         for label, cmd in [
-            ("📊 /stats", "/stats"),
+            ("⚡ /stats", "/stats"),
             ("🧠 /memory", "/memory list"),
             ("🎯 /goal", "/goal check system updates"),
             ("💾 df -h", "df -h /"),
             ("🧹 Clear", "clear"),
         ]:
             btn = QPushButton(label)
-            btn.setStyleSheet("padding: 2px 8px; font-size: 10px; border-radius: 4px;")
+            btn.setStyleSheet("padding: 3px 10px; font-size: 10.5px; border-radius: 6px; background: rgba(16,185,129,0.12); color: #34d399;")
             btn.clicked.connect(lambda checked, c=cmd: self.run_quick_command(c))
             chips_layout.addWidget(btn)
 
         self.close_btn = QPushButton("✕")
         self.close_btn.setFixedSize(22, 22)
-        self.close_btn.setStyleSheet("padding: 0; font-weight: bold;")
+        self.close_btn.setStyleSheet("padding: 0; font-weight: bold; border-radius: 11px;")
         self.close_btn.setToolTip("Close Terminal Drawer")
 
         header.addWidget(title)
@@ -85,7 +87,7 @@ class TerminalDrawerWidget(QFrame):
         # Input Box
         input_layout = QHBoxLayout()
         prompt_prefix = QLabel("❯")
-        prompt_prefix.setStyleSheet("color: #00ffaf; font-weight: bold; font-size: 14px; margin-right: 4px;")
+        prompt_prefix.setStyleSheet("color: #00f59b; font-weight: bold; font-size: 14px; margin-right: 4px;")
         
         self.input_field = QLineEdit()
         self.input_field.setObjectName("TerminalInput")
@@ -94,6 +96,7 @@ class TerminalDrawerWidget(QFrame):
 
         run_btn = QPushButton("Run")
         run_btn.setObjectName("PrimaryButton")
+        run_btn.setStyleSheet("padding: 6px 14px; font-size: 11.5px; border-radius: 8px;")
         run_btn.clicked.connect(self._on_submit)
 
         input_layout.addWidget(prompt_prefix)
@@ -136,7 +139,6 @@ class TerminalDrawerWidget(QFrame):
         try:
             # Check if it's a built-in slash command
             if cmd.startswith("/"):
-                # Handle slash command
                 code, stdout, stderr = execute_command(f"python3 -c 'from petrova.core.router import route_command; route_command(\"{cmd}\")'")
             else:
                 code, stdout, stderr = execute_command(cmd)

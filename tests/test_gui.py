@@ -27,7 +27,7 @@ class TestPetrovaGUI(unittest.TestCase):
         res = ensure_desktop_entry()
         self.assertTrue(res)
 
-    def test_neural_canvas_states(self):
+    def test_neural_canvas_states_and_tokens(self):
         canvas = NeuralVisualizerWidget()
         self.assertEqual(canvas.state, NeuralState.IDLE)
         self.assertGreater(len(canvas.nodes), 10)
@@ -35,10 +35,14 @@ class TestPetrovaGUI(unittest.TestCase):
         # Test state transitions
         canvas.set_state(NeuralState.THINKING, "Synthesizing Goal")
         self.assertEqual(canvas.state, NeuralState.THINKING)
-        self.assertIn("Synthesizing Goal", canvas.status_text)
+        self.assertIn("Synthesizing Goal", canvas.status_sub)
 
-        canvas.set_state(NeuralState.LISTENING)
-        self.assertEqual(canvas.state, NeuralState.LISTENING)
+        canvas.set_state(NeuralState.STREAMING)
+        self.assertEqual(canvas.state, NeuralState.STREAMING)
+
+        # Test real-time token firing
+        canvas.fire_token_pulse()
+        self.assertGreaterEqual(len(canvas.pulses), 1)
 
         canvas.set_state(NeuralState.SPEAKING)
         self.assertEqual(canvas.state, NeuralState.SPEAKING)
@@ -48,10 +52,10 @@ class TestPetrovaGUI(unittest.TestCase):
 
     def test_telemetry_widget(self):
         telemetry = TelemetryDashboardWidget()
-        self.assertIsNotNone(telemetry.cpu_temp_lbl)
-        self.assertIsNotNone(telemetry.ram_lbl)
-        self.assertIsNotNone(telemetry.bat_lbl)
-        self.assertIsNotNone(telemetry.disk_lbl)
+        self.assertIsNotNone(telemetry.cpu_temp_val)
+        self.assertIsNotNone(telemetry.ram_val)
+        self.assertIsNotNone(telemetry.bat_val)
+        self.assertIsNotNone(telemetry.disk_val)
         telemetry.update_telemetry()
 
     def test_terminal_drawer(self):
@@ -68,7 +72,7 @@ class TestPetrovaGUI(unittest.TestCase):
         card = chat.start_assistant_message()
         self.assertIsInstance(card, MessageCard)
         chat.append_assistant_token("Here is a command:\n```bash\necho 123\n```")
-        chat.finish_assistant_message()
+        chat.finalize_assistant_message("Here is a command:\n```bash\necho 123\n```")
         self.assertIn("echo 123", card.raw_content)
 
     def test_main_window_init(self):

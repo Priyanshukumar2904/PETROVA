@@ -1,112 +1,122 @@
 """
-PETROVA GUI Dark Theme & Cybernetic Obsidian Stylesheet (QSS).
-Modern, translucent glassmorphic look with electric cyan & neon violet accents.
+PETROVA Modern Translucent Glassmorphic Stylesheet (QSS).
+Sparkling Amber-Green & Deep Carbon Slate with smooth curves,
+translucent layers, and zero cluttered lines.
 """
 
-CYBER_DARK_THEME = """
+SPARKLING_AMBER_GREEN_THEME = """
 /* ============================================================================
-   PETROVA Modern Cyber Dark Palette
+   PETROVA Translucent Glass & Sparkling Amber-Green Theme
    ============================================================================ */
 
 QWidget {
-    background-color: #0c0f17;
-    color: #e6edf3;
+    background-color: #06090e;
+    color: #e2e8f0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Ubuntu", "Cantarell", sans-serif;
-    font-size: 13px;
-    selection-background-color: #00f0ff;
-    selection-color: #0c0f17;
+    font-size: 13.5px;
+    selection-background-color: #10b981;
+    selection-color: #04070a;
 }
 
 /* --- Main Window --- */
 QMainWindow {
-    background-color: #0a0d14;
+    background-color: #06090e;
 }
 
 /* --- Top Header Bar --- */
 QFrame#HeaderBar {
-    background-color: #111622;
-    border-bottom: 1px solid #1e2638;
-    padding: 6px 16px;
+    background-color: rgba(10, 16, 23, 0.85);
+    border: none;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+    padding: 8px 20px;
 }
 
 QLabel#AppTitle {
-    color: #00f0ff;
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 2px;
+    color: #00f59b;
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: 2.5px;
 }
 
 QLabel#DistroBadge {
-    background-color: #182234;
-    color: #38bdf8;
-    border: 1px solid #0284c7;
-    border-radius: 12px;
-    padding: 3px 10px;
-    font-size: 11px;
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 14px;
+    padding: 4px 12px;
+    font-size: 11.5px;
     font-weight: 600;
 }
 
 QLabel#StateBadge {
-    background-color: rgba(0, 240, 255, 0.12);
-    color: #00f0ff;
-    border: 1px solid rgba(0, 240, 255, 0.35);
-    border-radius: 12px;
-    padding: 3px 12px;
-    font-size: 11px;
+    background-color: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 14px;
+    padding: 4px 14px;
+    font-size: 11.5px;
     font-weight: 700;
 }
 
 /* --- Buttons --- */
 QPushButton {
-    background-color: #161d2d;
-    color: #e2e8f0;
-    border: 1px solid #232f48;
-    border-radius: 8px;
-    padding: 7px 14px;
+    background-color: rgba(16, 26, 34, 0.8);
+    color: #cbd5e1;
+    border: 1px solid rgba(52, 211, 153, 0.18);
+    border-radius: 10px;
+    padding: 8px 16px;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 12.5px;
 }
 
 QPushButton:hover {
-    background-color: #1e293f;
-    border-color: #00f0ff;
+    background-color: rgba(16, 185, 129, 0.18);
+    border-color: #00f59b;
     color: #ffffff;
 }
 
 QPushButton:pressed {
-    background-color: #0f1522;
+    background-color: rgba(245, 158, 11, 0.25);
+    border-color: #fbbf24;
+    color: #fef08a;
 }
 
 QPushButton#PrimaryButton {
-    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00b4d8, stop:1 #0077b6);
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #059669, stop:1 #10b981);
     color: #ffffff;
     border: none;
     font-weight: 700;
+    border-radius: 10px;
 }
 
 QPushButton#PrimaryButton:hover {
-    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00f0ff, stop:1 #0096c7);
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #00f59b);
+}
+
+QPushButton#PrimaryButton:pressed {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #d97706, stop:1 #f59e0b);
 }
 
 QPushButton#VoiceButton {
-    background-color: #192233;
-    border: 1px solid #00f0ff;
-    border-radius: 20px;
-    min-width: 40px;
-    min-height: 40px;
-    max-width: 40px;
-    max-height: 40px;
-    font-size: 16px;
+    background-color: rgba(16, 26, 34, 0.9);
+    border: 1.5px solid rgba(52, 211, 153, 0.4);
+    border-radius: 22px;
+    min-width: 44px;
+    min-height: 44px;
+    max-width: 44px;
+    max-height: 44px;
+    font-size: 18px;
 }
 
 QPushButton#VoiceButton:hover {
-    background-color: #00f0ff;
-    color: #0c0f17;
+    background-color: #10b981;
+    color: #06090e;
+    border-color: #00f59b;
 }
 
 QPushButton#VoiceButton[listening="true"] {
-    background-color: #ff0055;
-    border-color: #ff4d6d;
+    background-color: #ef4444;
+    border-color: #f87171;
     color: #ffffff;
 }
 
@@ -114,138 +124,139 @@ QPushButton#HeaderIconBtn {
     background-color: transparent;
     border: none;
     color: #94a3b8;
-    font-size: 14px;
-    padding: 4px 8px;
-    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 8px;
 }
 
 QPushButton#HeaderIconBtn:hover {
-    background-color: #1e2638;
-    color: #00f0ff;
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #00f59b;
 }
 
 /* --- Input Bar --- */
 QFrame#InputFrame {
-    background-color: #111622;
-    border-top: 1px solid #1e2638;
-    padding: 8px 16px;
+    background-color: rgba(10, 16, 23, 0.92);
+    border: none;
+    border-top: 1px solid rgba(16, 185, 129, 0.15);
+    padding: 10px 20px;
 }
 
 QTextEdit#PromptInput {
-    background-color: #161c2b;
-    color: #f1f5f9;
-    border: 1px solid #232e44;
-    border-radius: 10px;
-    padding: 8px 12px;
-    font-size: 13px;
+    background-color: rgba(16, 26, 35, 0.85);
+    color: #f8fafc;
+    border: 1px solid rgba(52, 211, 153, 0.2);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13.5px;
     font-family: inherit;
 }
 
 QTextEdit#PromptInput:focus {
-    border: 1px solid #00f0ff;
-    background-color: #182030;
+    border: 1.5px solid #00f59b;
+    background-color: rgba(18, 30, 40, 0.95);
 }
 
 /* --- Chat Container --- */
 QScrollArea#ChatScrollArea {
-    background-color: #0c0f17;
+    background-color: transparent;
     border: none;
 }
 
 QWidget#ChatContentWidget {
-    background-color: #0c0f17;
+    background-color: transparent;
 }
 
-/* --- Telemetry Sidebar Panel --- */
+/* --- Telemetry Minimalist Sidebar Panel --- */
 QFrame#TelemetryPanel {
-    background-color: #101420;
-    border-left: 1px solid #1a2233;
-    min-width: 280px;
-    max-width: 320px;
+    background-color: rgba(9, 14, 20, 0.92);
+    border: none;
+    border-left: 1px solid rgba(16, 185, 129, 0.1);
+    min-width: 260px;
+    max-width: 300px;
 }
 
 QLabel#SidebarTitle {
-    color: #38bdf8;
+    color: #34d399;
     font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 4px 0px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    padding: 2px 0px;
 }
 
 QFrame#TelemetryCard {
-    background-color: #151b29;
-    border: 1px solid #202b40;
-    border-radius: 10px;
-    padding: 10px;
+    background-color: rgba(14, 22, 30, 0.7);
+    border: 1px solid rgba(52, 211, 153, 0.12);
+    border-radius: 14px;
+    padding: 12px;
 }
 
 QProgressBar {
-    background-color: #1e2638;
+    background-color: rgba(20, 32, 44, 0.7);
     border: none;
-    border-radius: 4px;
-    height: 8px;
+    border-radius: 5px;
+    height: 7px;
     text-align: right;
-    font-size: 9px;
     color: transparent;
 }
 
 QProgressBar::chunk {
-    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00f0ff, stop:1 #38bdf8);
-    border-radius: 4px;
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #00f59b);
+    border-radius: 5px;
 }
 
 QProgressBar#RamBar::chunk {
-    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #06b6d4);
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #059669, stop:1 #34d399);
 }
 
 QProgressBar#BatteryBar::chunk {
-    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #a855f7, stop:1 #ec4899);
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f59e0b, stop:1 #fbbf24);
 }
 
 /* --- Terminal Drawer Panel --- */
 QFrame#TerminalDrawer {
-    background-color: #080a0f;
-    border-top: 1px solid #00f0ff;
+    background-color: #06090d;
+    border-top: 1.5px solid #10b981;
 }
 
 QPlainTextEdit#TerminalOutput {
-    background-color: #080a0f;
-    color: #00ffaf;
+    background-color: #06090d;
+    color: #34d399;
     font-family: "JetBrains Mono", "Fira Code", "Source Code Pro", "Consolas", monospace;
-    font-size: 12px;
+    font-size: 12.5px;
     border: none;
-    padding: 8px;
+    padding: 10px;
 }
 
 QLineEdit#TerminalInput {
-    background-color: #101420;
+    background-color: #0d161d;
     color: #f8fafc;
-    border: 1px solid #1e2638;
-    border-radius: 6px;
-    padding: 6px 10px;
+    border: 1px solid rgba(52, 211, 153, 0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
     font-family: "JetBrains Mono", "Fira Code", monospace;
-    font-size: 12px;
+    font-size: 12.5px;
 }
 
 QLineEdit#TerminalInput:focus {
-    border: 1px solid #00f0ff;
+    border: 1.5px solid #00f59b;
 }
 
-/* --- Custom Scrollbar --- */
+/* --- Custom Translucent Scrollbar --- */
 QScrollBar:vertical {
-    background: #0a0d14;
-    width: 8px;
+    background: transparent;
+    width: 6px;
     margin: 0px;
 }
 
 QScrollBar::handle:vertical {
-    background: #1e2638;
-    min-height: 20px;
-    border-radius: 4px;
+    background: rgba(52, 211, 153, 0.25);
+    min-height: 24px;
+    border-radius: 3px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background: #334155;
+    background: rgba(0, 245, 155, 0.5);
 }
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
@@ -253,13 +264,15 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 QScrollBar:horizontal {
-    background: #0a0d14;
-    height: 8px;
+    background: transparent;
+    height: 6px;
 }
 
 QScrollBar::handle:horizontal {
-    background: #1e2638;
-    min-width: 20px;
-    border-radius: 4px;
+    background: rgba(52, 211, 153, 0.25);
+    min-width: 24px;
+    border-radius: 3px;
 }
 """
+
+CYBER_DARK_THEME = SPARKLING_AMBER_GREEN_THEME

@@ -26,14 +26,14 @@ from petrova.memory.store import (
 
 
 class MemoryVaultDialog(QDialog):
-    """Visual memory inspector and manager."""
+    """Visual memory inspector and manager with translucent styling."""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("🧠 PETROVA Memory & Knowledge Vault")
-        self.resize(550, 420)
+        self.resize(580, 440)
         self.setStyleSheet("""
             QDialog {
-                background-color: #0d1117;
+                background-color: #080d12;
             }
         """)
 
@@ -42,16 +42,16 @@ class MemoryVaultDialog(QDialog):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(10)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(12)
 
         # Header
         title = QLabel("🧠 PERSISTENT MEMORY & KNOWLEDGE VAULT")
-        title.setStyleSheet("color: #00f0ff; font-weight: bold; font-size: 13px; letter-spacing: 1px;")
+        title.setStyleSheet("color: #00f59b; font-weight: 800; font-size: 13.5px; letter-spacing: 1px;")
         layout.addWidget(title)
 
-        desc = QLabel("PETROVA retains user preferences, hardware notes, and work habits across sessions.")
-        desc.setStyleSheet("color: #94a3b8; font-size: 11px;")
+        desc = QLabel("PETROVA retains user preferences, hardware notes, and work habits across sessions in local SQLite storage.")
+        desc.setStyleSheet("color: #94a3b8; font-size: 11.5px;")
         layout.addWidget(desc)
 
         # Search Bar
@@ -70,22 +70,23 @@ class MemoryVaultDialog(QDialog):
         self.list_widget = QListWidget()
         self.list_widget.setStyleSheet("""
             QListWidget {
-                background-color: #161b22;
-                border: 1px solid #30363d;
-                border-radius: 8px;
-                padding: 6px;
+                background-color: rgba(13, 20, 28, 0.85);
+                border: 1px solid rgba(16, 185, 129, 0.18);
+                border-radius: 10px;
+                padding: 8px;
             }
             QListWidget::item {
-                background-color: #0d1117;
-                border: 1px solid #21262d;
-                border-radius: 6px;
-                padding: 8px;
-                margin-bottom: 4px;
-                color: #e6edf3;
+                background-color: rgba(8, 13, 19, 0.9);
+                border: 1px solid rgba(52, 211, 153, 0.12);
+                border-radius: 8px;
+                padding: 10px;
+                margin-bottom: 6px;
+                color: #f1f5f9;
+                font-size: 12.5px;
             }
             QListWidget::item:selected {
-                border-color: #00f0ff;
-                background-color: #1f293d;
+                border-color: #00f59b;
+                background-color: rgba(16, 185, 129, 0.2);
             }
         """)
         layout.addWidget(self.list_widget)
@@ -93,7 +94,7 @@ class MemoryVaultDialog(QDialog):
         # Add Memory Row
         add_layout = QHBoxLayout()
         self.new_mem_input = QLineEdit()
-        self.new_mem_input.setPlaceholderText("Add a new fact or preference manually...")
+        self.new_mem_input.setPlaceholderText("Add a new preference or fact manually...")
         self.new_mem_input.returnPressed.connect(self._on_add)
         
         add_btn = QPushButton("+ Add Memory")
@@ -101,7 +102,7 @@ class MemoryVaultDialog(QDialog):
         add_btn.clicked.connect(self._on_add)
 
         delete_btn = QPushButton("🗑️ Delete Selected")
-        delete_btn.setStyleSheet("background-color: #7f1d1d; color: #fecaca; border: 1px solid #991b1b;")
+        delete_btn.setStyleSheet("background-color: rgba(185, 28, 28, 0.3); color: #fca5a5; border: 1px solid #dc2626;")
         delete_btn.clicked.connect(self._on_delete)
 
         add_layout.addWidget(self.new_mem_input)
@@ -135,7 +136,7 @@ class MemoryVaultDialog(QDialog):
         text = self.new_mem_input.text().strip()
         if not text:
             return
-        save_memory(content=text, category="user_preference", importance=0.8)
+        save_memory(content=text, category="user_preference", importance=3)
         self.new_mem_input.clear()
         self.load_memories()
 

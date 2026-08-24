@@ -24,7 +24,7 @@ from petrova.voice.tts import speak
 
 
 class MessageCard(QFrame):
-    """A single chat message card (User or Petrova)."""
+    """A single chat message card (User or Petrova) with translucent glass styling."""
     run_command_requested = pyqtSignal(str)
 
     def __init__(self, role: str, content: str = "", timestamp: str = "", parent=None):
@@ -37,8 +37,8 @@ class MessageCard(QFrame):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(12, 10, 12, 10)
-        layout.setSpacing(6)
+        layout.setContentsMargins(14, 12, 14, 12)
+        layout.setSpacing(8)
 
         # Header (Role badge + Timestamp + Voice / Copy buttons)
         header = QHBoxLayout()
@@ -47,28 +47,28 @@ class MessageCard(QFrame):
         if self.role == "user":
             self.setStyleSheet("""
                 QFrame {
-                    background-color: #142032;
-                    border: 1px solid #1e3a5f;
-                    border-radius: 12px;
+                    background-color: rgba(16, 185, 129, 0.1);
+                    border: 1px solid rgba(52, 211, 153, 0.25);
+                    border-radius: 14px;
                     margin-left: 60px;
                 }
             """)
             role_lbl = QLabel("👤 You")
-            role_lbl.setStyleSheet("color: #38bdf8; font-weight: 700; font-size: 12px;")
+            role_lbl.setStyleSheet("color: #34d399; font-weight: 700; font-size: 12.5px;")
         else:
             self.setStyleSheet("""
                 QFrame {
-                    background-color: #111827;
-                    border: 1px solid #1f293d;
-                    border-radius: 12px;
+                    background-color: rgba(12, 18, 26, 0.85);
+                    border: 1px solid rgba(16, 185, 129, 0.15);
+                    border-radius: 14px;
                     margin-right: 40px;
                 }
             """)
             role_lbl = QLabel("🤖 PETROVA")
-            role_lbl.setStyleSheet("color: #00f0ff; font-weight: 800; font-size: 12px; letter-spacing: 1px;")
+            role_lbl.setStyleSheet("color: #00f59b; font-weight: 900; font-size: 13px; letter-spacing: 1.5px;")
 
         time_lbl = QLabel(self.timestamp)
-        time_lbl.setStyleSheet("color: #64748b; font-size: 10px;")
+        time_lbl.setStyleSheet("color: #64748b; font-size: 11px;")
 
         header.addWidget(role_lbl)
         header.addWidget(time_lbl)
@@ -77,16 +77,16 @@ class MessageCard(QFrame):
         if self.role == "assistant":
             # Speak Button
             self.speak_btn = QPushButton("🔊")
-            self.speak_btn.setFixedSize(24, 24)
-            self.speak_btn.setStyleSheet("padding: 0; font-size: 12px; background: transparent; border: none;")
+            self.speak_btn.setFixedSize(26, 26)
+            self.speak_btn.setStyleSheet("padding: 0; font-size: 12px; background: transparent; border: none; color: #94a3b8;")
             self.speak_btn.setToolTip("Read Response Aloud")
             self.speak_btn.clicked.connect(self._on_speak)
             header.addWidget(self.speak_btn)
 
         # Copy text button
         self.copy_btn = QPushButton("📋")
-        self.copy_btn.setFixedSize(24, 24)
-        self.copy_btn.setStyleSheet("padding: 0; font-size: 11px; background: transparent; border: none;")
+        self.copy_btn.setFixedSize(26, 26)
+        self.copy_btn.setStyleSheet("padding: 0; font-size: 11px; background: transparent; border: none; color: #94a3b8;")
         self.copy_btn.setToolTip("Copy message to clipboard")
         self.copy_btn.clicked.connect(self._on_copy)
         header.addWidget(self.copy_btn)
@@ -98,7 +98,7 @@ class MessageCard(QFrame):
         self.content_lbl.setWordWrap(True)
         self.content_lbl.setTextFormat(Qt.TextFormat.RichText)
         self.content_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse | Qt.TextInteractionFlag.LinksAccessibleByMouse)
-        self.content_lbl.setStyleSheet("color: #f1f5f9; font-size: 13px; line-height: 1.4;")
+        self.content_lbl.setStyleSheet("color: #f1f5f9; font-size: 13.5px; line-height: 1.5;")
         layout.addWidget(self.content_lbl)
 
         # Container for interactive command action cards
@@ -126,16 +126,16 @@ class MessageCard(QFrame):
             lang = match.group(1) or "code"
             code = match.group(2)
             return (
-                f"<div style='background-color:#0b0f19; border:1px solid #1e293b; border-radius:6px; padding:8px; margin:6px 0;'>"
-                f"<div style='color:#64748b; font-size:10px; font-weight:bold; margin-bottom:4px;'>{lang.upper()}</div>"
-                f"<pre style='color:#38bdf8; font-family:monospace; font-size:12px; margin:0;'>{code}</pre>"
+                f"<div style='background-color:rgba(6,9,14,0.9); border:1px solid rgba(16,185,129,0.2); border-radius:8px; padding:10px; margin:8px 0;'>"
+                f"<div style='color:#34d399; font-size:10.5px; font-weight:bold; letter-spacing:1px; margin-bottom:4px;'>{lang.upper()}</div>"
+                f"<pre style='color:#a7f3d0; font-family:monospace; font-size:12.5px; margin:0; line-height:1.4;'>{code}</pre>"
                 f"</div>"
             )
         formatted = code_block_pattern.sub(replace_code_block, escaped)
 
         # Replace inline `code`
         inline_code_pattern = re.compile(r"`([^`]+)`")
-        formatted = inline_code_pattern.sub(r"<code style='background-color:#1e293b; color:#00f0ff; padding:2px 5px; border-radius:4px; font-family:monospace; font-size:12px;'>\1</code>", formatted)
+        formatted = inline_code_pattern.sub(r"<code style='background-color:rgba(16,185,129,0.15); color:#00f59b; padding:2px 6px; border-radius:4px; font-family:monospace; font-size:12.5px;'>\1</code>", formatted)
 
         # Bold **text**
         formatted = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", formatted)
@@ -163,34 +163,34 @@ class MessageCard(QFrame):
             card = QFrame()
             card.setStyleSheet("""
                 QFrame {
-                    background-color: #0b111e;
-                    border: 1px solid #00f0ff;
-                    border-radius: 8px;
-                    padding: 8px;
-                    margin-top: 6px;
+                    background-color: rgba(9, 14, 20, 0.95);
+                    border: 1px solid #10b981;
+                    border-radius: 10px;
+                    padding: 10px;
+                    margin-top: 8px;
                 }
             """)
             c_layout = QVBoxLayout(card)
-            c_layout.setContentsMargins(8, 6, 8, 6)
-            c_layout.setSpacing(6)
+            c_layout.setContentsMargins(10, 8, 10, 8)
+            c_layout.setSpacing(8)
 
             top = QHBoxLayout()
-            c_title = QLabel("⚡ Proposed System Command:")
-            c_title.setStyleSheet("color: #00f0ff; font-weight: bold; font-size: 11px;")
+            c_title = QLabel("⚡ Proposed Linux Command:")
+            c_title.setStyleSheet("color: #00f59b; font-weight: bold; font-size: 11.5px;")
             top.addWidget(c_title)
             top.addStretch()
             c_layout.addLayout(top)
 
             cmd_text = QLabel(f"<code>{html.escape(cmd)}</code>")
-            cmd_text.setStyleSheet("color: #00ffaf; font-family: monospace; font-size: 12px;")
+            cmd_text.setStyleSheet("color: #fbbf24; font-family: monospace; font-size: 12.5px; font-weight: bold;")
             c_layout.addWidget(cmd_text)
 
             btn_row = QHBoxLayout()
             btn_row.addStretch()
             
-            run_btn = QPushButton("⚡ Execute Command")
+            run_btn = QPushButton("⚡ Run Command")
             run_btn.setObjectName("PrimaryButton")
-            run_btn.setStyleSheet("padding: 4px 12px; font-size: 11px;")
+            run_btn.setStyleSheet("padding: 5px 14px; font-size: 11.5px; border-radius: 8px;")
             run_btn.clicked.connect(lambda checked, c=cmd: self.run_command_requested.emit(c))
             btn_row.addWidget(run_btn)
 
@@ -198,19 +198,23 @@ class MessageCard(QFrame):
             self.cmd_container.addWidget(card)
 
     def _on_speak(self):
-        if self.raw_content:
-            speak(self.raw_content)
+        """Read message aloud."""
+        speak(self.raw_content)
 
     def _on_copy(self):
-        if self.raw_content:
-            QApplication.clipboard().setText(self.raw_content)
+        """Copy message to system clipboard."""
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.raw_content)
+        self.copy_btn.setText("✓")
+        from PyQt6.QtCore import QTimer
+        QTimer.singleShot(1500, lambda: self.copy_btn.setText("📋"))
 
 
 class ChatWidget(QWidget):
     """
-    Scrollable chat history containing conversational bubbles.
+    Scrollable multi-turn chat stream container.
     """
-    run_command_signal = pyqtSignal(str)
+    run_command_requested = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -222,53 +226,64 @@ class ChatWidget(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        self.scroll = QScrollArea()
-        self.scroll.setObjectName("ChatScrollArea")
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setFrameShape(QFrame.Shape.NoFrame)
+        # Scroll Area
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setObjectName("ChatScrollArea")
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
 
-        self.content_widget = QWidget()
-        self.content_widget.setObjectName("ChatContentWidget")
-        self.cards_layout = QVBoxLayout(self.content_widget)
-        self.cards_layout.setContentsMargins(16, 16, 16, 16)
-        self.cards_layout.setSpacing(12)
-        self.cards_layout.addStretch()
+        self.chat_container = QWidget()
+        self.chat_container.setObjectName("ChatContentWidget")
+        self.messages_layout = QVBoxLayout(self.chat_container)
+        self.messages_layout.setContentsMargins(20, 16, 20, 16)
+        self.messages_layout.setSpacing(14)
+        self.messages_layout.addStretch()
 
-        self.scroll.setWidget(self.content_widget)
-        main_layout.addWidget(self.scroll)
+        self.scroll_area.setWidget(self.chat_container)
+        main_layout.addWidget(self.scroll_area)
 
     def add_user_message(self, text: str):
-        """Add user message card."""
+        """Append user question."""
         card = MessageCard(role="user", content=text)
         # Insert before stretch
-        self.cards_layout.insertWidget(self.cards_layout.count() - 1, card)
+        idx = max(0, self.messages_layout.count() - 1)
+        self.messages_layout.insertWidget(idx, card)
         self._scroll_to_bottom()
 
     def start_assistant_message(self) -> MessageCard:
-        """Start a new streaming assistant card."""
+        """Create new streaming message card for assistant."""
         card = MessageCard(role="assistant", content="")
-        card.run_command_requested.connect(self.run_command_signal.emit)
+        card.run_command_requested.connect(self.run_command_requested.emit)
         self.current_assistant_card = card
-        self.cards_layout.insertWidget(self.cards_layout.count() - 1, card)
+        idx = max(0, self.messages_layout.count() - 1)
+        self.messages_layout.insertWidget(idx, card)
         self._scroll_to_bottom()
         return card
 
     def append_assistant_token(self, token: str):
         """Append token to active assistant card."""
         if self.current_assistant_card:
-            new_text = self.current_assistant_card.raw_content + token
-            self.current_assistant_card.update_content(new_text)
+            self.current_assistant_card.update_content(self.current_assistant_card.raw_content + token)
             self._scroll_to_bottom()
 
-    def finish_assistant_message(self):
-        """Finalize streaming on the current assistant card."""
+    def finalize_assistant_message(self, full_text: str):
+        """Finalize assistant response and render command cards."""
         if self.current_assistant_card:
+            self.current_assistant_card.update_content(full_text)
             self.current_assistant_card.finalize()
             self.current_assistant_card = None
             self._scroll_to_bottom()
 
+    def add_assistant_message(self, text: str):
+        """Directly append complete assistant message."""
+        card = MessageCard(role="assistant", content=text)
+        card.run_command_requested.connect(self.run_command_requested.emit)
+        card.finalize()
+        idx = max(0, self.messages_layout.count() - 1)
+        self.messages_layout.insertWidget(idx, card)
+        self._scroll_to_bottom()
+
     def _scroll_to_bottom(self):
-        """Scroll chat view smoothly to bottom."""
-        QApplication.processEvents()
-        scrollbar = self.scroll.verticalScrollBar()
+        """Smoothly scroll to latest message."""
+        scrollbar = self.scroll_area.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
