@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
     QScrollArea,
 )
 
-from petrova.linux.stats import get_system_telemetry, get_network_speed
+from petrova.linux.stats import get_system_telemetry, get_network_speed, format_network_speed
 from petrova.gui.styles import COLORS
 
 
@@ -362,8 +362,9 @@ class TelemetryDashboardWidget(QFrame):
             self.disk_sub_2.setText(f"Free: {disk_free:.0f} GB")
 
             # 5. Network Speed
-            rx, tx = get_network_speed()
-            self.net_rates.setText(f"↓ {rx:.1f} MB/s       ↑ {tx:.1f} MB/s")
+            rx_kb, tx_kb = get_network_speed()
+            self.net_rates.setText(format_network_speed(rx_kb, tx_kb))
+
 
             # 6. System Info
             distro = data.get("distro", {})

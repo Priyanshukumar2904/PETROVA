@@ -9,8 +9,9 @@ from datetime import datetime
 from typing import Tuple, Optional
 
 from petrova.config.settings import get_config
-from petrova.linux.stats import get_system_telemetry, get_distro_info, get_network_speed
+from petrova.linux.stats import get_system_telemetry, get_distro_info, get_network_speed, format_network_speed
 from petrova.memory.store import get_all_memories, save_memory, search_memories, clear_all_memories, get_memory_stats
+
 from petrova.core.server import is_server_running, start_server, stop_server, server_status
 from petrova.voice import is_voice_enabled, set_voice_enabled, speak
 from petrova.tools.web import search_web, fetch_web_page
@@ -74,7 +75,8 @@ def execute_gui_slash_command(command_str: str) -> Tuple[bool, str]:
     elif primary in ("stats", "telemetry", "hw", "temp"):
         data = get_system_telemetry()
         distro = get_distro_info()
-        rx, tx = get_network_speed()
+        rx_kb, tx_kb = get_network_speed()
+        net_str = format_network_speed(rx_kb, tx_kb)
         ram = data.get("ram", {})
         disk = data.get("disk", {})
         bat = data.get("battery", {})
@@ -89,8 +91,9 @@ def execute_gui_slash_command(command_str: str) -> Tuple[bool, str]:
             f"- **Memory (RAM):** `{ram.get('used_gb', 0):.1f} GB` / `{ram.get('total_gb', 0):.1f} GB` ({ram.get('pct', 0)}%)\n"
             f"- **Disk Storage (/):** `{disk.get('used_gb', 0):.1f} GB` / `{disk.get('total_gb', 0):.1f} GB` ({disk.get('pct', 0)}%)\n"
             f"- **Battery & Power:** `{bat.get('percent', 100)}%` ({bat.get('state', 'AC')})\n"
-            f"- **Network Speed:** `↓{rx:.1f} MB/s`  `↑{tx:.1f} MB/s`"
+            f"- **Network Speed:** `{net_str}`"
         )
+
 
     # 3. /status
     elif primary in ("status", "info"):

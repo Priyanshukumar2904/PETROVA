@@ -225,7 +225,7 @@ def get_gpu_info() -> Dict[str, Any]:
 
 
 def get_network_speed() -> Tuple[float, float]:
-    """Calculate real-time download and upload speeds in MB/s from /proc/net/dev."""
+    """Calculate real-time download and upload speeds in KB/s from /proc/net/dev."""
     global _last_net_time, _last_net_bytes, _last_net_rate
     now = time.time()
 
@@ -237,7 +237,7 @@ def get_network_speed() -> Tuple[float, float]:
                 if ":" in line:
                     iface, data = line.split(":", 1)
                     iface = iface.strip()
-                    if iface != "lo":
+                    if iface != "lo" and not iface.startswith("docker") and not iface.startswith("veth"):
                         parts = data.split()
                         if len(parts) >= 9:
                             total_rx += int(parts[0])
@@ -247,18 +247,38 @@ def get_network_speed() -> Tuple[float, float]:
 
     if _last_net_time > 0 and now > _last_net_time:
         dt = now - _last_net_time
-        if dt >= 0.5:
-            rx_rate = max(0.0, (total_rx - _last_net_bytes[0]) / (1024 * 1024 * dt))
-            tx_rate = max(0.0, (total_tx - _last_net_bytes[1]) / (1024 * 1024 * dt))
-            _last_net_rate = (round(rx_rate, 1), round(tx_rate, 1))
+        if dt >= 0.2:
+            rx_kb = max(0.0, (total_rx - _last_net_bytes[0]) / (1024.0 * dt))
+            tx_kb = max(0.0, (total_tx - _last_net_bytes[1]) / (1024.0 * dt))
+            _last_net_rate = (round(rx_kb, 1), round(tx_kb, 1))
             _last_net_time = now
             _last_net_bytes = (total_rx, total_tx)
     else:
         _last_net_time = now
         _last_net_bytes = (total_rx, total_tx)
-        _last_net_rate = (2.4, 0.8)  # default nominal
+        _last_net_rate = (0.0, 0.0)
 
     return _last_net_rate
+
+
+def format_network_speed(rx_kb: float, tx_kb: float) -> str:
+    """Format network speed into human-friendly string (KB/s or MB/s)."""
+    if rx_kb >= 1024:
+        rx_str = f"{rx_kb / 1024:.1f} MB/s"
+    elif rx_kb > 0:
+        rx_str = f"{rx_kb:.1f} KB/s"
+    else:
+        rx_str = "0.0 KB/s"
+
+    if tx_kb >= 1024:
+        tx_str = f"{tx_kb / 1024:.1f} MB/s"
+    elif tx_kb > 0:
+        tx_str = f"{tx_kb:.1f} KB/s"
+    else:
+        tx_str = "0.0 KB/s"
+
+    return f"↓ {rx_str}  ↑ {tx_str}"
+
 
 
 def get_disk_usage(path: str = "/") -> Dict[str, Any]:

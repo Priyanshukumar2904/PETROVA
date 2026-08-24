@@ -27,11 +27,12 @@ Unlike cloud chatbots that send telemetry and private shell interactions to remo
 
 ---
 
-## ⚡ Interactive Terminal Walkthrough
+## ⚡ Cyber-HUD Interactive Walkthrough
 
 <p align="center">
-  <img src="assets/terminal_demo.svg" alt="PETROVA Terminal Walkthrough" width="100%" />
+  <img src="assets/petrova_demo.gif" alt="PETROVA Cyber-HUD Walkthrough" width="100%" />
 </p>
+
 
 ---
 

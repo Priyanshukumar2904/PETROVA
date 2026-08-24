@@ -27,8 +27,9 @@ from PyQt6.QtWidgets import (
 )
 
 from petrova.config.settings import get_config
-from petrova.linux.stats import get_distro_info, get_cpu_temp, get_ram_usage, get_battery_status, get_network_speed, get_system_telemetry
+from petrova.linux.stats import get_distro_info, get_cpu_temp, get_ram_usage, get_battery_status, get_network_speed, format_network_speed, get_system_telemetry
 from petrova.voice import speak, is_voice_enabled, set_voice_enabled
+
 from petrova.voice.stt import listen_and_transcribe
 from petrova.brain.brain import stream_ask
 from petrova.tools.executor import get_execution_env, normalize_command
@@ -448,11 +449,13 @@ class PetrovaMainWindow(QMainWindow):
             temp = data.get("cpu_temp")
             temp_str = f"{temp:.0f}°C" if temp else "54°C"
             bat_pct = int(data.get("battery", {}).get("percent", 100))
-            rx, tx = get_network_speed()
+            rx_kb, tx_kb = get_network_speed()
+            net_str = format_network_speed(rx_kb, tx_kb)
 
             self.status_right.setText(
-                f"CPU {cpu_pct}%  |  RAM {ram_pct}%  |  TEMP {temp_str}  |  BAT {bat_pct}%  |  NET ↓{rx:.1f} MB/s ↑{tx:.1f} MB/s"
+                f"CPU {cpu_pct}%  |  RAM {ram_pct}%  |  TEMP {temp_str}  |  BAT {bat_pct}%  |  NET {net_str}"
             )
+
         except Exception:
             pass
 
