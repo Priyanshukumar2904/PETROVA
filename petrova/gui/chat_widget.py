@@ -1,7 +1,6 @@
 """
-PETROVA Central Workspace Components: Greeting Panel, Metric Strip,
-Technical AI Chat Panel with Structured Tables & Action Buttons, AI Input Bar,
-and Lower Central 3-Panel Horizon Dock (Quick Actions, Tasks, Notifications).
+PETROVA Central Workspace Components: Greeting Panel with embedded Compact Neural Canvas,
+System Metric Strip, Technical AI Chat Panel, AI Input Bar, and Lower 3-Panel Horizon Dock.
 """
 
 import html
@@ -26,13 +25,14 @@ from petrova.config.settings import get_config
 from petrova.linux.stats import get_system_telemetry
 from petrova.voice.tts import speak
 from petrova.gui.styles import COLORS
+from petrova.gui.neural_canvas import CompactNeuralWidget, NeuralState
 
 
 class GreetingPanelWidget(QFrame):
     """
-    Section 8: Dynamic time-based Greeting Panel.
-    Good morning/afternoon/evening/night, <User>.
-    PETROVA is at your service.
+    Section 8: Dynamic Greeting Panel with embedded right-hand Compact Neural Canvas.
+    Left: Good evening / Good night, <User>. PETROVA is at your service.
+    Right: Interactive real-time cognitive neural lattice.
     """
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -40,9 +40,14 @@ class GreetingPanelWidget(QFrame):
         self._setup_ui()
 
     def _setup_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(18, 14, 18, 14)
-        layout.setSpacing(4)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(18, 10, 18, 10)
+        layout.setSpacing(14)
+
+        # Left Column: Greeting Text
+        text_col = QVBoxLayout()
+        text_col.setContentsMargins(0, 0, 0, 0)
+        text_col.setSpacing(2)
 
         hour = datetime.now().hour
         if 5 <= hour < 12:
@@ -63,8 +68,15 @@ class GreetingPanelWidget(QFrame):
         self.sub_lbl = QLabel("PETROVA is at your service.")
         self.sub_lbl.setObjectName("GreetingSubtitle")
 
-        layout.addWidget(self.title_lbl)
-        layout.addWidget(self.sub_lbl)
+        text_col.addWidget(self.title_lbl)
+        text_col.addWidget(self.sub_lbl)
+        layout.addLayout(text_col)
+
+        layout.addStretch()
+
+        # Right Column: Embedded Compact Neural Canvas (fills empty right space)
+        self.neural_canvas = CompactNeuralWidget(self)
+        layout.addWidget(self.neural_canvas)
 
 
 class MetricStripWidget(QFrame):
@@ -146,7 +158,7 @@ class MetricStripWidget(QFrame):
 
 class TechnicalMessageCard(QFrame):
     """
-    Sections 11 & 12: Technical Chat Message Card (NO bubbly graphics, technical labels [YOU], [PETROVA]).
+    Sections 11 & 12: Technical Chat Message Card.
     """
     run_command_requested = pyqtSignal(str)
 
@@ -163,7 +175,6 @@ class TechnicalMessageCard(QFrame):
         layout.setContentsMargins(8, 6, 8, 6)
         layout.setSpacing(4)
 
-        # Technical Role Header
         header = QHBoxLayout()
         header.setSpacing(8)
 
@@ -194,7 +205,6 @@ class TechnicalMessageCard(QFrame):
 
         layout.addLayout(header)
 
-        # Content Label
         self.content_lbl = QLabel()
         self.content_lbl.setObjectName("MessageBody")
         self.content_lbl.setWordWrap(True)
@@ -202,7 +212,6 @@ class TechnicalMessageCard(QFrame):
         self.content_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse | Qt.TextInteractionFlag.LinksAccessibleByMouse)
         layout.addWidget(self.content_lbl)
 
-        # Interactive Action Buttons Row
         self.actions_row = QHBoxLayout()
         self.actions_row.setSpacing(8)
         layout.addLayout(self.actions_row)
@@ -217,7 +226,6 @@ class TechnicalMessageCard(QFrame):
         text = self.raw_content
         escaped = html.escape(text)
 
-        # Render structured monospace code / directory table blocks
         code_block_pattern = re.compile(r"```([a-zA-Z0-9_\-]+)?\n(.*?)```", re.DOTALL)
         def replace_code_block(match):
             lang = match.group(1) or ""
@@ -229,11 +237,9 @@ class TechnicalMessageCard(QFrame):
             )
         formatted = code_block_pattern.sub(replace_code_block, escaped)
 
-        # Inline `code`
         inline_code_pattern = re.compile(r"`([^`]+)`")
         formatted = inline_code_pattern.sub(r"<code style='background-color:#111111; color:#FFFFFF; padding:1px 5px; border-radius:2px; font-family:monospace;'>\1</code>", formatted)
 
-        # Bold
         formatted = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", formatted)
         formatted = formatted.replace("\n", "<br>")
 
@@ -251,7 +257,6 @@ class TechnicalMessageCard(QFrame):
             if item.widget():
                 item.widget().deleteLater()
 
-        # Add reference action buttons [ INSPECT ] [ CLEAN ] [ IGNORE ] [ DETAILS ]
         if commands:
             for cmd in commands[:1]:
                 run_btn = QPushButton(f"[ ⚡ RUN: {cmd[:24]}... ]" if len(cmd) > 24 else f"[ ⚡ RUN: {cmd} ]")
@@ -287,14 +292,12 @@ class ChatWidget(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Outer Frame
         self.frame = QFrame()
         self.frame.setObjectName("ChatMainFrame")
         frame_layout = QVBoxLayout(self.frame)
         frame_layout.setContentsMargins(0, 0, 0, 0)
         frame_layout.setSpacing(0)
 
-        # Header Bar: AI ASSISTANT | CONVERSATION ID: #250611-0038 | [trash] [...]
         header = QFrame()
         header.setObjectName("ChatHeaderBar")
         h_layout = QHBoxLayout(header)
@@ -324,7 +327,6 @@ class ChatWidget(QWidget):
         h_layout.addWidget(more_btn)
         frame_layout.addWidget(header)
 
-        # Scroll Area
         self.scroll_area = QScrollArea()
         self.scroll_area.setObjectName("ChatScrollArea")
         self.scroll_area.setWidgetResizable(True)
@@ -392,7 +394,7 @@ class LowerCentralHorizonDock(QWidget):
     """
     Section 14: Lower Central Panels (3-Card Horizontal Row):
     Panel A: QUICK ACTIONS
-    Panel B: TASKS (ACTIVE & COMPLETED)
+    Panel B: TASKS
     Panel C: NOTIFICATIONS
     """
     action_triggered = pyqtSignal(str)

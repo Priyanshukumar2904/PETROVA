@@ -1,7 +1,7 @@
 """
 PETROVA Main Desktop Application Window.
 Exact implementation of the V1 Monochrome Cyber-HUD specification:
-Top System Bar, Left Navigation Sidebar, Central Workspace (Greeting + Metric Strip + Interactive Neural Canvas + AI Chat + Input + Lower Dock),
+Top System Bar, Left Navigation Sidebar, Central Workspace (Greeting with embedded Neural Canvas + Metric Strip + AI Chat + Input + Lower Dock),
 Right System Monitor (Segmented LEDs + Wave Pattern Petrova Core), and Bottom Status Bar.
 """
 
@@ -33,7 +33,7 @@ from petrova.gui.styles import MONOCHROME_THEME_QSS, COLORS
 from petrova.gui.nav_sidebar import NavSidebarWidget
 from petrova.gui.telemetry_widget import TelemetryDashboardWidget
 from petrova.gui.chat_widget import ChatWidget, GreetingPanelWidget, MetricStripWidget, LowerCentralHorizonDock
-from petrova.gui.neural_canvas import NeuralVisualizerWidget, NeuralState
+from petrova.gui.neural_canvas import NeuralState
 from petrova.gui.terminal_drawer import TerminalDrawerWidget
 from petrova.gui.memory_dialog import MemoryVaultDialog
 
@@ -71,7 +71,7 @@ class VoiceWorker(QObject):
 
     def run(self):
         try:
-            text = listen_and_transcribe()
+            text = listen_and_transcribe(duration=5)
             if text:
                 self.transcription_ready.emit(text)
             else:
@@ -177,17 +177,14 @@ class PetrovaMainWindow(QMainWindow):
         center_layout.setContentsMargins(0, 0, 0, 0)
         center_layout.setSpacing(8)
 
-        # Section 8: Greeting Panel
+        # Section 8: Greeting Panel with embedded Compact Neural Canvas
         self.greeting_panel = GreetingPanelWidget(self)
+        self.neural_canvas = self.greeting_panel.neural_canvas
         center_layout.addWidget(self.greeting_panel)
 
         # Section 9: System Metric Strip
         self.metric_strip = MetricStripWidget(self)
         center_layout.addWidget(self.metric_strip)
-
-        # Interactive Cognitive Neural Visualizer Canvas
-        self.neural_canvas = NeuralVisualizerWidget(self)
-        center_layout.addWidget(self.neural_canvas)
 
         # Sections 10-12: AI Assistant Conversation Panel
         self.chat_widget = ChatWidget(self)
