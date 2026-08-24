@@ -1,8 +1,10 @@
 """
 PETROVA Interactive Embedded Terminal Drawer Widget.
-Provides an integrated command console for shell execution, live streaming, and interactive stdin piping.
+Provides an integrated command console for shell execution, live streaming,
+interactive stdin piping, and ANSI escape code cleaning.
 """
 
+import re
 from typing import List, Optional
 from PyQt6.QtCore import Qt, pyqtSignal, QObject
 from PyQt6.QtGui import QTextCursor, QFont
@@ -15,6 +17,25 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QLabel,
 )
+
+ANSI_ESCAPE_RE = re.compile(
+    r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])|"
+    r"\x1B\][^\x1B\x07]*[\x1B\x07]|"
+    r"\]3008;[^\\]*\\|"
+    r"\[\?[0-9]+[a-zA-Z]|"
+    r"\[[0-9;]+[a-zA-Z]"
+)
+
+
+def clean_terminal_text(text: str) -> str:
+    """Clean terminal ANSI codes, control escapes, and normalize carriage returns."""
+    cleaned = ANSI_ESCAPE_RE.sub("", text)
+    # Remove leftover lone escape markers
+    cleaned = re.sub(r"\[[0-9;]*m", "", cleaned)
+    cleaned = re.sub(r"\[[0-9]*[A-Za-z]", "", cleaned)
+    # Replace lone carriage returns without newline
+    cleaned = cleaned.replace("\r\n", "\n").replace("\r", "\n")
+    return cleaned
 
 
 class TerminalDrawerWidget(QFrame):
@@ -50,7 +71,7 @@ class TerminalDrawerWidget(QFrame):
         for label, cmd in [
             ("⚡ /stats", "/stats"),
             ("🧠 /memory", "/memory list"),
-            ("🔄 Update System", "sudo pacman -Syu --noconfirm"),
+            ("🔄 Update System", "sudo pacman -Syu"),
             ("💾 df -h", "df -h /"),
             ("🧹 Clear", "clear"),
         ]:
@@ -110,9 +131,12 @@ class TerminalDrawerWidget(QFrame):
             self.input_field.setPlaceholderText("Enter command (e.g. uname -a, sudo pacman -Syu, fastfetch)...")
 
     def append_output(self, text: str):
-        """Append text to output console."""
+        """Append cleaned text to output console."""
+        cleaned = clean_terminal_text(text)
+        if not cleaned:
+            return
         self.output.moveCursor(QTextCursor.MoveOperation.End)
-        self.output.insertPlainText(text)
+        self.output.insertPlainText(cleaned)
         self.output.moveCursor(QTextCursor.MoveOperation.End)
 
     def run_quick_command(self, cmd: str):
