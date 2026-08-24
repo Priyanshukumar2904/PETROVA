@@ -1,5 +1,5 @@
 """
-Tests for PETROVA Desktop GUI Subsystem, Neural Visualizer, and Telemetry Widgets.
+Tests for PETROVA Desktop GUI Subsystem, Navigation Sidebar, Sparkline Strip, and Telemetry Widgets.
 """
 
 import os
@@ -13,7 +13,8 @@ from petrova.gui.desktop import ensure_desktop_entry
 from petrova.gui.neural_canvas import NeuralVisualizerWidget, NeuralState
 from petrova.gui.telemetry_widget import TelemetryDashboardWidget
 from petrova.gui.terminal_drawer import TerminalDrawerWidget
-from petrova.gui.chat_widget import ChatWidget, MessageCard
+from petrova.gui.chat_widget import ChatWidget, MessageCard, SparklineStripWidget
+from petrova.gui.nav_sidebar import NavSidebarWidget
 from petrova.gui.window import PetrovaMainWindow
 
 
@@ -26,6 +27,20 @@ class TestPetrovaGUI(unittest.TestCase):
     def test_desktop_entry_creation(self):
         res = ensure_desktop_entry()
         self.assertTrue(res)
+
+    def test_nav_sidebar(self):
+        nav = NavSidebarWidget()
+        self.assertEqual(nav.active_tab, "HOME")
+        self.assertIn("AI_CHAT", nav.nav_buttons)
+        nav._set_active_tab("AI_CHAT")
+        self.assertEqual(nav.active_tab, "AI_CHAT")
+
+    def test_sparkline_strip(self):
+        strip = SparklineStripWidget()
+        self.assertIsNotNone(strip.cpu_lbl)
+        self.assertIsNotNone(strip.ram_lbl)
+        self.assertIsNotNone(strip.temp_lbl)
+        strip.update_metrics()
 
     def test_neural_canvas_states_and_tokens(self):
         canvas = NeuralVisualizerWidget()
@@ -54,8 +69,8 @@ class TestPetrovaGUI(unittest.TestCase):
         telemetry = TelemetryDashboardWidget()
         self.assertIsNotNone(telemetry.cpu_temp_val)
         self.assertIsNotNone(telemetry.ram_val)
-        self.assertIsNotNone(telemetry.bat_val)
         self.assertIsNotNone(telemetry.disk_val)
+        self.assertIsNotNone(telemetry.gpu_val)
         telemetry.update_telemetry()
 
     def test_terminal_drawer(self):
@@ -77,11 +92,11 @@ class TestPetrovaGUI(unittest.TestCase):
 
     def test_main_window_init(self):
         window = PetrovaMainWindow()
-        self.assertIsNotNone(window.neural_canvas)
+        self.assertIsNotNone(window.nav_sidebar)
         self.assertIsNotNone(window.chat_widget)
         self.assertIsNotNone(window.telemetry_sidebar)
         self.assertIsNotNone(window.terminal_drawer)
-        self.assertEqual(window.windowTitle(), "PETROVA — AI Operating Assistant")
+        self.assertIn("PETROVA", window.windowTitle())
 
 
 if __name__ == "__main__":
