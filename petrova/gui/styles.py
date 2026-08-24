@@ -1,475 +1,517 @@
 """
-PETROVA Cyber-HUD & Futuristic Terminal Operating System Stylesheet (QSS).
-Matches the reference layout: Deep Carbon Obsidian, precision wireframe borders,
-high-legibility typography, segmented LED bars, and sparkling amber-green accents.
+PETROVA Monochrome Cyber-HUD Stylesheet & Theme System.
+Exact implementation of the V1 Monochrome Specification:
+#000000 (Black background), #FFFFFF (Primary Text), #BDBDBD (Secondary Text), #555555 / #333333 (Borders).
 """
 
-SPARKLING_AMBER_GREEN_THEME = """
+# Centralized Theme Dictionary (allowing future color themes without changing component code)
+COLORS = {
+    "background": "#000000",
+    "surface": "#050505",
+    "surface_elevated": "#0a0a0a",
+    "foreground": "#FFFFFF",
+    "secondary": "#BDBDBD",
+    "muted": "#757575",
+    "border": "#333333",
+    "border_highlight": "#555555",
+    "border_active": "#FFFFFF",
+    "accent": "#FFFFFF",
+    "accent_inverted": "#000000",
+    "led_filled": "#FFFFFF",
+    "led_empty": "#222222",
+}
+
+MONOCHROME_THEME_QSS = f"""
 /* ============================================================================
-   PETROVA Cyber-HUD & Linux Terminal Operating Assistant Theme
+   PETROVA V1 Monochrome Cyber-HUD Theme
    ============================================================================ */
 
-QWidget {
-    background-color: #06080c;
-    color: #e2e8f0;
+QWidget {{
+    background-color: {COLORS["background"]};
+    color: {COLORS["foreground"]};
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Ubuntu", "JetBrains Mono", monospace, sans-serif;
-    font-size: 13.5px;
-    selection-background-color: #00f59b;
-    selection-color: #04070a;
-}
+    font-size: 13px;
+    selection-background-color: {COLORS["foreground"]};
+    selection-color: {COLORS["background"]};
+}}
 
-QMainWindow {
-    background-color: #06080c;
-}
+QMainWindow {{
+    background-color: {COLORS["background"]};
+}}
 
-/* --- Top Title Bar --- */
-QFrame#TitleBar {
-    background-color: #080c12;
-    border-bottom: 1px solid #16202c;
-    padding: 6px 14px;
-}
+/* --- Top System Bar --- */
+QFrame#TopSystemBar {{
+    background-color: {COLORS["background"]};
+    border: none;
+    border-bottom: 1px solid {COLORS["border"]};
+    min-height: 42px;
+    max-height: 48px;
+    padding: 4px 16px;
+}}
 
-QLabel#TitleText {
-    color: #cbd5e1;
-    font-family: "JetBrains Mono", "Fira Code", monospace;
-    font-size: 12.5px;
-    font-weight: 700;
-    letter-spacing: 1px;
-}
+QLabel#TopBarBrand {{
+    color: {COLORS["foreground"]};
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+}}
 
-QLabel#SecurityBadge {
-    color: #00f59b;
+QLabel#TopBarSub {{
+    color: {COLORS["muted"]};
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    font-weight: 500;
+}}
+
+QLabel#TopBarPrivacy {{
+    color: {COLORS["secondary"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 11.5px;
     font-weight: 700;
     letter-spacing: 1px;
-}
+}}
 
-QLabel#ClockLabel {
-    color: #94a3b8;
+QLabel#TopBarClock {{
+    color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 12px;
     font-weight: 600;
-}
+}}
 
-/* --- Left Navigation Sidebar --- */
-QFrame#NavSidebar {
-    background-color: #070a0f;
-    border-right: 1px solid #16202c;
-    min-width: 175px;
-    max-width: 195px;
-}
+/* --- Left Navigation Panel --- */
+QFrame#NavSidebar {{
+    background-color: {COLORS["background"]};
+    border: none;
+    border-right: 1px solid {COLORS["border"]};
+    min-width: 205px;
+    max-width: 220px;
+}}
 
-QLabel#BrandTitle {
-    color: #ffffff;
+QLabel#NavLogoText {{
+    color: {COLORS["foreground"]};
+    font-family: "JetBrains Mono", monospace;
     font-size: 14px;
     font-weight: 900;
-    letter-spacing: 2px;
-}
+    letter-spacing: 3px;
+}}
 
-QLabel#BrandSub {
-    color: #64748b;
+QLabel#NavSubText {{
+    color: {COLORS["muted"]};
+    font-family: "JetBrains Mono", monospace;
     font-size: 10px;
-    letter-spacing: 1px;
     font-weight: 700;
-}
+    letter-spacing: 1px;
+}}
 
-QLabel#OnlineDot {
-    color: #00f59b;
+QLabel#NavOnlineText {{
+    color: {COLORS["foreground"]};
+    font-family: "JetBrains Mono", monospace;
     font-size: 11px;
     font-weight: 700;
-}
+}}
 
-QPushButton#NavItem {
+QPushButton#NavItem {{
     background-color: transparent;
-    color: #94a3b8;
+    color: {COLORS["secondary"]};
     border: 1px solid transparent;
-    border-radius: 8px;
-    padding: 8px 12px;
+    border-radius: 2px;
+    padding: 8px 14px;
+    font-family: "JetBrains Mono", "Segoe UI", monospace;
     font-weight: 700;
     font-size: 12.5px;
     text-align: left;
-    letter-spacing: 0.5px;
-}
-
-QPushButton#NavItem:hover {
-    background-color: rgba(22, 32, 44, 0.8);
-    color: #00f59b;
-    border-color: #1e2d3d;
-}
-
-QPushButton#NavItem[active="true"] {
-    background-color: #ffffff;
-    color: #06080c;
-    border: 1px solid #ffffff;
-    font-weight: 900;
-}
-
-QFrame#ShortcutsCard {
-    background-color: #080c12;
-    border: 1px solid #16202c;
-    border-radius: 8px;
-    padding: 8px 10px;
-}
-
-QLabel#ShortcutHeader {
-    color: #64748b;
-    font-size: 10px;
-    font-weight: 800;
     letter-spacing: 1px;
-}
+}}
 
-QLabel#ShortcutItem {
-    color: #94a3b8;
+QPushButton#NavItem:hover {{
+    background-color: {COLORS["surface_elevated"]};
+    color: {COLORS["foreground"]};
+    border-color: {COLORS["border"]};
+}}
+
+QPushButton#NavItem[active="true"] {{
+    background-color: {COLORS["foreground"]};
+    color: {COLORS["background"]};
+    border: 1px solid {COLORS["foreground"]};
+    font-weight: 900;
+}}
+
+QFrame#ShortcutsPanel {{
+    background-color: {COLORS["background"]};
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
+    padding: 8px 10px;
+}}
+
+QLabel#ShortcutsHeader {{
+    color: {COLORS["muted"]};
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}}
+
+QLabel#ShortcutLine {{
+    color: {COLORS["secondary"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 11px;
-}
+}}
 
-/* --- Center Greeting & Sparkline Bar --- */
-QFrame#GreetingCard {
-    background-color: #080d14;
-    border: 1px solid #16202c;
-    border-radius: 8px;
-    padding: 12px 18px;
-}
+/* --- Central Workspace: Greeting Panel --- */
+QFrame#GreetingPanel {{
+    background-color: {COLORS["background"]};
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
+    padding: 14px 18px;
+}}
 
-QLabel#GreetingTitle {
-    color: #ffffff;
+QLabel#GreetingTitle {{
+    color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 16px;
-    font-weight: 800;
-}
+    font-weight: 700;
+}}
 
-QLabel#GreetingSub {
-    color: #94a3b8;
+QLabel#GreetingSubtitle {{
+    color: {COLORS["secondary"]};
+    font-family: "JetBrains Mono", monospace;
     font-size: 12.5px;
-}
+}}
 
-QFrame#SparklineBar {
-    background-color: #080d14;
-    border: 1px solid #16202c;
-    border-radius: 8px;
-    padding: 6px 12px;
-}
+/* --- Central Workspace: System Metric Strip --- */
+QFrame#MetricStrip {{
+    background-color: {COLORS["background"]};
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
+    padding: 4px 6px;
+}}
 
-QFrame#SparklineChip {
+QFrame#MetricCell {{
     background-color: transparent;
-    border-right: 1px solid #16202c;
-    padding: 2px 10px;
-}
+    border-right: 1px solid {COLORS["border"]};
+    padding: 2px 8px;
+}}
 
-QLabel#SparkChipLabel {
-    color: #64748b;
+QLabel#MetricCellTitle {{
+    color: {COLORS["muted"]};
+    font-family: "JetBrains Mono", monospace;
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 0.5px;
-}
+}}
 
-QLabel#SparkChipValue {
-    color: #00f59b;
+QLabel#MetricCellValue {{
+    color: {COLORS["foreground"]};
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    font-weight: 700;
+}}
+
+/* --- Central Workspace: AI Assistant Panel --- */
+QFrame#ChatMainFrame {{
+    background-color: {COLORS["background"]};
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
+}}
+
+QFrame#ChatHeaderBar {{
+    background-color: {COLORS["background"]};
+    border-bottom: 1px solid {COLORS["border"]};
+    padding: 6px 14px;
+}}
+
+QLabel#ChatHeaderTitle {{
+    color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 12px;
     font-weight: 800;
-}
-
-/* --- Center AI Chat Container --- */
-QFrame#ChatOuterFrame {
-    background-color: #070a0f;
-    border: 1px solid #16202c;
-    border-radius: 8px;
-}
-
-QFrame#ChatHeader {
-    background-color: #080d14;
-    border-bottom: 1px solid #16202c;
-    padding: 6px 14px;
-}
-
-QLabel#ChatHeaderTitle {
-    color: #cbd5e1;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 11.5px;
-    font-weight: 800;
     letter-spacing: 1px;
-}
+}}
 
-QLabel#ChatHeaderId {
-    color: #64748b;
+QLabel#ChatHeaderId {{
+    color: {COLORS["muted"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 11px;
-}
+}}
 
-QScrollArea#ChatScrollArea {
+QScrollArea#ChatScrollArea {{
     background-color: transparent;
     border: none;
-}
+}}
 
-QWidget#ChatContentWidget {
+QWidget#ChatContentWidget {{
     background-color: transparent;
-}
+}}
 
-/* --- Message Cards --- */
-QFrame#UserCard {
-    background-color: #0a1017;
-    border: 1px solid #1a2636;
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-left: 60px;
-}
+/* Message Blocks */
+QFrame#TechnicalMessageBlock {{
+    background-color: transparent;
+    border: none;
+    padding: 4px 0px;
+}}
 
-QFrame#AssistantCard {
-    background-color: #070a0f;
-    border: 1px solid #16202c;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-right: 20px;
-}
-
-QLabel#RoleBadgeYou {
-    color: #38bdf8;
+QLabel#LabelYou {{
+    color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 11.5px;
     font-weight: 800;
     letter-spacing: 1px;
-}
+}}
 
-QLabel#RoleBadgePetrova {
-    color: #00f59b;
+QLabel#LabelPetrova {{
+    color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 11.5px;
     font-weight: 900;
     letter-spacing: 1px;
-}
+}}
 
-QFrame#TableBox {
-    background-color: #05080c;
-    border: 1px solid #16202c;
-    border-radius: 6px;
+QLabel#MessageBody {{
+    color: {COLORS["foreground"]};
+    font-family: "JetBrains Mono", "Segoe UI", monospace;
+    font-size: 13.5px;
+    line-height: 1.5;
+}}
+
+/* Structured Table Output */
+QFrame#StructureTableBox {{
+    background-color: {COLORS["surface"]};
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
     padding: 8px 12px;
-    margin: 6px 0;
-}
+    margin: 6px 0px;
+}}
 
-QPushButton#ActionPill {
-    background-color: transparent;
-    color: #00f59b;
-    border: 1px solid #16202c;
-    border-radius: 6px;
-    padding: 5px 12px;
+QPushButton#MonochromePill {{
+    background-color: {COLORS["background"]};
+    color: {COLORS["foreground"]};
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
+    padding: 4px 12px;
     font-family: "JetBrains Mono", monospace;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.5px;
-}
+}}
 
-QPushButton#ActionPill:hover {
-    background-color: rgba(0, 245, 155, 0.15);
-    border-color: #00f59b;
-    color: #ffffff;
-}
+QPushButton#MonochromePill:hover {{
+    background-color: {COLORS["foreground"]};
+    color: {COLORS["background"]};
+    border-color: {COLORS["foreground"]};
+}}
 
-QPushButton#ActionPill:pressed {
-    background-color: #00f59b;
-    color: #06080c;
-}
+QPushButton#MonochromePill:pressed {{
+    background-color: {COLORS["secondary"]};
+    color: {COLORS["background"]};
+}}
 
-/* --- Prompt Input Frame --- */
-QFrame#InputFrame {
-    background-color: #080d14;
-    border: 1px solid #16202c;
-    border-radius: 8px;
+/* --- Input Bar --- */
+QFrame#AiInputFrame {{
+    background-color: {COLORS["background"]};
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
     padding: 6px 12px;
-}
+}}
 
-QTextEdit#PromptInput {
+QTextEdit#AiInputText {{
     background-color: transparent;
-    color: #f8fafc;
+    color: {COLORS["foreground"]};
     border: none;
     font-family: "JetBrains Mono", "Segoe UI", monospace;
     font-size: 13.5px;
-    padding: 4px;
-}
+}}
 
-QPushButton#MicBtn {
+QPushButton#InputIconBtn {{
     background-color: transparent;
-    border: 1px solid #1e2d3d;
-    border-radius: 6px;
-    color: #94a3b8;
-    font-size: 15px;
-    min-width: 34px;
-    min-height: 34px;
-    max-width: 34px;
-    max-height: 34px;
-}
-
-QPushButton#MicBtn:hover {
-    background-color: rgba(0, 245, 155, 0.15);
-    border-color: #00f59b;
-    color: #00f59b;
-}
-
-QPushButton#SendBtn {
-    background-color: transparent;
-    border: 1px solid #1e2d3d;
-    border-radius: 6px;
-    color: #00f59b;
-    font-size: 14px;
-    font-weight: bold;
-    min-width: 34px;
-    min-height: 34px;
-    max-width: 34px;
-    max-height: 34px;
-}
-
-QPushButton#SendBtn:hover {
-    background-color: #00f59b;
-    color: #06080c;
-}
-
-/* --- Bottom Horizon 3-Card Dock --- */
-QFrame#BottomDockCard {
-    background-color: #080d14;
-    border: 1px solid #16202c;
-    border-radius: 8px;
-    padding: 8px 12px;
-}
-
-QLabel#BottomDockTitle {
-    color: #64748b;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
-
-/* --- Right System Overview Sidebar --- */
-QFrame#OverviewSidebar {
-    background-color: #070a0f;
-    border-left: 1px solid #16202c;
-    min-width: 250px;
-    max-width: 275px;
-    padding: 10px 14px;
-}
-
-QLabel#SidebarHeaderTitle {
-    color: #cbd5e1;
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
+    color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11.5px;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
+    font-size: 13px;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    max-height: 32px;
+}}
 
-QFrame#TelemetryBlock {
-    background-color: transparent;
-    border-bottom: 1px solid #121a24;
-    padding: 6px 0px 8px 0px;
-}
+QPushButton#InputIconBtn:hover {{
+    background-color: {COLORS["foreground"]};
+    color: {COLORS["background"]};
+    border-color: {COLORS["foreground"]};
+}}
 
-QLabel#BlockLabel {
-    color: #cbd5e1;
+/* --- Lower Central Panels (3-Card Row) --- */
+QFrame#LowerCard {{
+    background-color: {COLORS["background"]};
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
+    padding: 8px 12px;
+}}
+
+QLabel#LowerCardTitle {{
+    color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 11px;
     font-weight: 800;
-    letter-spacing: 0.5px;
-}
+    letter-spacing: 1px;
+}}
 
-QLabel#BlockValue {
-    color: #00f59b;
+/* --- Right System Overview Sidebar --- */
+QFrame#RightSystemMonitor {{
+    background-color: {COLORS["background"]};
+    border: none;
+    border-left: 1px solid {COLORS["border"]};
+    min-width: 300px;
+    max-width: 340px;
+    padding: 10px 14px;
+}}
+
+QLabel#OverviewHeaderTitle {{
+    color: {COLORS["foreground"]};
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}}
+
+QFrame#MonitorBlock {{
+    background-color: transparent;
+    border-bottom: 1px solid {COLORS["border"]};
+    padding: 6px 0px 8px 0px;
+}}
+
+QLabel#BlockLabel {{
+    color: {COLORS["foreground"]};
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}}
+
+QLabel#BlockValue {{
+    color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 12px;
     font-weight: 800;
-}
+}}
 
-QLabel#BlockSub {
-    color: #64748b;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-}
-
-/* Segmented LED Bar */
-QLabel#LedBar {
-    color: #00f59b;
+QLabel#LedProgressBar {{
+    color: {COLORS["led_filled"]};
     font-family: "JetBrains Mono", "Courier New", monospace;
-    font-size: 11.5px;
+    font-size: 12px;
     letter-spacing: 1.5px;
     font-weight: bold;
-}
+}}
 
-/* PETROVA CORE Bottom HUD */
-QFrame#CoreHudFrame {
-    background-color: #080d14;
-    border: 1px solid #16202c;
-    border-radius: 8px;
-    padding: 10px;
-}
-
-QLabel#CoreHudTitle {
-    color: #cbd5e1;
+QLabel#BlockSubDetail {{
+    color: {COLORS["secondary"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
+    font-size: 10.5px;
+}}
+
+/* PETROVA CORE Panel */
+QFrame#PetrovaCoreFrame {{
+    background-color: {COLORS["background"]};
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
+    padding: 10px;
+}}
+
+QLabel#CoreTitle {{
+    color: {COLORS["foreground"]};
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
     font-weight: 800;
     letter-spacing: 1px;
-}
+}}
 
-QLabel#CoreHudKey {
-    color: #64748b;
+QLabel#CoreKey {{
+    color: {COLORS["muted"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 10px;
-}
+}}
 
-QLabel#CoreHudVal {
-    color: #00f59b;
+QLabel#CoreVal {{
+    color: {COLORS["foreground"]};
     font-family: "JetBrains Mono", monospace;
     font-size: 10px;
     font-weight: 700;
-}
+}}
 
-/* --- Terminal Drawer Panel --- */
-QFrame#TerminalDrawer {
-    background-color: #05080c;
-    border-top: 2px solid #00f59b;
-}
-
-QPlainTextEdit#TerminalOutput {
-    background-color: #05080c;
-    color: #00f59b;
-    font-family: "JetBrains Mono", "Fira Code", monospace;
-    font-size: 13px;
+/* --- Bottom Status Bar --- */
+QFrame#BottomStatusBar {{
+    background-color: {COLORS["background"]};
     border: none;
-    padding: 10px;
-}
+    border-top: 1px solid {COLORS["border"]};
+    min-height: 28px;
+    max-height: 32px;
+    padding: 2px 14px;
+}}
 
-QLineEdit#TerminalInput {
-    background-color: #080d14;
-    color: #f8fafc;
-    border: 1px solid #16202c;
-    border-radius: 6px;
-    padding: 8px 12px;
+QLabel#StatusTextLeft {{
+    color: {COLORS["muted"]};
     font-family: "JetBrains Mono", monospace;
-    font-size: 13px;
-}
+    font-size: 10.5px;
+    font-weight: 600;
+}}
 
-QLineEdit#TerminalInput:focus {
-    border-color: #00f59b;
-}
+QLabel#StatusTextRight {{
+    color: {COLORS["secondary"]};
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+}}
+
+/* Terminal Drawer */
+QFrame#TerminalDrawer {{
+    background-color: {COLORS["background"]};
+    border-top: 2px solid {COLORS["foreground"]};
+}}
+
+QPlainTextEdit#TerminalOutput {{
+    background-color: {COLORS["background"]};
+    color: {COLORS["foreground"]};
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-size: 12.5px;
+    border: none;
+    padding: 8px;
+}}
+
+QLineEdit#TerminalInput {{
+    background-color: {COLORS["surface"]};
+    color: {COLORS["foreground"]};
+    border: 1px solid {COLORS["border"]};
+    border-radius: 2px;
+    padding: 6px 10px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12.5px;
+}}
+
+QLineEdit#TerminalInput:focus {{
+    border-color: {COLORS["foreground"]};
+}}
 
 /* Custom Scrollbars */
-QScrollBar:vertical {
+QScrollBar:vertical {{
     background: transparent;
     width: 6px;
-}
+}}
 
-QScrollBar::handle:vertical {
-    background: #16202c;
+QScrollBar::handle:vertical {{
+    background: {COLORS["border"]};
     min-height: 20px;
-    border-radius: 3px;
-}
+    border-radius: 0px;
+}}
 
-QScrollBar::handle:vertical:hover {
-    background: #00f59b;
-}
+QScrollBar::handle:vertical:hover {{
+    background: {COLORS["foreground"]};
+}}
 
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
     height: 0px;
-}
+}}
 """
 
-CYBER_DARK_THEME = SPARKLING_AMBER_GREEN_THEME
+SPARKLING_AMBER_GREEN_THEME = MONOCHROME_THEME_QSS
+CYBER_DARK_THEME = MONOCHROME_THEME_QSS
