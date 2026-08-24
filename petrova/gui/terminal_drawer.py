@@ -1,13 +1,9 @@
 """
 PETROVA Interactive Embedded Terminal Drawer Widget.
-Provides an integrated command console for shell execution and slash commands.
+Provides an integrated command console for shell execution, live streaming, and interactive stdin piping.
 """
 
-import io
-import contextlib
-import subprocess
-import threading
-from typing import List
+from typing import List, Optional
 from PyQt6.QtCore import Qt, pyqtSignal, QObject
 from PyQt6.QtGui import QTextCursor, QFont
 from PyQt6.QtWidgets import (
@@ -20,21 +16,21 @@ from PyQt6.QtWidgets import (
     QLabel,
 )
 
-from petrova.tools.executor import execute_command
-from petrova.core.router import route_command
-
 
 class TerminalDrawerWidget(QFrame):
     """
     Collapsible interactive terminal console embedded at the bottom of the GUI.
+    Supports live real-time output streaming and user stdin interaction (y/n, inputs).
     """
-    command_executed = pyqtSignal(str, str, int)  # cmd, output, returncode
+    command_submitted = pyqtSignal(str)
+    stdin_submitted = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("TerminalDrawer")
         self.history: List[str] = []
         self.history_index: int = 0
+        self.is_busy: bool = False
 
         self._setup_ui()
 
@@ -46,7 +42,7 @@ class TerminalDrawerWidget(QFrame):
         # Header Bar
         header = QHBoxLayout()
         title = QLabel("💻 INTERACTIVE LINUX TERMINAL DRAWER")
-        title.setStyleSheet("color: #00f59b; font-weight: 800; font-size: 11.5px; letter-spacing: 1px;")
+        title.setStyleSheet("color: #FFFFFF; font-weight: 800; font-size: 11.5px; letter-spacing: 1px;")
 
         # Quick Action Chips
         chips_layout = QHBoxLayout()
@@ -54,12 +50,12 @@ class TerminalDrawerWidget(QFrame):
         for label, cmd in [
             ("⚡ /stats", "/stats"),
             ("🧠 /memory", "/memory list"),
-            ("🎯 /goal", "/goal check system updates"),
+            ("🔄 Update System", "sudo pacman -Syu --noconfirm"),
             ("💾 df -h", "df -h /"),
             ("🧹 Clear", "clear"),
         ]:
             btn = QPushButton(label)
-            btn.setStyleSheet("padding: 3px 10px; font-size: 10.5px; border-radius: 6px; background: rgba(16,185,129,0.12); color: #34d399;")
+            btn.setObjectName("MonochromePill")
             btn.clicked.connect(lambda checked, c=cmd: self.run_quick_command(c))
             chips_layout.addWidget(btn)
 
@@ -78,31 +74,40 @@ class TerminalDrawerWidget(QFrame):
         self.output = QPlainTextEdit()
         self.output.setObjectName("TerminalOutput")
         self.output.setReadOnly(True)
-        self.output.setMaximumBlockCount(1000)
+        self.output.setMaximumBlockCount(2000)
         layout.addWidget(self.output)
 
         # Welcome message
-        self.append_output("⚡ PETROVA Terminal Console Ready. Type shell commands or /slash commands below:\n")
+        self.append_output("⚡ PETROVA Terminal Console Ready. Type shell commands or interactive responses below:\n")
 
         # Input Box
         input_layout = QHBoxLayout()
-        prompt_prefix = QLabel("❯")
-        prompt_prefix.setStyleSheet("color: #00f59b; font-weight: bold; font-size: 14px; margin-right: 4px;")
+        self.prompt_prefix = QLabel("❯")
+        self.prompt_prefix.setStyleSheet("color: #FFFFFF; font-weight: bold; font-size: 14px; margin-right: 4px;")
         
         self.input_field = QLineEdit()
         self.input_field.setObjectName("TerminalInput")
-        self.input_field.setPlaceholderText("Enter command (e.g. uname -a, /goal, pacman -Qe, fastfetch)...")
+        self.input_field.setPlaceholderText("Enter command or respond to prompts (e.g. y, n, pacman -Qe)...")
         self.input_field.returnPressed.connect(self._on_submit)
 
-        run_btn = QPushButton("Run")
-        run_btn.setObjectName("PrimaryButton")
-        run_btn.setStyleSheet("padding: 6px 14px; font-size: 11.5px; border-radius: 8px;")
-        run_btn.clicked.connect(self._on_submit)
+        self.run_btn = QPushButton("Run / Send")
+        self.run_btn.setObjectName("MonochromePill")
+        self.run_btn.clicked.connect(self._on_submit)
 
-        input_layout.addWidget(prompt_prefix)
+        input_layout.addWidget(self.prompt_prefix)
         input_layout.addWidget(self.input_field)
-        input_layout.addWidget(run_btn)
+        input_layout.addWidget(self.run_btn)
         layout.addLayout(input_layout)
+
+    def set_busy_state(self, busy: bool, prompt_text: str = ""):
+        """Update terminal prompt indicator when a background process is active."""
+        self.is_busy = busy
+        if busy:
+            self.prompt_prefix.setText("❯ (in)")
+            self.input_field.setPlaceholderText(prompt_text or "Process running... Type response (y/n, text) and press Enter")
+        else:
+            self.prompt_prefix.setText("❯")
+            self.input_field.setPlaceholderText("Enter command (e.g. uname -a, sudo pacman -Syu, fastfetch)...")
 
     def append_output(self, text: str):
         """Append text to output console."""
@@ -118,38 +123,22 @@ class TerminalDrawerWidget(QFrame):
         self._on_submit()
 
     def _on_submit(self):
-        cmd = self.input_field.text().strip()
-        if not cmd:
+        text = self.input_field.text().strip()
+        if not text:
             return
 
         self.input_field.clear()
-        self.history.append(cmd)
-        self.history_index = len(self.history)
 
-        if cmd == "clear":
+        if text == "clear" and not self.is_busy:
             self.output.clear()
             return
 
-        self.append_output(f"\n❯ {cmd}\n")
-
-        # Run command in background thread
-        threading.Thread(target=self._execute_async, args=(cmd,), daemon=True).start()
-
-    def _execute_async(self, cmd: str):
-        try:
-            # Check if it's a built-in slash command
-            if cmd.startswith("/"):
-                code, stdout, stderr = execute_command(f"python3 -c 'from petrova.core.router import route_command; route_command(\"{cmd}\")'")
-            else:
-                code, stdout, stderr = execute_command(cmd)
-
-            output = stdout if stdout else ""
-            if stderr:
-                output += f"\n[stderr]: {stderr}"
-            if not output.strip():
-                output = f"[Process exited with code {code}]\n"
-            
-            # Post back to main thread
-            self.command_executed.emit(cmd, output, code)
-        except Exception as e:
-            self.command_executed.emit(cmd, f"Error: {str(e)}\n", 1)
+        # If a process is currently running and asking for input:
+        if self.is_busy:
+            self.append_output(f"{text}\n")
+            self.stdin_submitted.emit(text)
+        else:
+            self.history.append(text)
+            self.history_index = len(self.history)
+            self.append_output(f"\n❯ {text}\n")
+            self.command_submitted.emit(text)

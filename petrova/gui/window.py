@@ -1,9 +1,8 @@
 """
 PETROVA Main Desktop Application Window.
 Full implementation of the V1 Monochrome Cyber-HUD with multi-view navigation stack,
-active single-key [H],[A],[S],[F],[T],[G],[Q] and Ctrl+ shortcuts, Bash execution engine,
-secure sudo authentication modal, full GUI slash commands support (/help, /stats, /memory, /goal, etc.),
-and voice controls.
+real-time streaming terminal drawer with interactive stdin piping (y/n confirmations),
+active single-key shortcuts, secure sudo modal, and voice controls.
 """
 
 import sys
@@ -32,7 +31,7 @@ from petrova.linux.stats import get_distro_info, get_cpu_temp, get_ram_usage, ge
 from petrova.voice import speak, is_voice_enabled, set_voice_enabled
 from petrova.voice.stt import listen_and_transcribe
 from petrova.brain.brain import stream_ask
-from petrova.tools.executor import execute_command, launch_in_terminal_emulator
+from petrova.tools.executor import get_execution_env, normalize_command
 
 from petrova.gui.styles import MONOCHROME_THEME_QSS, COLORS
 from petrova.gui.nav_sidebar import NavSidebarWidget
@@ -107,21 +106,63 @@ class VoiceWorker(QObject):
             self.error_occurred.emit(str(e))
 
 
-class CommandWorker(QObject):
-    """Thread-safe worker for executing shell commands without freezing or crashing GUI."""
-    finished = pyqtSignal(int, str, str)
+class InteractiveCommandWorker(QObject):
+    """
+    Streaming command worker that executes in Bash, streams output line-by-line,
+    and supports live interactive stdin writes (y/n, inputs).
+    """
+    output_line = pyqtSignal(str)
+    finished = pyqtSignal(int)
 
     def __init__(self, cmd: str, sudo_password: str = None):
         super().__init__()
-        self.cmd = cmd
+        self.raw_cmd = cmd
         self.sudo_password = sudo_password
+        self.process: subprocess.Popen = None
 
     def run(self):
+        cmd = normalize_command(self.raw_cmd)
+        env = get_execution_env()
+
+        # If sudo password provided, pipe to sudo -S
+        if self.sudo_password and "sudo " in cmd:
+            cmd = cmd.replace("sudo ", f"echo '{self.sudo_password}' | sudo -S -p '' ")
+
         try:
-            code, stdout, stderr = execute_command(self.cmd, bypass_confirm=True, sudo_password=self.sudo_password)
-            self.finished.emit(code, stdout or "", stderr or "")
+            self.process = subprocess.Popen(
+                cmd,
+                shell=True,
+                executable="/bin/bash",
+                env=env,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+            )
+
+            # Read live stream character/line buffer
+            while True:
+                line = self.process.stdout.readline()
+                if not line:
+                    break
+                self.output_line.emit(line)
+
+            self.process.wait()
+            code = self.process.returncode
+            self.finished.emit(code)
         except Exception as e:
-            self.finished.emit(1, "", str(e))
+            self.output_line.emit(f"\n[Execution error: {str(e)}]\n")
+            self.finished.emit(1)
+
+    def send_stdin(self, text: str):
+        """Write user response to running process's standard input."""
+        if self.process and self.process.stdin and self.process.poll() is None:
+            try:
+                self.process.stdin.write(text + "\n")
+                self.process.stdin.flush()
+            except Exception:
+                pass
 
 
 class PetrovaMainWindow(QMainWindow):
@@ -138,6 +179,7 @@ class PetrovaMainWindow(QMainWindow):
         self.inference_thread: QThread = None
         self.voice_thread: QThread = None
         self.command_thread: QThread = None
+        self.command_worker: InteractiveCommandWorker = None
         self.goal_thread: QThread = None
         self.is_listening = False
         self.cached_sudo_password: str = None
@@ -242,10 +284,11 @@ class PetrovaMainWindow(QMainWindow):
         self.chat_widget.run_command_requested.connect(self._execute_proposed_command)
         home_layout.addWidget(self.chat_widget, 1)
 
-        # Collapsible Terminal Drawer
+        # Collapsible Terminal Drawer with Interactive Stdin
         self.terminal_drawer = TerminalDrawerWidget(self)
         self.terminal_drawer.close_btn.clicked.connect(lambda: self.terminal_drawer.setVisible(False))
-        self.terminal_drawer.command_executed.connect(self._execute_proposed_command)
+        self.terminal_drawer.command_submitted.connect(self._execute_proposed_command)
+        self.terminal_drawer.stdin_submitted.connect(self._on_terminal_stdin_submitted)
         self.terminal_drawer.setVisible(False)
         self.terminal_drawer.setFixedHeight(210)
         home_layout.addWidget(self.terminal_drawer)
@@ -481,6 +524,13 @@ class PetrovaMainWindow(QMainWindow):
             return
 
         self.prompt_input.clear()
+
+        # If a background terminal command is currently running and asking for input:
+        if self.command_worker and self.terminal_drawer.is_busy:
+            self.terminal_drawer.append_output(f"{prompt}\n")
+            self.command_worker.send_stdin(prompt)
+            return
+
         self.chat_widget.add_user_message(prompt)
 
         # 1. Check if input is a built-in slash command
@@ -619,10 +669,11 @@ class PetrovaMainWindow(QMainWindow):
             self.voice_thread.wait()
 
     def _execute_proposed_command(self, cmd: str):
-        """Thread-safe command execution into terminal drawer with sudo support."""
+        """Thread-safe interactive command execution with live streaming and stdin piping."""
         self.terminal_drawer.setVisible(True)
         self.telemetry_sidebar.set_core_status("EXECUTING")
         self.terminal_drawer.append_output(f"\n[Executing]: {cmd}\n")
+        self.terminal_drawer.set_busy_state(True)
         notify(f"Executing: {cmd}", level="info")
 
         # Check if command requires sudo authentication
@@ -644,6 +695,7 @@ class PetrovaMainWindow(QMainWindow):
                         self.cached_sudo_password = pwd
                     else:
                         self.terminal_drawer.append_output("[Authentication cancelled by user]\n")
+                        self.terminal_drawer.set_busy_state(False)
                         notify("Execution cancelled (no sudo password).", level="warning")
                         self._reset_to_ready()
                         return
@@ -653,28 +705,28 @@ class PetrovaMainWindow(QMainWindow):
             self.command_thread.wait()
 
         self.command_thread = QThread(self)
-        self.command_worker = CommandWorker(cmd, sudo_password=sudo_pwd)
+        self.command_worker = InteractiveCommandWorker(cmd, sudo_password=sudo_pwd)
         self.command_worker.moveToThread(self.command_thread)
 
         self.command_thread.started.connect(self.command_worker.run)
+        self.command_worker.output_line.connect(self.terminal_drawer.append_output)
         self.command_worker.finished.connect(self._on_command_finished)
 
         self.command_thread.start()
 
-    def _on_command_finished(self, code: int, stdout: str, stderr: str):
-        out = stdout if stdout else ""
-        if stderr:
-            if "incorrect password" in stderr.lower():
-                self.cached_sudo_password = None
-            out += f"\n[stderr]: {stderr}"
-        if not out.strip():
-            out = f"[Process exited with code {code}]"
-        self.terminal_drawer.append_output(f"{out}\n")
+    def _on_terminal_stdin_submitted(self, text: str):
+        """Handle user input into active process (y/n, prompt response)."""
+        if self.command_worker:
+            self.command_worker.send_stdin(text)
+
+    def _on_command_finished(self, code: int):
+        self.terminal_drawer.append_output(f"[Process finished with exit code {code}]\n")
+        self.terminal_drawer.set_busy_state(False)
         
         if code == 0:
             notify("Command executed successfully.", level="success")
         else:
-            notify(f"Command finished with code {code}", level="warning")
+            notify(f"Command finished with exit code {code}", level="warning")
 
         self._reset_to_ready()
 
