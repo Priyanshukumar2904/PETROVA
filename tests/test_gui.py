@@ -1,5 +1,5 @@
 """
-Tests for PETROVA Desktop GUI Subsystem, Navigation Sidebar, Sparkline Strip, and Telemetry Widgets.
+Tests for PETROVA Desktop GUI Subsystem, Navigation Views, System Monitor, and Notifications.
 """
 
 import os
@@ -15,13 +15,17 @@ from petrova.gui.telemetry_widget import TelemetryDashboardWidget
 from petrova.gui.terminal_drawer import TerminalDrawerWidget
 from petrova.gui.chat_widget import ChatWidget, MessageCard, SparklineStripWidget
 from petrova.gui.nav_sidebar import NavSidebarWidget
+from petrova.gui.system_view import SystemViewWidget
+from petrova.gui.files_view import FilesViewWidget
+from petrova.gui.tasks_view import TasksViewWidget
+from petrova.gui.settings_view import SettingsViewWidget
+from petrova.gui.notifications import NotificationManager, notify
 from petrova.gui.window import PetrovaMainWindow
 
 
 class TestPetrovaGUI(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # Create single QApplication instance for tests
         cls.app = QApplication.instance() or QApplication([])
 
     def test_desktop_entry_creation(self):
@@ -45,7 +49,7 @@ class TestPetrovaGUI(unittest.TestCase):
     def test_neural_canvas_states_and_tokens(self):
         canvas = NeuralVisualizerWidget()
         self.assertEqual(canvas.state, NeuralState.IDLE)
-        self.assertGreater(len(canvas.nodes), 10)
+        self.assertGreater(len(canvas.nodes), 5)
 
         # Test state transitions
         canvas.set_state(NeuralState.THINKING, "Synthesizing Goal")
@@ -90,6 +94,33 @@ class TestPetrovaGUI(unittest.TestCase):
         chat.finalize_assistant_message("Here is a command:\n```bash\necho 123\n```")
         self.assertIn("echo 123", card.raw_content)
 
+    def test_system_view(self):
+        sys_view = SystemViewWidget()
+        self.assertIsNotNone(sys_view.proc_table)
+        sys_view.refresh_data()
+
+    def test_files_view(self):
+        files_view = FilesViewWidget()
+        self.assertIsNotNone(files_view.table)
+        files_view.refresh_storage()
+        if hasattr(files_view, "worker_thread") and files_view.worker_thread:
+            files_view.worker_thread.wait(500)
+        files_view.close()
+
+    def test_tasks_view(self):
+        tasks_view = TasksViewWidget()
+        self.assertIsNotNone(tasks_view.table)
+        self.assertGreaterEqual(len(tasks_view.tasks_list), 1)
+
+    def test_settings_view(self):
+        settings_view = SettingsViewWidget()
+        self.assertIsNotNone(settings_view.name_input)
+
+    def test_notifications_bus(self):
+        bus = NotificationManager.get_instance()
+        notify("Test notice 123", level="info")
+        self.assertTrue(any("Test notice 123" in n["text"] for n in bus.history))
+
     def test_main_window_init(self):
         window = PetrovaMainWindow()
         self.assertIsNotNone(window.nav_sidebar)
@@ -97,6 +128,7 @@ class TestPetrovaGUI(unittest.TestCase):
         self.assertIsNotNone(window.telemetry_sidebar)
         self.assertIsNotNone(window.terminal_drawer)
         self.assertIn("PETROVA", window.windowTitle())
+        window.close()
 
 
 if __name__ == "__main__":

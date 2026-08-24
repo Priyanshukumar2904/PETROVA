@@ -1,8 +1,7 @@
 """
 PETROVA Main Desktop Application Window.
-Exact implementation of the V1 Monochrome Cyber-HUD specification:
-Top System Bar, Left Navigation Sidebar, Central Workspace (Greeting with embedded Neural Canvas + Metric Strip + AI Chat + Input + Lower Dock),
-Right System Monitor (Segmented LEDs + Wave Pattern Petrova Core), and Bottom Status Bar.
+Full implementation of the V1 Monochrome Cyber-HUD with multi-view navigation stack:
+HOME (AI Command Center), AI CHAT, SYSTEM, FILES, TASKS, and SETTINGS.
 """
 
 import sys
@@ -18,6 +17,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QTextEdit,
     QFrame,
+    QStackedWidget,
     QApplication,
     QMessageBox,
 )
@@ -34,8 +34,13 @@ from petrova.gui.nav_sidebar import NavSidebarWidget
 from petrova.gui.telemetry_widget import TelemetryDashboardWidget
 from petrova.gui.chat_widget import ChatWidget, GreetingPanelWidget, MetricStripWidget, LowerCentralHorizonDock
 from petrova.gui.neural_canvas import NeuralState
+from petrova.gui.system_view import SystemViewWidget
+from petrova.gui.files_view import FilesViewWidget
+from petrova.gui.tasks_view import TasksViewWidget
+from petrova.gui.settings_view import SettingsViewWidget
 from petrova.gui.terminal_drawer import TerminalDrawerWidget
 from petrova.gui.memory_dialog import MemoryVaultDialog
+from petrova.gui.notifications import notify
 
 
 class InferenceWorker(QObject):
@@ -171,25 +176,22 @@ class PetrovaMainWindow(QMainWindow):
         self.nav_sidebar.nav_changed.connect(self._on_nav_tab_changed)
         body_layout.addWidget(self.nav_sidebar)
 
-        # COLUMN 2: CENTRAL WORKSPACE (65-70% width)
-        center_col = QWidget()
-        center_layout = QVBoxLayout(center_col)
-        center_layout.setContentsMargins(0, 0, 0, 0)
-        center_layout.setSpacing(8)
+        # COLUMN 2: CENTRAL WORKSPACE WITH STACKED VIEW
+        self.central_stack = QStackedWidget()
 
-        # Section 8: Greeting Panel with embedded Compact Neural Canvas
+        # VIEW 0: HOME (AI Command Center)
+        home_view = QWidget()
+        home_layout = QVBoxLayout(home_view)
+        home_layout.setContentsMargins(0, 0, 0, 0)
+        home_layout.setSpacing(8)
+
         self.greeting_panel = GreetingPanelWidget(self)
         self.neural_canvas = self.greeting_panel.neural_canvas
-        center_layout.addWidget(self.greeting_panel)
+        home_layout.addWidget(self.greeting_panel)
 
-        # Section 9: System Metric Strip
-        self.metric_strip = MetricStripWidget(self)
-        center_layout.addWidget(self.metric_strip)
-
-        # Sections 10-12: AI Assistant Conversation Panel
         self.chat_widget = ChatWidget(self)
         self.chat_widget.run_command_requested.connect(self._execute_proposed_command)
-        center_layout.addWidget(self.chat_widget, 1)
+        home_layout.addWidget(self.chat_widget, 1)
 
         # Collapsible Terminal Drawer
         self.terminal_drawer = TerminalDrawerWidget(self)
@@ -197,9 +199,9 @@ class PetrovaMainWindow(QMainWindow):
         self.terminal_drawer.command_executed.connect(self._on_terminal_command_done)
         self.terminal_drawer.setVisible(False)
         self.terminal_drawer.setFixedHeight(210)
-        center_layout.addWidget(self.terminal_drawer)
+        home_layout.addWidget(self.terminal_drawer)
 
-        # Section 13: AI Input Bar
+        # AI Input Bar
         self.input_frame = QFrame()
         self.input_frame.setObjectName("AiInputFrame")
         input_layout = QHBoxLayout(self.input_frame)
@@ -225,14 +227,35 @@ class PetrovaMainWindow(QMainWindow):
         self.send_btn.clicked.connect(self._on_submit_prompt)
         input_layout.addWidget(self.send_btn)
 
-        center_layout.addWidget(self.input_frame)
+        home_layout.addWidget(self.input_frame)
 
-        # Section 14: Lower Central Panels (3-Card Horizontal Row)
+        # Lower Central Panels (3-Card Horizontal Row)
         self.lower_dock = LowerCentralHorizonDock(self)
-        self.lower_dock.action_triggered.connect(self._submit_chip_prompt)
-        center_layout.addWidget(self.lower_dock)
+        self.lower_dock.action_triggered.connect(self._on_dock_action)
+        home_layout.addWidget(self.lower_dock)
 
-        body_layout.addWidget(center_col, 1)
+        self.central_stack.addWidget(home_view)  # Index 0: HOME
+
+        # VIEW 1: SYSTEM Intelligence
+        self.system_view = SystemViewWidget(self)
+        self.system_view.execute_command_requested.connect(self._execute_proposed_command)
+        self.central_stack.addWidget(self.system_view)  # Index 1: SYSTEM
+
+        # VIEW 2: FILES & Storage Intelligence
+        self.files_view = FilesViewWidget(self)
+        self.files_view.execute_command_requested.connect(self._execute_proposed_command)
+        self.central_stack.addWidget(self.files_view)  # Index 2: FILES
+
+        # VIEW 3: TASKS & Goal Manager
+        self.tasks_view = TasksViewWidget(self)
+        self.tasks_view.execute_goal_requested.connect(self._submit_chip_prompt)
+        self.central_stack.addWidget(self.tasks_view)  # Index 3: TASKS
+
+        # VIEW 4: SETTINGS
+        self.settings_view = SettingsViewWidget(self)
+        self.central_stack.addWidget(self.settings_view)  # Index 4: SETTINGS
+
+        body_layout.addWidget(self.central_stack, 1)
 
         # COLUMN 3: RIGHT SYSTEM MONITOR (~320px)
         self.telemetry_sidebar = TelemetryDashboardWidget(self)
@@ -287,23 +310,36 @@ class PetrovaMainWindow(QMainWindow):
         QShortcut(QKeySequence("A"), self, lambda: self.nav_sidebar._set_active_tab("AI_CHAT"))
         QShortcut(QKeySequence("S"), self, lambda: self.nav_sidebar._set_active_tab("SYSTEM"))
         QShortcut(QKeySequence("F"), self, lambda: self.nav_sidebar._set_active_tab("FILES"))
-        QShortcut(QKeySequence("T"), self, self._toggle_terminal_drawer)
-        QShortcut(QKeySequence("G"), self, self._open_memory_vault)
+        QShortcut(QKeySequence("T"), self, lambda: self.nav_sidebar._set_active_tab("TASKS"))
+        QShortcut(QKeySequence("G"), self, lambda: self.nav_sidebar._set_active_tab("SETTINGS"))
         QShortcut(QKeySequence("Q"), self, self.close)
         QShortcut(QKeySequence("Ctrl+T"), self, self._toggle_terminal_drawer)
         QShortcut(QKeySequence("Ctrl+M"), self, self._open_memory_vault)
 
     def _on_nav_tab_changed(self, tab: str):
-        if tab == "AI_CHAT":
-            self.prompt_input.setFocus()
+        if tab in ("HOME", "AI_CHAT"):
+            self.central_stack.setCurrentIndex(0)
+            if tab == "AI_CHAT":
+                self.prompt_input.setFocus()
         elif tab == "SYSTEM":
-            self.telemetry_sidebar.update_telemetry()
+            self.system_view.refresh_data()
+            self.central_stack.setCurrentIndex(1)
         elif tab == "FILES":
-            self._submit_chip_prompt("What's using my storage? Show top 5 largest directories in tabular format.")
+            self.files_view.refresh_storage()
+            self.central_stack.setCurrentIndex(2)
         elif tab == "TASKS":
-            self._submit_chip_prompt("/goal show active tasks")
+            self.central_stack.setCurrentIndex(3)
         elif tab == "SETTINGS":
-            self._open_memory_vault()
+            self.settings_view.load_settings()
+            self.central_stack.setCurrentIndex(4)
+
+    def _on_dock_action(self, action: str):
+        if action == "__NAV_TASKS__":
+            self.nav_sidebar._set_active_tab("TASKS")
+        elif action.startswith("/"):
+            self._submit_chip_prompt(action)
+        else:
+            self._execute_proposed_command(action)
 
     def _show_initial_greeting(self):
         welcome_msg = (
@@ -311,17 +347,18 @@ class PetrovaMainWindow(QMainWindow):
             "Here are the top 5 largest directories in your system:\n\n"
             "```text\n"
             "PATH                              SIZE\n"
-            "/home/user/Downloads            31.4 GB\n"
-            "/home/user/.cache               12.8 GB\n"
-            "/home/user/Videos                8.2 GB\n"
+            "/home/cipher/Downloads          14.2 GB\n"
+            "/home/cipher/.cache              8.4 GB\n"
+            "/var/log                         3.1 GB\n"
+            "/var/cache/pacman/pkg            2.8 GB\n"
             "/usr/lib                         6.1 GB\n"
-            "/var/log                         3.7 GB\n"
             "```\n\n"
-            "Would you like me to inspect any of these?"
+            "Would you like me to inspect or clean any of these?"
         )
         self.chat_widget.add_assistant_message(welcome_msg)
 
     def _submit_chip_prompt(self, text: str):
+        self.nav_sidebar._set_active_tab("HOME")
         self.prompt_input.setPlainText(text)
         self._on_submit_prompt()
 
@@ -340,6 +377,7 @@ class PetrovaMainWindow(QMainWindow):
 
         self.prompt_input.clear()
         self.chat_widget.add_user_message(prompt)
+        notify(f"Processing query: {prompt[:30]}...", level="info")
 
         # Update Petrova Core state to THINKING
         self.telemetry_sidebar.set_core_status("THINKING")
@@ -367,6 +405,7 @@ class PetrovaMainWindow(QMainWindow):
 
     def _on_inference_finished(self, full_response: str):
         self.chat_widget.finalize_assistant_message(full_response)
+        notify("Response generated.", level="success")
 
         if is_voice_enabled() and full_response:
             self.neural_canvas.set_state(NeuralState.SPEAKING)
@@ -383,6 +422,7 @@ class PetrovaMainWindow(QMainWindow):
     def _on_inference_error(self, error: str):
         self.chat_widget.append_assistant_token(f"\n\n**Error:** `{error}`")
         self.chat_widget.finalize_assistant_message(f"Error: {error}")
+        notify(f"Inference error: {error}", level="error")
         self.telemetry_sidebar.set_core_status("ERROR")
         self._reset_to_ready()
 
@@ -398,6 +438,7 @@ class PetrovaMainWindow(QMainWindow):
         self.mic_btn.setText("[REC]")
         self.telemetry_sidebar.set_core_status("LISTENING")
         self.neural_canvas.set_state(NeuralState.INPUT_ACTIVE)
+        notify("Listening to microphone...", level="info")
 
         self.voice_thread = QThread()
         self.voice_worker = VoiceWorker()
@@ -414,9 +455,11 @@ class PetrovaMainWindow(QMainWindow):
         self.mic_btn.setText("[MIC]")
 
         if text.strip():
+            notify(f"Voice recognized: \"{text}\"", level="success")
             self.prompt_input.setPlainText(text)
             self._on_submit_prompt()
         else:
+            notify("No speech detected or audio unclear.", level="warning")
             self._reset_to_ready()
 
         if self.voice_thread and self.voice_thread.isRunning():
@@ -428,6 +471,7 @@ class PetrovaMainWindow(QMainWindow):
         self.telemetry_sidebar.set_core_status("EXECUTING")
         self.neural_canvas.set_state(NeuralState.COMMAND_EXEC)
         self.terminal_drawer.append_output(f"\n[Executing]: {cmd}\n")
+        notify(f"Executing: {cmd}", level="info")
         
         def run():
             code, stdout, stderr = execute_command(cmd)
@@ -435,6 +479,10 @@ class PetrovaMainWindow(QMainWindow):
             if stderr:
                 out += f"\n[stderr]: {stderr}"
             self.terminal_drawer.append_output(f"{out}\n[Exit code: {code}]\n")
+            if code == 0:
+                notify(f"Command completed: {cmd}", level="success")
+            else:
+                notify(f"Command failed (exit {code}): {cmd}", level="error")
             QTimer.singleShot(800, self._reset_to_ready)
 
         import threading

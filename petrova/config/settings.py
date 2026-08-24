@@ -144,3 +144,11 @@ def get_config() -> Config:
     if _config_instance is None:
         _config_instance = Config()
     return _config_instance
+
+
+def save_config(cfg: Optional[Config] = None):
+    """Save the configuration instance."""
+    if cfg is None:
+        cfg = get_config()
+    cfg.save()
+

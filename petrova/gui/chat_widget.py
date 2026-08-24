@@ -26,6 +26,7 @@ from petrova.linux.stats import get_system_telemetry
 from petrova.voice.tts import speak
 from petrova.gui.styles import COLORS
 from petrova.gui.neural_canvas import CompactNeuralWidget, NeuralState
+from petrova.gui.notifications import NotificationManager, notify
 
 
 class GreetingPanelWidget(QFrame):
@@ -60,7 +61,7 @@ class GreetingPanelWidget(QFrame):
             time_greeting = "Good night"
 
         config = get_config()
-        user_name = config.user_name or "Priyanshu"
+        user_name = config.user_name or "Cipher"
 
         self.title_lbl = QLabel(f"{time_greeting}, {user_name}.")
         self.title_lbl.setObjectName("GreetingTitle")
@@ -158,7 +159,7 @@ class MetricStripWidget(QFrame):
 
 class TechnicalMessageCard(QFrame):
     """
-    Sections 11 & 12: Technical Chat Message Card.
+    Sections 11 & 12: Technical Chat Message Card with dynamic action pills.
     """
     run_command_requested = pyqtSignal(str)
 
@@ -259,12 +260,12 @@ class TechnicalMessageCard(QFrame):
 
         if commands:
             for cmd in commands[:1]:
-                run_btn = QPushButton(f"[ ⚡ RUN: {cmd[:24]}... ]" if len(cmd) > 24 else f"[ ⚡ RUN: {cmd} ]")
+                run_btn = QPushButton(f"[ ⚡ RUN: {cmd[:28]}... ]" if len(cmd) > 28 else f"[ ⚡ RUN: {cmd} ]")
                 run_btn.setObjectName("MonochromePill")
                 run_btn.clicked.connect(lambda checked, c=cmd: self.run_command_requested.emit(c))
                 self.actions_row.addWidget(run_btn)
 
-            for act_lbl, act_cmd in [("[ INSPECT ]", "ls -la"), ("[ CLEAN ]", "sudo pacman -Sc --noconfirm"), ("[ DETAILS ]", "df -h")]:
+            for act_lbl, act_cmd in [("[ INSPECT ]", "du -sh ~/.cache ~/Downloads /var/log"), ("[ CLEAN ]", "sudo pacman -Sc --noconfirm"), ("[ DETAILS ]", "df -h")]:
                 pill = QPushButton(act_lbl)
                 pill.setObjectName("MonochromePill")
                 pill.clicked.connect(lambda checked, c=act_cmd: self.run_command_requested.emit(c))
@@ -349,6 +350,7 @@ class ChatWidget(QWidget):
             item = self.messages_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
+        notify("Conversation history cleared.", level="info")
 
     def add_user_message(self, text: str):
         card = TechnicalMessageCard(role="user", content=text)
@@ -395,13 +397,18 @@ class LowerCentralHorizonDock(QWidget):
     Section 14: Lower Central Panels (3-Card Horizontal Row):
     Panel A: QUICK ACTIONS
     Panel B: TASKS
-    Panel C: NOTIFICATIONS
+    Panel C: NOTIFICATIONS (Connected to live event bus)
     """
     action_triggered = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._setup_ui()
+
+        # Connect to Notification Bus
+        notif_bus = NotificationManager.get_instance()
+        notif_bus.notification_added.connect(self._on_notice_added)
+        notif_bus.cleared.connect(self._on_notices_cleared)
 
     def _setup_ui(self):
         layout = QHBoxLayout(self)
@@ -422,9 +429,9 @@ class LowerCentralHorizonDock(QWidget):
         grid = QGridLayout()
         grid.setSpacing(4)
         quick_actions = [
-            ("[System Scan]", "sudo pacman -Qk"),
+            ("[System Scan]", "journalctl -p 3 -xb -n 15"),
             ("[Clean Cache]", "sudo pacman -Sc --noconfirm"),
-            ("[Update System]", "/goal check system updates"),
+            ("[Update System]", "checkupdates"),
             ("[Disk Analysis]", "df -h"),
             ("[Process Monitor]", "ps aux --sort=-%cpu | head -n 10"),
             ("[Network Monitor]", "ip -br addr"),
@@ -452,12 +459,12 @@ class LowerCentralHorizonDock(QWidget):
         active_lbl.setStyleSheet(f"color: {COLORS['muted']}; font-family: 'JetBrains Mono'; font-size: 10px; font-weight: bold;")
         t_layout.addWidget(active_lbl)
 
-        line1 = QLabel("● Monitoring System       Running")
-        line1.setStyleSheet(f"color: {COLORS['foreground']}; font-family: 'JetBrains Mono'; font-size: 11px;")
-        line2 = QLabel("● Disk Analysis           34%")
-        line2.setStyleSheet(f"color: {COLORS['secondary']}; font-family: 'JetBrains Mono'; font-size: 11px;")
-        t_layout.addWidget(line1)
-        t_layout.addWidget(line2)
+        self.t_line1 = QLabel("● Monitoring System       Running")
+        self.t_line1.setStyleSheet(f"color: {COLORS['foreground']}; font-family: 'JetBrains Mono'; font-size: 11px;")
+        self.t_line2 = QLabel("● Telemetry Stream        Active")
+        self.t_line2.setStyleSheet(f"color: {COLORS['secondary']}; font-family: 'JetBrains Mono'; font-size: 11px;")
+        t_layout.addWidget(self.t_line1)
+        t_layout.addWidget(self.t_line2)
 
         sep = QLabel("--------------------------")
         sep.setStyleSheet(f"color: {COLORS['border']}; font-family: 'JetBrains Mono'; font-size: 10px;")
@@ -467,44 +474,59 @@ class LowerCentralHorizonDock(QWidget):
         comp_lbl.setStyleSheet(f"color: {COLORS['muted']}; font-family: 'JetBrains Mono'; font-size: 10px; font-weight: bold;")
         t_layout.addWidget(comp_lbl)
 
-        line3 = QLabel("✓ System Scan")
-        line3.setStyleSheet(f"color: {COLORS['muted']}; font-family: 'JetBrains Mono'; font-size: 11px;")
-        t_layout.addWidget(line3)
+        self.t_line3 = QLabel("✓ Neural Synapse Ready")
+        self.t_line3.setStyleSheet(f"color: {COLORS['muted']}; font-family: 'JetBrains Mono'; font-size: 11px;")
+        t_layout.addWidget(self.t_line3)
 
         t_layout.addStretch()
         view_all_btn = QPushButton("[VIEW ALL]")
         view_all_btn.setObjectName("MonochromePill")
-        view_all_btn.clicked.connect(lambda: self.action_triggered.emit("/goal list"))
+        view_all_btn.clicked.connect(lambda: self.action_triggered.emit("__NAV_TASKS__"))
         t_layout.addWidget(view_all_btn, alignment=Qt.AlignmentFlag.AlignRight)
         layout.addWidget(tasks_card, 1)
 
         # Panel C: NOTIFICATIONS
         notif_card = QFrame()
         notif_card.setObjectName("LowerCard")
-        n_layout = QVBoxLayout(notif_card)
-        n_layout.setContentsMargins(10, 8, 10, 8)
-        n_layout.setSpacing(4)
+        self.n_layout = QVBoxLayout(notif_card)
+        self.n_layout.setContentsMargins(10, 8, 10, 8)
+        self.n_layout.setSpacing(3)
 
         n_title = QLabel("NOTIFICATIONS")
         n_title.setObjectName("LowerCardTitle")
-        n_layout.addWidget(n_title)
+        self.n_layout.addWidget(n_title)
 
-        self.notifs = [
-            f"[{datetime.now().strftime('%H:%M')}] System check completed.",
-            "[00:35] Cache cleaned successfully.",
-            "[00:34] Package update available.",
-            "[00:30] PETROVA is now online.",
-        ]
-        for note in self.notifs:
-            lbl = QLabel(note)
+        self.notif_container = QVBoxLayout()
+        self.notif_container.setSpacing(2)
+        self.n_layout.addLayout(self.notif_container)
+
+        # Populate current history
+        for note in NotificationManager.get_instance().history[-4:]:
+            lbl = QLabel(f"[{note['time']}] {note['text']}")
             lbl.setStyleSheet(f"color: {COLORS['secondary']}; font-family: 'JetBrains Mono'; font-size: 11px;")
-            n_layout.addWidget(lbl)
+            self.notif_container.addWidget(lbl)
 
-        n_layout.addStretch()
+        self.n_layout.addStretch()
         clear_all_btn = QPushButton("[CLEAR ALL]")
         clear_all_btn.setObjectName("MonochromePill")
-        n_layout.addWidget(clear_all_btn, alignment=Qt.AlignmentFlag.AlignRight)
+        clear_all_btn.clicked.connect(lambda: NotificationManager.get_instance().clear())
+        self.n_layout.addWidget(clear_all_btn, alignment=Qt.AlignmentFlag.AlignRight)
         layout.addWidget(notif_card, 1)
+
+    def _on_notice_added(self, time_str: str, text: str, level: str):
+        while self.notif_container.count() >= 4:
+            item = self.notif_container.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        lbl = QLabel(f"[{time_str}] {text}")
+        lbl.setStyleSheet(f"color: {COLORS['foreground'] if level == 'success' else COLORS['secondary']}; font-family: 'JetBrains Mono'; font-size: 11px;")
+        self.notif_container.addWidget(lbl)
+
+    def _on_notices_cleared(self):
+        while self.notif_container.count():
+            item = self.notif_container.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
 
 
 # Compatibility aliases
