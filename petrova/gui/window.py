@@ -108,8 +108,8 @@ class VoiceWorker(QObject):
 
 class InteractiveCommandWorker(QObject):
     """
-    Streaming command worker that executes in Bash, streams output line-by-line,
-    and supports live interactive stdin writes (y/n, inputs).
+    Streaming command worker attached to a real Linux Pseudo-Terminal (PTY).
+    Guarantees isatty(0) is True, streams output live, and supports interactive stdin writes (y/n, inputs).
     """
     output_line = pyqtSignal(str)
     finished = pyqtSignal(int)
@@ -119,8 +119,13 @@ class InteractiveCommandWorker(QObject):
         self.raw_cmd = cmd
         self.sudo_password = sudo_password
         self.process: subprocess.Popen = None
+        self.master_fd = None
 
     def run(self):
+        import pty
+        import os
+        import select
+
         cmd = normalize_command(self.raw_cmd)
         env = get_execution_env()
 
@@ -129,24 +134,55 @@ class InteractiveCommandWorker(QObject):
             cmd = cmd.replace("sudo ", f"echo '{self.sudo_password}' | sudo -S -p '' ")
 
         try:
+            self.master_fd, slave_fd = pty.openpty()
             self.process = subprocess.Popen(
                 cmd,
                 shell=True,
                 executable="/bin/bash",
                 env=env,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
+                stdin=slave_fd,
+                stdout=slave_fd,
+                stderr=slave_fd,
+                close_fds=True,
+                start_new_session=True,
             )
+            os.close(slave_fd)
 
-            # Read live stream character/line buffer
             while True:
-                line = self.process.stdout.readline()
-                if not line:
+                if self.master_fd is None:
                     break
-                self.output_line.emit(line)
+                r, _, _ = select.select([self.master_fd], [], [], 0.1)
+                if r:
+                    try:
+                        data = os.read(self.master_fd, 2048)
+                        if not data:
+                            break
+                        text = data.decode(errors="replace")
+                        self.output_line.emit(text)
+                    except OSError:
+                        break
+
+                if self.process.poll() is not None:
+                    # Drain remaining buffer
+                    try:
+                        while self.master_fd is not None:
+                            r, _, _ = select.select([self.master_fd], [], [], 0.05)
+                            if not r:
+                                break
+                            data = os.read(self.master_fd, 2048)
+                            if not data:
+                                break
+                            self.output_line.emit(data.decode(errors="replace"))
+                    except Exception:
+                        pass
+                    break
+
+            if self.master_fd is not None:
+                try:
+                    os.close(self.master_fd)
+                except Exception:
+                    pass
+                self.master_fd = None
 
             self.process.wait()
             code = self.process.returncode
@@ -156,13 +192,14 @@ class InteractiveCommandWorker(QObject):
             self.finished.emit(1)
 
     def send_stdin(self, text: str):
-        """Write user response to running process's standard input."""
-        if self.process and self.process.stdin and self.process.poll() is None:
+        """Write user response into the real Linux PTY."""
+        import os
+        if self.master_fd is not None:
             try:
-                self.process.stdin.write(text + "\n")
-                self.process.stdin.flush()
+                os.write(self.master_fd, text.encode() + b"\n")
             except Exception:
                 pass
+
 
 
 class PetrovaMainWindow(QMainWindow):

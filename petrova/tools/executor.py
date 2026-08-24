@@ -79,7 +79,7 @@ def is_readonly_safe(command: str) -> bool:
 
 
 def normalize_command(command: str) -> str:
-    """Normalize common user typos in command names."""
+    """Normalize common user typos and ensure non-blocking package operations."""
     cmd = command.strip()
     replacements = {
         "h top": "htop",
@@ -91,7 +91,14 @@ def normalize_command(command: str) -> str:
     for typo, fix in replacements.items():
         if cmd.lower().startswith(typo):
             cmd = fix + cmd[len(typo):]
+
+    # Automatically add --noconfirm to pacman operations if not already present
+    cmd_lower = cmd.lower()
+    if "pacman " in cmd_lower and any(op in cmd_lower for op in ["-s", "-syu", "-syyu", "-r", "-u"]) and "--noconfirm" not in cmd_lower:
+        cmd += " --noconfirm"
+
     return cmd
+
 
 
 def get_execution_env() -> dict:
