@@ -156,45 +156,32 @@ You can launch PETROVA through any of the following methods:
 
 ## 🏗️ Architecture Overview
 
-```mermaid
-flowchart TD
-    subgraph UI["🖥️ User Interface Layer"]
-        GUI["PySide6 Desktop GUI (Neural Canvas + Drawer)"]
-        CLI["Rich & prompt_toolkit Terminal REPL"]
-        VOICE["Voice Subsystem (Piper TTS + Whisper STT)"]
-    end
+<p align="center">
+  <img src="assets/architecture.svg" alt="PETROVA Architecture Diagram" width="100%" />
+</p>
 
-    subgraph Core["⚙️ PETROVA Intelligence Engine"]
-        ROUTER["Slash Command & Query Router"]
-        PROMPT["Distro-Aware Context & System Prompt Builder"]
-        STREAM["Token Streaming Provider"]
-        SUPERVISOR["Inference Supervisor (llama-server / Ollama)"]
-        PLANNER["Multi-Step Agentic Goal Planner"]
-        EXECUTOR["Safe Shell Executor (TTY Interactive & Guardrails)"]
-        INSPECTOR["Web & GitHub Repo Inspector"]
-    end
+### 💡 How It Works in 4 Simple Steps
 
-    subgraph Storage["💾 XDG Storage Standard"]
-        CFG["Config: ~/.config/petrova/config.json"]
-        DB["Memory DB: ~/.local/share/petrova/petrova.db"]
-        HIST["History: ~/.local/share/petrova/history"]
-    end
-
-    GUI <--> ROUTER
-    CLI <--> ROUTER
-    VOICE <--> ROUTER
-
-    ROUTER -->|Goal Objective| PLANNER
-    ROUTER -->|Shell Command| EXECUTOR
-    ROUTER -->|Web / GitHub Query| INSPECTOR
-    ROUTER -->|AI Prompt| PROMPT
-
-    PROMPT --> STREAM
-    STREAM <--> SUPERVISOR
-    PROMPT <--> DB
-    ROUTER <--> CFG
-    CLI <--> HIST
 ```
+[ You (GUI / Terminal / Voice) ]
+               │
+               ▼
+[ 1. Central Intelligence Router ]  ── (Directs your request to the right engine)
+               │
+               ▼
+[ 2. Offline AI Brain & Safety Shield ] ── (Thinks 100% locally & checks commands)
+               │
+               ▼
+[ 3. Local SQLite Memory Vault ] ── (Remembers your habits & preferences)
+```
+
+1. **How You Connect (The Senses)**: You interact through your preferred interface — the **Desktop GUI**, lightning-fast **Terminal REPL**, or hands-free **Voice Engine**.
+2. **The Central Router (The Traffic Director)**: Identifies whether your input is an AI question, a Linux shell command, or a multi-step objective, routing it with zero lag.
+3. **The Brain & Safety Shield (Thinking & Doing)**:
+   * **100% Offline AI Brain**: Runs local LLMs on your GPU/CPU with no internet required.
+   * **Safety Guardrails**: Inspects every command beforehand and asks for your confirmation before executing anything destructive.
+   * **Agentic Planner**: Automatically breaks big goals down into an interactive step-by-step checklist.
+4. **The Local Memory Vault (Remembering)**: Stores your preferences, shell habits, and session journals in a fast SQLite database located at `~/.local/share/petrova/`.
 
 ---
 
@@ -203,3 +190,4 @@ flowchart TD
 Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
 Developed with ❤️ by [Priyanshukumar2904](https://github.com/Priyanshukumar2904).
+
