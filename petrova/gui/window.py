@@ -1,7 +1,7 @@
 """
 PETROVA Main Desktop Application Window.
-Full implementation of the V1 Monochrome Cyber-HUD with multi-view navigation stack:
-HOME (AI Command Center), AI CHAT, SYSTEM, FILES, TASKS, and SETTINGS.
+Full implementation of the V1 Monochrome Cyber-HUD with multi-view navigation stack,
+thread-safe asynchronous command executor, prominent voice controls, and microphone STT.
 """
 
 import sys
@@ -84,6 +84,23 @@ class VoiceWorker(QObject):
             self.error_occurred.emit(str(e))
 
 
+class CommandWorker(QObject):
+    """Thread-safe worker for executing shell commands without freezing or crashing GUI."""
+    output_ready = pyqtSignal(str)
+    finished = pyqtSignal(int, str, str)
+
+    def __init__(self, cmd: str):
+        super().__init__()
+        self.cmd = cmd
+
+    def run(self):
+        try:
+            code, stdout, stderr = execute_command(self.cmd, bypass_confirm=True)
+            self.finished.emit(code, stdout or "", stderr or "")
+        except Exception as e:
+            self.finished.emit(1, "", str(e))
+
+
 class PetrovaMainWindow(QMainWindow):
     """
     Main PETROVA Monochrome Cyber-HUD Window.
@@ -97,6 +114,7 @@ class PetrovaMainWindow(QMainWindow):
 
         self.inference_thread: QThread = None
         self.voice_thread: QThread = None
+        self.command_thread: QThread = None
         self.is_listening = False
 
         self._setup_ui()
@@ -116,13 +134,13 @@ class PetrovaMainWindow(QMainWindow):
         root_layout.setSpacing(0)
 
         # =========================================================================
-        # 1. TOP SYSTEM BAR (Section 3)
+        # 1. TOP SYSTEM BAR
         # =========================================================================
         self.top_bar = QFrame()
         self.top_bar.setObjectName("TopSystemBar")
         tb_layout = QHBoxLayout(self.top_bar)
         tb_layout.setContentsMargins(18, 0, 18, 0)
-        tb_layout.setSpacing(10)
+        tb_layout.setSpacing(12)
 
         left_title_box = QHBoxLayout()
         left_title_box.setSpacing(8)
@@ -144,7 +162,15 @@ class PetrovaMainWindow(QMainWindow):
         tb_layout.addStretch()
 
         right_info_box = QHBoxLayout()
-        right_info_box.setSpacing(14)
+        right_info_box.setSpacing(12)
+
+        # Voice Output Toggle in Top Bar
+        voice_on = is_voice_enabled()
+        self.voice_toggle_top = QPushButton("🔊 Spoken Voice: ON" if voice_on else "🔇 Spoken Voice: OFF")
+        self.voice_toggle_top.setObjectName("MonochromePill")
+        self.voice_toggle_top.setToolTip("Toggle Spoken Audio Output")
+        self.voice_toggle_top.clicked.connect(self._toggle_voice_output)
+        right_info_box.addWidget(self.voice_toggle_top)
 
         privacy_lbl = QLabel("[LOCK] LOCAL MODE • FULL PRIVACY")
         privacy_lbl.setObjectName("TopBarPrivacy")
@@ -194,7 +220,7 @@ class PetrovaMainWindow(QMainWindow):
         # Collapsible Terminal Drawer
         self.terminal_drawer = TerminalDrawerWidget(self)
         self.terminal_drawer.close_btn.clicked.connect(lambda: self.terminal_drawer.setVisible(False))
-        self.terminal_drawer.command_executed.connect(self._on_terminal_command_done)
+        self.terminal_drawer.command_executed.connect(self._execute_proposed_command)
         self.terminal_drawer.setVisible(False)
         self.terminal_drawer.setFixedHeight(210)
         home_layout.addWidget(self.terminal_drawer)
@@ -204,7 +230,7 @@ class PetrovaMainWindow(QMainWindow):
         self.input_frame.setObjectName("AiInputFrame")
         input_layout = QHBoxLayout(self.input_frame)
         input_layout.setContentsMargins(12, 6, 12, 6)
-        input_layout.setSpacing(10)
+        input_layout.setSpacing(8)
 
         self.prompt_input = QTextEdit()
         self.prompt_input.setObjectName("AiInputText")
@@ -213,14 +239,21 @@ class PetrovaMainWindow(QMainWindow):
         self.prompt_input.installEventFilter(self)
         input_layout.addWidget(self.prompt_input, 1)
 
-        # Prominent Microphone Button
+        # Voice Output Toggle (Input bar)
+        self.voice_toggle_bar = QPushButton("🔊 Voice: ON" if voice_on else "🔇 Voice: OFF")
+        self.voice_toggle_bar.setObjectName("MonochromePill")
+        self.voice_toggle_bar.setToolTip("Toggle Spoken Audio Feedback")
+        self.voice_toggle_bar.clicked.connect(self._toggle_voice_output)
+        input_layout.addWidget(self.voice_toggle_bar)
+
+        # Microphone Button
         self.mic_btn = QPushButton("🎙️ Speak")
         self.mic_btn.setObjectName("MonochromePill")
         self.mic_btn.setToolTip("Click to Speak into Microphone")
         self.mic_btn.clicked.connect(self._toggle_mic_listen)
         input_layout.addWidget(self.mic_btn)
 
-        # Prominent Send Button
+        # Send Button
         self.send_btn = QPushButton("➤ Send")
         self.send_btn.setObjectName("MonochromePill")
         self.send_btn.setToolTip("Send Prompt (Enter)")
@@ -229,7 +262,7 @@ class PetrovaMainWindow(QMainWindow):
 
         home_layout.addWidget(self.input_frame)
 
-        # Lower Central Panels (3-Card Horizontal Row)
+        # Lower Central Panels
         self.lower_dock = LowerCentralHorizonDock(self)
         self.lower_dock.action_triggered.connect(self._on_dock_action)
         home_layout.addWidget(self.lower_dock)
@@ -253,6 +286,7 @@ class PetrovaMainWindow(QMainWindow):
 
         # VIEW 4: SETTINGS
         self.settings_view = SettingsViewWidget(self)
+        self.settings_view.config_saved.connect(self._sync_voice_settings)
         self.central_stack.addWidget(self.settings_view)  # Index 4: SETTINGS
 
         body_layout.addWidget(self.central_stack, 1)
@@ -264,7 +298,7 @@ class PetrovaMainWindow(QMainWindow):
         root_layout.addWidget(body, 1)
 
         # =========================================================================
-        # 3. BOTTOM STATUS BAR (Section 23)
+        # 3. BOTTOM STATUS BAR
         # =========================================================================
         self.bottom_status_bar = QFrame()
         self.bottom_status_bar.setObjectName("BottomStatusBar")
@@ -283,6 +317,18 @@ class PetrovaMainWindow(QMainWindow):
         bs_layout.addWidget(self.status_right)
 
         root_layout.addWidget(self.bottom_status_bar)
+
+    def _toggle_voice_output(self):
+        new_state = not is_voice_enabled()
+        set_voice_enabled(new_state)
+        self._sync_voice_settings()
+        msg = "Voice output ENABLED." if new_state else "Voice output MUTED."
+        notify(msg, level="info")
+
+    def _sync_voice_settings(self):
+        state = is_voice_enabled()
+        self.voice_toggle_top.setText("🔊 Spoken Voice: ON" if state else "🔇 Spoken Voice: OFF")
+        self.voice_toggle_bar.setText("🔊 Voice: ON" if state else "🔇 Voice: OFF")
 
     def _update_clock_and_status(self):
         now_str = datetime.now().strftime("%Y-%m-%d  %H:%M:%S")
@@ -306,7 +352,6 @@ class PetrovaMainWindow(QMainWindow):
             pass
 
     def _setup_shortcuts(self):
-        # Use Ctrl+ combinations to prevent accidental trigger during typing or viewing
         QShortcut(QKeySequence("Ctrl+H"), self, lambda: self.nav_sidebar._set_active_tab("HOME"))
         QShortcut(QKeySequence("Ctrl+A"), self, lambda: self.nav_sidebar._set_active_tab("AI_CHAT"))
         QShortcut(QKeySequence("Ctrl+S"), self, lambda: self.nav_sidebar._set_active_tab("SYSTEM"))
@@ -384,7 +429,7 @@ class PetrovaMainWindow(QMainWindow):
 
         self.chat_widget.start_assistant_message()
 
-        self.inference_thread = QThread()
+        self.inference_thread = QThread(self)
         self.inference_worker = InferenceWorker(prompt)
         self.inference_worker.moveToThread(self.inference_thread)
 
@@ -429,12 +474,12 @@ class PetrovaMainWindow(QMainWindow):
             return
 
         self.is_listening = True
-        self.mic_btn.setText("🔴 Listening...")
-        self.prompt_input.setPlaceholderText("Listening to your voice... Speak now.")
+        self.mic_btn.setText("🔴 Recording (5s)...")
+        self.prompt_input.setPlaceholderText("🔴 Recording... Speak into your microphone now.")
         self.telemetry_sidebar.set_core_status("LISTENING")
-        notify("Listening to microphone...", level="info")
+        notify("Listening to microphone (5s)... Speak now", level="info")
 
-        self.voice_thread = QThread()
+        self.voice_thread = QThread(self)
         self.voice_worker = VoiceWorker()
         self.voice_worker.moveToThread(self.voice_thread)
 
@@ -449,12 +494,13 @@ class PetrovaMainWindow(QMainWindow):
         self.mic_btn.setText("🎙️ Speak")
         self.prompt_input.setPlaceholderText("Ask PETROVA anything or enter command...")
 
-        if text.strip():
+        if text and text.strip():
             notify(f"Voice recognized: \"{text}\"", level="success")
             self.prompt_input.setPlainText(text)
             self._on_submit_prompt()
         else:
-            notify("No speech detected or audio unclear.", level="warning")
+            notify("No speech detected. Please check mic input volume.", level="warning")
+            self.prompt_input.setPlaceholderText("No speech detected. Try speaking closer to mic.")
             self._reset_to_ready()
 
         if self.voice_thread and self.voice_thread.isRunning():
@@ -462,28 +508,41 @@ class PetrovaMainWindow(QMainWindow):
             self.voice_thread.wait()
 
     def _execute_proposed_command(self, cmd: str):
+        """Thread-safe command execution into terminal drawer."""
         self.terminal_drawer.setVisible(True)
         self.telemetry_sidebar.set_core_status("EXECUTING")
         self.terminal_drawer.append_output(f"\n[Executing]: {cmd}\n")
         notify(f"Executing: {cmd}", level="info")
+
+        if hasattr(self, "command_thread") and self.command_thread and self.command_thread.isRunning():
+            self.command_thread.quit()
+            self.command_thread.wait()
+
+        self.command_thread = QThread(self)
+        self.command_worker = CommandWorker(cmd)
+        self.command_worker.moveToThread(self.command_thread)
+
+        self.command_thread.started.connect(self.command_worker.run)
+        self.command_worker.finished.connect(self._on_command_finished)
+
+        self.command_thread.start()
+
+    def _on_command_finished(self, code: int, stdout: str, stderr: str):
+        out = stdout if stdout else ""
+        if stderr:
+            out += f"\n[stderr]: {stderr}"
+        self.terminal_drawer.append_output(f"{out}\n[Exit code: {code}]\n")
         
-        def run():
-            code, stdout, stderr = execute_command(cmd, bypass_confirm=True)
-            out = stdout if stdout else ""
-            if stderr:
-                out += f"\n[stderr]: {stderr}"
-            self.terminal_drawer.append_output(f"{out}\n[Exit code: {code}]\n")
-            if code == 0:
-                notify(f"Command completed: {cmd}", level="success")
-            else:
-                notify(f"Command finished with code {code}: {cmd}", level="warning")
-            QTimer.singleShot(800, self._reset_to_ready)
+        if code == 0:
+            notify("Command executed successfully.", level="success")
+        else:
+            notify(f"Command returned exit code {code}", level="warning")
 
-        import threading
-        threading.Thread(target=run, daemon=True).start()
+        self._reset_to_ready()
 
-    def _on_terminal_command_done(self, cmd: str, output: str, code: int):
-        self.terminal_drawer.append_output(f"{output}\n")
+        if self.command_thread and self.command_thread.isRunning():
+            self.command_thread.quit()
+            self.command_thread.wait()
 
     def _toggle_terminal_drawer(self):
         visible = not self.terminal_drawer.isVisible()

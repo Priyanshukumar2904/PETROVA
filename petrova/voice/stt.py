@@ -1,6 +1,6 @@
 """
 Speech-to-Text (STT) Voice Input Engine for PETROVA.
-Captures user microphone audio via PipeWire/PulseAudio and transcribes accurately into text.
+Captures user microphone audio via PipeWire/PulseAudio with volume normalization and multi-engine transcription.
 """
 
 import os
@@ -14,11 +14,11 @@ from petrova.ui.console import console
 
 def record_audio_clip(duration: int = 5) -> Optional[str]:
     """
-    Record microphone audio with PipeWire/PulseAudio integration and 16kHz mono sampling.
+    Record microphone audio from default Pulse/PipeWire stream with 16kHz mono and volume boost.
     """
     temp_wav = tempfile.mktemp(suffix=".wav")
 
-    # 1. Prefer ffmpeg with pulse input (captures exact system default microphone)
+    # 1. Primary: ffmpeg with pulse input and audio boost
     if shutil.which("ffmpeg"):
         cmd = [
             "ffmpeg", "-y",
@@ -27,12 +27,12 @@ def record_audio_clip(duration: int = 5) -> Optional[str]:
             "-t", str(duration),
             "-ac", "1",
             "-ar", "16000",
-            "-af", "volume=1.5",
+            "-af", "volume=2.5",
             temp_wav
         ]
         try:
             res = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=duration + 3)
-            if res.returncode == 0 and os.path.exists(temp_wav) and os.path.getsize(temp_wav) > 2000:
+            if res.returncode == 0 and os.path.exists(temp_wav) and os.path.getsize(temp_wav) > 1500:
                 return temp_wav
         except Exception:
             pass
@@ -52,17 +52,10 @@ def record_audio_clip(duration: int = 5) -> Optional[str]:
         ]
         try:
             res = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=duration + 3)
-            if res.returncode == 0 and os.path.exists(temp_wav) and os.path.getsize(temp_wav) > 2000:
+            if res.returncode == 0 and os.path.exists(temp_wav) and os.path.getsize(temp_wav) > 1500:
                 return temp_wav
         except Exception:
-            # Try raw arecord
-            try:
-                cmd_raw = ["arecord", "-d", str(duration), "-f", "cd", "-t", "wav", "-q", temp_wav]
-                subprocess.run(cmd_raw, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=duration + 3)
-                if os.path.exists(temp_wav) and os.path.getsize(temp_wav) > 2000:
-                    return temp_wav
-            except Exception:
-                pass
+            pass
 
     # 3. Fallback: pw-record (PipeWire native)
     if shutil.which("pw-record"):
@@ -73,7 +66,7 @@ def record_audio_clip(duration: int = 5) -> Optional[str]:
             time.sleep(duration)
             proc.terminate()
             proc.wait(timeout=2)
-            if os.path.exists(temp_wav) and os.path.getsize(temp_wav) > 2000:
+            if os.path.exists(temp_wav) and os.path.getsize(temp_wav) > 1500:
                 return temp_wav
         except Exception:
             pass
@@ -83,7 +76,7 @@ def record_audio_clip(duration: int = 5) -> Optional[str]:
 
 def listen_and_transcribe(duration: int = 5) -> Optional[str]:
     """
-    Listen to user voice via microphone and transcribe to text with multi-tier recognizers.
+    Listen to user voice via microphone and transcribe to text.
     """
     wav_path = record_audio_clip(duration)
     if not wav_path:
@@ -92,11 +85,10 @@ def listen_and_transcribe(duration: int = 5) -> Optional[str]:
     try:
         import speech_recognition as sr
         recognizer = sr.Recognizer()
-        recognizer.dynamic_energy_threshold = True
-        recognizer.energy_threshold = 250
+        recognizer.energy_threshold = 150
+        recognizer.dynamic_energy_threshold = False
 
         with sr.AudioFile(wav_path) as source:
-            recognizer.adjust_for_ambient_noise(source, duration=0.4)
             audio_data = recognizer.record(source)
 
         text = recognizer.recognize_google(audio_data)
