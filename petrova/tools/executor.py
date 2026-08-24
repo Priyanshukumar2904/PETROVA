@@ -1,6 +1,7 @@
 """
 Safe Linux Terminal Command Execution Engine for PETROVA.
-Runs native Linux shell commands in Bash with complete user PATH and environment inheritance.
+Runs native Linux shell commands in Bash with complete user PATH,
+seamless sudo password piping, and terminal emulator launching for interactive system operations.
 """
 
 import os
@@ -21,6 +22,11 @@ INTERACTIVE_COMMANDS = [
     "htop", "top", "btop", "nvtop", "iotop", "iftop", "nmtui", "ncdu",
     "vim", "vi", "nvim", "nano", "micro", "emacs",
     "less", "more", "man", "watch", "fzf", "lazygit", "ranger", "yazi", "mc"
+]
+
+INTERACTIVE_SYSTEM_COMMANDS = [
+    "pacman -syu", "pacman -syyu", "pacman -s ", "pacman -rns", "pacman -u",
+    "paru -syu", "yay -syu", "reboot", "poweroff", "shutdown"
 ]
 
 DANGEROUS_COMMANDS = [
@@ -47,6 +53,12 @@ def is_interactive(command: str) -> bool:
     if base == "sudo" and len(cmd_parts) > 1:
         base = cmd_parts[1]
     return base in INTERACTIVE_COMMANDS
+
+
+def is_interactive_system_command(command: str) -> bool:
+    """Check if command is an interactive package manager or system command."""
+    cmd_lower = command.strip().lower()
+    return any(p in cmd_lower for p in INTERACTIVE_SYSTEM_COMMANDS)
 
 
 def is_potentially_dangerous(command: str) -> bool:
@@ -108,8 +120,8 @@ def get_execution_env() -> dict:
 def launch_in_terminal_emulator(command: str) -> bool:
     """Launch interactive or root command in user's GUI terminal emulator."""
     terminals = [
-        ("kitty", ["kitty", "-e", "bash", "-c", f"{command}; echo; read -p 'Press Enter to close...'"]),
         ("alacritty", ["alacritty", "-e", "bash", "-c", f"{command}; echo; read -p 'Press Enter to close...'"]),
+        ("kitty", ["kitty", "-e", "bash", "-c", f"{command}; echo; read -p 'Press Enter to close...'"]),
         ("konsole", ["konsole", "-e", "bash", "-c", f"{command}; echo; read -p 'Press Enter to close...'"]),
         ("gnome-terminal", ["gnome-terminal", "--", "bash", "-c", f"{command}; echo; read -p 'Press Enter to close...'"]),
         ("xfce4-terminal", ["xfce4-terminal", "-e", f"bash -c '{command}; echo; read -p \"Press Enter to close...\"'"]),
@@ -131,6 +143,7 @@ def execute_command(
     explanation: Optional[str] = None,
     timeout: int = 600,
     bypass_confirm: bool = False,
+    sudo_password: Optional[str] = None,
 ) -> Tuple[int, str, str]:
     """
     Execute a Linux shell command safely in Bash with full environment inheritance.
@@ -141,6 +154,7 @@ def execute_command(
     perm_mode = config.get("permission_mode", "autonomous")
     is_danger = is_potentially_dangerous(command)
     is_tui = is_interactive(command)
+    is_sys_interactive = is_interactive_system_command(command)
     is_tty = sys.stdin.isatty() if hasattr(sys.stdin, "isatty") else False
 
     # 1. READ ONLY MODE
@@ -156,22 +170,26 @@ def execute_command(
         except Exception:
             pass
 
-    # 3. INTERACTIVE TUI EXECUTION (In real TTY or spawn emulator)
-    if is_tui:
-        if is_tty:
-            try:
-                res = subprocess.run(command, shell=True, executable="/bin/bash", env=get_execution_env())
-                return res.returncode, "[Interactive session completed]", ""
-            except Exception as e:
-                return 1, "", str(e)
-        else:
-            launched = launch_in_terminal_emulator(command)
-            if launched:
-                return 0, f"[Launched interactive session '{command}' in terminal emulator]", ""
+    # 3. INTERACTIVE TUI OR FULL SYSTEM UPGRADE (In real TTY or spawn emulator)
+    if (is_tui or is_sys_interactive) and not is_tty and not sudo_password:
+        launched = launch_in_terminal_emulator(command)
+        if launched:
+            return 0, f"[Launched interactive session in terminal emulator: {command}]", ""
 
-    # 4. STANDARD EXECUTION IN BASH
+    if is_tui and is_tty:
+        try:
+            res = subprocess.run(command, shell=True, executable="/bin/bash", env=get_execution_env())
+            return res.returncode, "[Interactive session completed]", ""
+        except Exception as e:
+            return 1, "", str(e)
+
+    # 4. STANDARD EXECUTION IN BASH WITH OPTIONAL SUDO PASSWORD
     env = get_execution_env()
     shell_bin = "/bin/bash" if os.path.exists("/bin/bash") else "/bin/sh"
+
+    # If sudo password provided, transform command to use sudo -S
+    if sudo_password and "sudo " in command:
+        command = command.replace("sudo ", f"echo '{sudo_password}' | sudo -S -p '' ")
 
     try:
         process = subprocess.Popen(

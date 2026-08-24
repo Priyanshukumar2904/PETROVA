@@ -1,10 +1,12 @@
 """
 PETROVA Main Desktop Application Window.
 Full implementation of the V1 Monochrome Cyber-HUD with multi-view navigation stack,
-active single-key [H],[A],[S],[F],[T],[G],[Q] and Ctrl+ shortcuts, Bash execution engine, and voice controls.
+active single-key [H],[A],[S],[F],[T],[G],[Q] and Ctrl+ shortcuts, Bash execution engine,
+secure sudo authentication modal, and voice controls.
 """
 
 import sys
+import subprocess
 from datetime import datetime
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QObject, QTimer, QEvent
 from PyQt6.QtGui import QFont, QKeySequence, QShortcut, QKeyEvent
@@ -17,6 +19,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QTextEdit,
     QLineEdit,
+    QInputDialog,
     QFrame,
     QStackedWidget,
     QApplication,
@@ -89,13 +92,14 @@ class CommandWorker(QObject):
     """Thread-safe worker for executing shell commands without freezing or crashing GUI."""
     finished = pyqtSignal(int, str, str)
 
-    def __init__(self, cmd: str):
+    def __init__(self, cmd: str, sudo_password: str = None):
         super().__init__()
         self.cmd = cmd
+        self.sudo_password = sudo_password
 
     def run(self):
         try:
-            code, stdout, stderr = execute_command(self.cmd, bypass_confirm=True)
+            code, stdout, stderr = execute_command(self.cmd, bypass_confirm=True, sudo_password=self.sudo_password)
             self.finished.emit(code, stdout or "", stderr or "")
         except Exception as e:
             self.finished.emit(1, "", str(e))
@@ -116,6 +120,7 @@ class PetrovaMainWindow(QMainWindow):
         self.voice_thread: QThread = None
         self.command_thread: QThread = None
         self.is_listening = False
+        self.cached_sudo_password: str = None
 
         self._setup_ui()
         self._setup_shortcuts()
@@ -352,7 +357,6 @@ class PetrovaMainWindow(QMainWindow):
             pass
 
     def _setup_shortcuts(self):
-        # Global shortcuts with Ctrl+
         QShortcut(QKeySequence("Ctrl+H"), self, lambda: self.nav_sidebar._set_active_tab("HOME"))
         QShortcut(QKeySequence("Ctrl+A"), self, lambda: self.nav_sidebar._set_active_tab("AI_CHAT"))
         QShortcut(QKeySequence("Ctrl+S"), self, lambda: self.nav_sidebar._set_active_tab("SYSTEM"))
@@ -364,10 +368,6 @@ class PetrovaMainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+M"), self, self._open_memory_vault)
 
     def keyPressEvent(self, event: QKeyEvent):
-        """
-        Handle single-key shortcuts [H], [A], [S], [F], [T], [G], [Q]
-        when not actively typing inside a text input field.
-        """
         focus_widget = QApplication.focusWidget()
         is_typing = isinstance(focus_widget, (QTextEdit, QLineEdit))
 
@@ -552,18 +552,42 @@ class PetrovaMainWindow(QMainWindow):
             self.voice_thread.wait()
 
     def _execute_proposed_command(self, cmd: str):
-        """Thread-safe command execution into terminal drawer with Bash environment."""
+        """Thread-safe command execution into terminal drawer with sudo support."""
         self.terminal_drawer.setVisible(True)
         self.telemetry_sidebar.set_core_status("EXECUTING")
         self.terminal_drawer.append_output(f"\n[Executing]: {cmd}\n")
         notify(f"Executing: {cmd}", level="info")
+
+        # Check if command requires sudo authentication
+        sudo_pwd = None
+        if "sudo " in cmd:
+            # Check if sudo credentials already cached
+            res = subprocess.run("sudo -n true", shell=True, capture_output=True)
+            if res.returncode != 0:
+                if self.cached_sudo_password:
+                    sudo_pwd = self.cached_sudo_password
+                else:
+                    pwd, ok = QInputDialog.getText(
+                        self,
+                        "Root Authentication Required",
+                        f"Enter sudo password to execute:\n{cmd}",
+                        QLineEdit.EchoMode.Password,
+                    )
+                    if ok and pwd:
+                        sudo_pwd = pwd
+                        self.cached_sudo_password = pwd
+                    else:
+                        self.terminal_drawer.append_output("[Authentication cancelled by user]\n")
+                        notify("Execution cancelled (no sudo password).", level="warning")
+                        self._reset_to_ready()
+                        return
 
         if hasattr(self, "command_thread") and self.command_thread and self.command_thread.isRunning():
             self.command_thread.quit()
             self.command_thread.wait()
 
         self.command_thread = QThread(self)
-        self.command_worker = CommandWorker(cmd)
+        self.command_worker = CommandWorker(cmd, sudo_password=sudo_pwd)
         self.command_worker.moveToThread(self.command_thread)
 
         self.command_thread.started.connect(self.command_worker.run)
@@ -574,6 +598,9 @@ class PetrovaMainWindow(QMainWindow):
     def _on_command_finished(self, code: int, stdout: str, stderr: str):
         out = stdout if stdout else ""
         if stderr:
+            # Check if incorrect password
+            if "incorrect password" in stderr.lower():
+                self.cached_sudo_password = None
             out += f"\n[stderr]: {stderr}"
         if not out.strip():
             out = f"[Process exited with code {code}]"
