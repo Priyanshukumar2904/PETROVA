@@ -18,10 +18,13 @@ dependencies = [
     "rich>=13.7.0",
     "requests>=2.31.0",
     "prompt_toolkit>=3.0.43",
+    "edge-tts>=7.0.0",
+    "pyttsx3>=2.90",
     "gTTS>=2.5.0",
     "SpeechRecognition>=3.10.0",
     "PyQt6>=6.6.0",
 ]
+
 
 
 keywords = [

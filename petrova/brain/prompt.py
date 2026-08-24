@@ -4,13 +4,14 @@ Injects real-time hardware telemetry, distro identity, workspace context, and SQ
 """
 
 import platform
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from petrova.config.settings import get_config
 from petrova.linux.stats import get_distro_info, get_live_system_snapshot
 from petrova.linux.workspace import format_workspace_prompt_block
 
 
-def build_system_prompt(memories: List[Dict[str, Any]]) -> str:
+def build_system_prompt(memories: Optional[List[Dict[str, Any]]] = None) -> str:
+
     """Build a dynamic, alive, witty, and telemetry-aware system prompt."""
     config = get_config()
     user_name = config.user_name

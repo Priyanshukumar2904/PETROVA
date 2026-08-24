@@ -25,17 +25,19 @@ INTERACTIVE_COMMANDS = [
 # Commands considered dangerous requiring explicit warning/confirmation regardless of mode
 DANGEROUS_COMMANDS = [
     "rm -rf", "rm -r", "mkfs", "dd", "shutdown", "reboot", "poweroff",
-    "init 0", "init 6", ":(){ :|:& };:", "chmod -R 777", "chmod 777 /",
-    "> /dev/sda", "> /dev/nvme", "killall", "pkill -9", "iptables -F"
+    "init 0", "init 6", ":(){ :|:& };:", "chmod -r 777", "chmod 777", "chmod 777 /",
+    "> /dev/sda", "> /dev/nvme", "killall", "pkill -9", "iptables -f"
 ]
+
 
 # Safe read-only system inspection commands
 SAFE_READONLY_COMMANDS = [
-    "ls", "dir", "pwd", "uname", "whoami", "id", "uptime", "date",
+    "echo", "printf", "stat", "tree", "ls", "dir", "pwd", "uname", "whoami", "id", "uptime", "date",
     "df", "free", "cat", "head", "tail", "grep", "find", "ps", "top",
     "htop", "btop", "neofetch", "fastfetch", "lscpu", "lsblk", "ip", "ifconfig",
     "ping", "curl", "which", "whereis", "file", "systemctl status", "sensors"
 ]
+
 
 
 def is_interactive(command: str) -> bool:
@@ -117,8 +119,9 @@ def execute_command(
 
     # 2. PERMISSION / CONFIRMATION CHECK
     need_confirm = True
-    if perm_mode == "autonomous" and is_safe and not is_danger:
+    if perm_mode == "autonomous" and not is_danger:
         need_confirm = False
+
 
     if need_confirm:
         console.print()
