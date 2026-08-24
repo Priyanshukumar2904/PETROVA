@@ -6,15 +6,26 @@ Stores user facts, preferences, workflows, and episodic session journals.
 import os
 import re
 import sqlite3
+from contextlib import contextmanager
 from typing import List, Dict, Any, Optional
 from petrova.config.settings import DB_FILE, get_config
+
+
+@contextmanager
+def get_db():
+    """Context manager for SQLite database connection that guarantees cleanup."""
+    connection = sqlite3.connect(DB_FILE)
+    try:
+        yield connection
+    finally:
+        connection.close()
 
 
 def initialize():
     """Initialize memory database and table schemas."""
     DB_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         # Long-term semantic facts
         connection.execute(
             """
@@ -63,7 +74,7 @@ def enforce_storage_quota():
 
     current_mb = get_db_size_mb()
     if current_mb > max_mb:
-        with sqlite3.connect(DB_FILE) as connection:
+        with get_db() as connection:
             connection.execute(
                 """
                 DELETE FROM memories
@@ -94,7 +105,7 @@ def save_memory(
     initialize()
     enforce_storage_quota()
 
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         cursor = connection.cursor()
         cursor.execute(
             """
@@ -114,7 +125,7 @@ def save_memory(
 def log_session_summary(summary: str, commands_run: int = 0):
     """Record summary of session activities for continuity on next launch."""
     initialize()
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         connection.execute(
             """
             INSERT INTO session_logs (summary, commands_run)
@@ -128,7 +139,7 @@ def log_session_summary(summary: str, commands_run: int = 0):
 def get_last_session_summary() -> Optional[Dict[str, Any]]:
     """Retrieve the most recent session summary."""
     initialize()
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         row = connection.execute(
             """
             SELECT summary, commands_run, created_at
@@ -150,7 +161,7 @@ def get_last_session_summary() -> Optional[Dict[str, Any]]:
 def get_memories(limit: int = 10) -> List[str]:
     """Get top memories ordered by importance and recency."""
     initialize()
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         rows = connection.execute(
             """
             SELECT content
@@ -167,7 +178,7 @@ def get_memories(limit: int = 10) -> List[str]:
 def get_all_memories(category: Optional[str] = None) -> List[Dict[str, Any]]:
     """Return all stored memories as dictionaries."""
     initialize()
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         if category:
             rows = connection.execute(
                 """
@@ -213,7 +224,7 @@ def search_memories(query: str, limit: int = 5) -> List[Dict[str, Any]]:
     if not words:
         return []
 
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         rows = connection.execute(
             """
             SELECT id, content, category, importance
@@ -253,7 +264,7 @@ def search_memories(query: str, limit: int = 5) -> List[Dict[str, Any]]:
 def delete_memory_by_id(memory_id: int) -> bool:
     """Delete a memory entry by ID."""
     initialize()
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         cursor = connection.cursor()
         cursor.execute("DELETE FROM memories WHERE id = ?", (memory_id,))
         connection.commit()
@@ -263,7 +274,7 @@ def delete_memory_by_id(memory_id: int) -> bool:
 def delete_memory(content: str) -> bool:
     """Delete a memory entry by matching content string."""
     initialize()
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         cursor = connection.cursor()
         cursor.execute("DELETE FROM memories WHERE content = ?", (content,))
         connection.commit()
@@ -273,7 +284,7 @@ def delete_memory(content: str) -> bool:
 def clear_all_memories() -> int:
     """Delete all memories from database."""
     initialize()
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         cursor = connection.cursor()
         cursor.execute("DELETE FROM memories")
         connection.commit()
@@ -283,6 +294,6 @@ def clear_all_memories() -> int:
 def get_memory_count() -> int:
     """Get the total count of stored memories."""
     initialize()
-    with sqlite3.connect(DB_FILE) as connection:
+    with get_db() as connection:
         row = connection.execute("SELECT COUNT(*) FROM memories").fetchone()
         return row[0] if row else 0

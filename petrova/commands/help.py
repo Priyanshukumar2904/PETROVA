@@ -17,6 +17,7 @@ def help_command():
 
     # Goals & Execution
     table.add_row("/help", "Show this command reference")
+    table.add_row("/gui [or /app]", "Launch modern Desktop GUI Application & Neural Visualizer")
     table.add_row("/goal <objective>", "Plan and execute a multi-step agentic objective")
     table.add_row("/run <cmd> [or !<cmd>]", "Safely execute a Linux shell command")
     table.add_row("/voice [on|off|loop]", "Toggle or start hands-free spoken voice output")

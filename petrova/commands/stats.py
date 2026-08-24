@@ -17,6 +17,9 @@ def stats_command():
     ram = telemetry["ram"]
     disk = telemetry["disk"]
     temp = telemetry["cpu_temp"]
+    battery = telemetry["battery"]
+    uptime = telemetry["uptime"]
+    load_avg = telemetry["load_avg"]
 
     table = Table(show_header=False, box=None, expand=True)
     table.add_column("Category", style="bold cyan", width=22)
@@ -26,6 +29,16 @@ def stats_command():
     table.add_row("Operating System", f"[bold green]{distro['pretty_name']}[/bold green] [dim](Family: {distro['id_like'] or distro['id']})[/dim]")
     table.add_row("Linux Kernel", f"[cyan]{telemetry['kernel']}[/cyan]")
     table.add_row("Package Manager", f"[bold]{distro['package_manager']}[/bold] [dim](AUR Helper: {distro['aur_helper']})[/dim]")
+    table.add_row("Uptime & Load", f"[bold]{uptime}[/bold] [dim](Load: {load_avg})[/dim]")
+
+    # Battery
+    if battery["present"] and battery["percent"] is not None:
+        bat_pct = battery["percent"]
+        bat_color = "green" if bat_pct >= 40 else ("yellow" if bat_pct >= 20 else "red")
+        bat_bar = "█" * int(bat_pct / 5) + "░" * (20 - int(bat_pct / 5))
+        rem_str = f" [dim]({battery['time_str']})[/dim]" if battery["time_str"] else ""
+        plug_str = " ⚡ [green]AC Connected[/green]" if battery["plugged_in"] else " 🔋 [yellow]Battery Power[/yellow]"
+        table.add_row("Battery & Power", f"[{bat_color}]{bat_pct}%[/{bat_color}] ({battery['status']}){plug_str}{rem_str} [dim][{bat_bar}][/dim]")
 
     # Thermals
     if temp:

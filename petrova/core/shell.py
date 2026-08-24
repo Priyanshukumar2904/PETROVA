@@ -25,6 +25,8 @@ from petrova.commands.exit import exit_command
 # Built-in Slash Commands for Tab completion
 SLASH_COMMANDS = [
     "/help",
+    "/gui",
+    "/app",
     "/goal",
     "/voice",
     "/voice on",

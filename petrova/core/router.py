@@ -101,6 +101,10 @@ def route_command(user_input: str) -> bool:
     elif primary in ("config", "setup"):
         return config_command(args)
 
+    elif primary in ("gui", "app", "ui", "desktop"):
+        from petrova.commands.gui import gui_command
+        return gui_command()
+
 
     # If it was an unrecognized slash command (starts with /), warn the user
     if trimmed.startswith("/"):

@@ -5,7 +5,7 @@ Provides a caring health check-in, workspace awareness, and continuity from the 
 
 from datetime import datetime
 from petrova.config.settings import get_config
-from petrova.linux.stats import get_cpu_temp, get_ram_usage, get_distro_info
+from petrova.linux.stats import get_cpu_temp, get_ram_usage, get_distro_info, get_battery_status
 from petrova.linux.workspace import get_workspace_context
 from petrova.memory.store import get_last_session_summary
 
@@ -30,6 +30,7 @@ def get_greeting() -> str:
     temp = get_cpu_temp()
     ram = get_ram_usage()
     distro = get_distro_info()
+    battery = get_battery_status()
 
     health_notes = []
     if temp and temp >= 82.0:
@@ -39,6 +40,9 @@ def get_greeting() -> str:
 
     if ram["pct"] >= 88.0:
         health_notes.append(f"⚠️ [bold yellow]High Memory:[/bold yellow] RAM usage is at [yellow]{ram['pct']}%[/yellow] ({ram['used_gb']}/{ram['total_gb']} GB).")
+
+    if battery["present"] and not battery["plugged_in"] and battery["percent"] is not None and battery["percent"] <= 25:
+        health_notes.append(f"🔋 [bold yellow]Low Battery:[/bold yellow] Battery is at [red]{battery['percent']}%[/red] ({battery.get('time_str', 'plug in soon')}).")
 
     # 3. Workspace check
     ws = get_workspace_context()

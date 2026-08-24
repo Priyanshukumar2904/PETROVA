@@ -109,6 +109,36 @@ class TestPetrovaCore(unittest.TestCase):
         prompt = build_system_prompt(memories)
         self.assertIn("PETROVA", prompt)
         self.assertIn("User prefers concise answers.", prompt)
+        self.assertIn("REAL-TIME HARDWARE & SYSTEM TELEMETRY", prompt)
+        self.assertIn("DIRECT READ ACCESS", prompt)
+
+    def test_telemetry_and_battery(self):
+        from petrova.linux.stats import (
+            get_battery_status,
+            get_uptime_str,
+            get_load_average_str,
+            get_live_system_snapshot,
+            get_system_telemetry,
+        )
+        bat = get_battery_status()
+        self.assertIsInstance(bat, dict)
+        self.assertIn("present", bat)
+        self.assertIn("status", bat)
+
+        uptime = get_uptime_str()
+        self.assertIsInstance(uptime, str)
+
+        load = get_load_average_str()
+        self.assertIsInstance(load, str)
+
+        snapshot = get_live_system_snapshot()
+        self.assertIn("Distribution:", snapshot)
+        self.assertIn("CPU Temperature:", snapshot)
+        self.assertIn("RAM Usage:", snapshot)
+
+        telemetry = get_system_telemetry()
+        self.assertIn("distro", telemetry)
+        self.assertIn("battery", telemetry)
 
     def test_voice_cleaner_and_workspace(self):
         from petrova.voice.tts import clean_text_for_speech
@@ -129,7 +159,6 @@ class TestPetrovaCore(unittest.TestCase):
         self.assertTrue(route_command("/version"))
         self.assertTrue(route_command("/about"))
         self.assertFalse(route_command("What is the kernel version?"))
-
 
 
 if __name__ == "__main__":

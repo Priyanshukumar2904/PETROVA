@@ -1,104 +1,147 @@
-<svg width="1000" height="480" viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg">
+<svg width="1100" height="510" viewBox="0 0 1100 510" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <!-- Card Gradient -->
     <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#181825" />
-      <stop offset="100%" stop-color="#11111b" />
+      <stop offset="0%" stop-color="#0c141a" />
+      <stop offset="100%" stop-color="#06090e" />
     </linearGradient>
-    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.4" />
+
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f59b" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#fbbf24" />
+    </linearGradient>
+
+    <!-- Card Shadow Filter -->
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.5" />
     </filter>
+
+    <style>
+      .feature-card {
+        cursor: pointer;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), filter 0.28s ease;
+      }
+      .feature-card rect.card-border {
+        transition: stroke 0.25s ease, stroke-width 0.25s ease, fill 0.25s ease;
+      }
+      .feature-card:hover {
+        transform: translateY(-4px);
+        filter: drop-shadow(0 10px 20px rgba(16, 185, 129, 0.2));
+      }
+      .feature-card:hover rect.card-border {
+        stroke: #10b981;
+        stroke-width: 1.8px;
+      }
+      .feature-card:active {
+        transform: translateY(0px) scale(0.985);
+        filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.3));
+      }
+      .feature-card:active rect.card-border {
+        stroke: #f59e0b;
+        stroke-width: 2px;
+      }
+      .feature-card:active text.card-title {
+        fill: #fbbf24;
+      }
+    </style>
   </defs>
 
-  <rect width="1000" height="480" rx="16" fill="#0f172a" stroke="#1e293b" stroke-width="1.5" />
+  <!-- Background Base -->
+  <rect width="1100" height="510" rx="16" fill="#070b10" stroke="#13211b" stroke-width="1.5" />
 
   <!-- Section Title -->
-  <text x="500" y="48" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="800" fill="#38bdf8" text-anchor="middle" letter-spacing="1">
-    ⚡ PETROVA INTELLIGENCE ARCHITECTURE &amp; CAPABILITIES
-  </text>
-
-  <!-- Row 1 Cards -->
-  <!-- Card 1: Proactive Briefings -->
-  <g transform="translate(40, 80)" filter="url(#cardShadow)">
-    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#38bdf8" stroke-width="1" />
-    <text x="20" y="36" font-family="sans-serif" font-size="20">🌟</text>
-    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#38bdf8">Proactive Health Briefings</text>
-    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8" width="240">
-      <tspan x="20" dy="0">Time-aware greetings with live CPU</tspan>
-      <tspan x="20" dy="18">thermals, RAM telemetry, and</tspan>
-      <tspan x="20" dy="18">previous session continuity.</tspan>
+  <g transform="translate(550, 48)">
+    <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="url(#headerGrad)" text-anchor="middle" letter-spacing="1.5">
+      ⚡ PETROVA CORE ARCHITECTURE &amp; CAPABILITIES
     </text>
-    <rect x="20" y="122" width="100" height="22" rx="4" fill="#0369a1" fill-opacity="0.3" />
-    <text x="28" y="137" font-family="monospace" font-size="10" fill="#38bdf8">Hardware Aware</text>
   </g>
 
-  <!-- Card 2: Distro Fidelity -->
-  <g transform="translate(360, 80)" filter="url(#cardShadow)">
-    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#34d399" stroke-width="1" />
-    <text x="20" y="36" font-family="sans-serif" font-size="20">🐧</text>
-    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#34d399">Deep Distro Precision</text>
-    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8">
-      <tspan x="20" dy="0">Native package manager intelligence</tspan>
-      <tspan x="20" dy="18">(CachyOS, Arch, paru, pacman)</tspan>
-      <tspan x="20" dy="18">with zero cross-distro hallucinations.</tspan>
+  <!-- ==================== ROW 1 ==================== -->
+
+  <!-- Card 1: Dual Desktop GUI & Terminal -->
+  <g class="feature-card" transform="translate(45, 80)" filter="url(#cardShadow)">
+    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
+    <text x="22" y="38" font-family="sans-serif" font-size="20">🖥️</text>
+    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#00f59b">Desktop GUI &amp; Terminal Drawer</text>
+    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
+      <tspan x="22" dy="0">PySide6 native app with live neural</tspan>
+      <tspan x="22" dy="18">canvas visualizer, telemetry gauges,</tspan>
+      <tspan x="22" dy="18">and slide-up embedded shell drawer.</tspan>
     </text>
-    <rect x="20" y="122" width="115" height="22" rx="4" fill="#065f46" fill-opacity="0.3" />
-    <text x="28" y="137" font-family="monospace" font-size="10" fill="#34d399">CachyOS / Arch</text>
+    <rect x="22" y="134" width="130" height="24" rx="5" fill="#0b2419" stroke="#10b981" stroke-width="0.8" />
+    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#34d399">Wayland / X11 Ready</text>
   </g>
 
-  <!-- Card 3: Safe Command Execution -->
-  <g transform="translate(680, 80)" filter="url(#cardShadow)">
-    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#f472b6" stroke-width="1" />
-    <text x="20" y="36" font-family="sans-serif" font-size="20">⚡</text>
-    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#f472b6">Interactive TTY Execution</text>
-    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8">
-      <tspan x="20" dy="0">Full-screen TTY support for htop, top,</tspan>
-      <tspan x="20" dy="18">vim, and sudo prompts with safe</tspan>
-      <tspan x="20" dy="18">[y/N] permission checks.</tspan>
+  <!-- Card 2: Voice & STT Engine -->
+  <g class="feature-card" transform="translate(390, 80)" filter="url(#cardShadow)">
+    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
+    <text x="22" y="38" font-family="sans-serif" font-size="20">🎙️</text>
+    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#34d399">Voice &amp; Speech Engine</text>
+    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
+      <tspan x="22" dy="0">Offline neural Text-to-Speech (Piper)</tspan>
+      <tspan x="22" dy="18">and microphone STT (Whisper/Vosk)</tspan>
+      <tspan x="22" dy="18">with hands-free push-to-talk.</tspan>
     </text>
-    <rect x="20" y="122" width="105" height="22" rx="4" fill="#831843" fill-opacity="0.3" />
-    <text x="28" y="137" font-family="monospace" font-size="10" fill="#f472b6">htop &amp; TUI Ready</text>
+    <rect x="22" y="134" width="125" height="24" rx="5" fill="#09291b" stroke="#34d399" stroke-width="0.8" />
+    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#6ee7b7">TTS + STT Pipeline</text>
   </g>
 
-  <!-- Row 2 Cards -->
-  <!-- Card 4: SQLite Memory -->
-  <g transform="translate(40, 270)" filter="url(#cardShadow)">
-    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#a78bfa" stroke-width="1" />
-    <text x="20" y="36" font-family="sans-serif" font-size="20">🧠</text>
-    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#a78bfa">Persistent SQLite Memory</text>
-    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8">
-      <tspan x="20" dy="0">Remembers user preferences, shell</tspan>
-      <tspan x="20" dy="18">habits, and project details with</tspan>
-      <tspan x="20" dy="18">automatic quota enforcement.</tspan>
+  <!-- Card 3: Deep Distro Precision -->
+  <g class="feature-card" transform="translate(735, 80)" filter="url(#cardShadow)">
+    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
+    <text x="22" y="38" font-family="sans-serif" font-size="20">🐧</text>
+    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#a3e635">Deep Distro Precision</text>
+    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
+      <tspan x="22" dy="0">Automatic OS detection (Arch, CachyOS,</tspan>
+      <tspan x="22" dy="18">Debian, Fedora) with zero package</tspan>
+      <tspan x="22" dy="18">manager hallucination.</tspan>
     </text>
-    <rect x="20" y="122" width="100" height="22" rx="4" fill="#4c1d95" fill-opacity="0.3" />
-    <text x="28" y="137" font-family="monospace" font-size="10" fill="#a78bfa">Zero-Latency</text>
+    <rect x="22" y="134" width="135" height="24" rx="5" fill="#202b0c" stroke="#a3e635" stroke-width="0.8" />
+    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#bef264">CachyOS / Arch / Deb</text>
   </g>
 
-  <!-- Card 5: Web & GitHub Inspector -->
-  <g transform="translate(360, 270)" filter="url(#cardShadow)">
-    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#fbbf24" stroke-width="1" />
-    <text x="20" y="36" font-family="sans-serif" font-size="20">🌐</text>
-    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#fbbf24">Online Repo &amp; Web Fetch</text>
-    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8">
-      <tspan x="20" dy="0">Pass any GitHub repo or web URL</tspan>
-      <tspan x="20" dy="18">to instantly fetch structure, README,</tspan>
-      <tspan x="20" dy="18">and code documentation.</tspan>
+  <!-- ==================== ROW 2 ==================== -->
+
+  <!-- Card 4: Persistent SQLite Memory -->
+  <g class="feature-card" transform="translate(45, 285)" filter="url(#cardShadow)">
+    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
+    <text x="22" y="38" font-family="sans-serif" font-size="20">🧠</text>
+    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#38bdf8">Persistent SQLite Memory</text>
+    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
+      <tspan x="22" dy="0">Remembers user preferences, shell</tspan>
+      <tspan x="22" dy="18">habits, and episodic session notes</tspan>
+      <tspan x="22" dy="18">with automated storage quota caps.</tspan>
     </text>
-    <rect x="20" y="122" width="105" height="22" rx="4" fill="#78350f" fill-opacity="0.3" />
-    <text x="28" y="137" font-family="monospace" font-size="10" fill="#fbbf24">No API Key Req</text>
+    <rect x="22" y="134" width="120" height="24" rx="5" fill="#08283b" stroke="#38bdf8" stroke-width="0.8" />
+    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#7dd3fc">Zero-Latency DB</text>
   </g>
 
-  <!-- Card 6: Multi-Step Goal Planner -->
-  <g transform="translate(680, 270)" filter="url(#cardShadow)">
-    <rect width="280" height="160" rx="10" fill="url(#cardBg)" stroke="#38bdf8" stroke-width="1" />
-    <text x="20" y="36" font-family="sans-serif" font-size="20">🎯</text>
-    <text x="50" y="35" font-family="sans-serif" font-size="15" font-weight="bold" fill="#38bdf8">Multi-Step Goal Planner</text>
-    <text x="20" y="68" font-family="sans-serif" font-size="12" fill="#94a3b8">
-      <tspan x="20" dy="0">Type /goal &lt;task&gt; to decompose</tspan>
-      <tspan x="20" dy="18">complex objectives into sequenced,</tspan>
-      <tspan x="20" dy="18">interactive execution plans.</tspan>
+  <!-- Card 5: Multi-Step Goal Planner -->
+  <g class="feature-card" transform="translate(390, 285)" filter="url(#cardShadow)">
+    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
+    <text x="22" y="38" font-family="sans-serif" font-size="20">🎯</text>
+    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#fbbf24">Multi-Step Goal Planner</text>
+    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
+      <tspan x="22" dy="0">Type /goal &lt;task&gt; to decompose</tspan>
+      <tspan x="22" dy="18">complex objectives into sequenced,</tspan>
+      <tspan x="22" dy="18">interactive execution plans.</tspan>
     </text>
-    <rect x="20" y="122" width="110" height="22" rx="4" fill="#0369a1" fill-opacity="0.3" />
-    <text x="28" y="137" font-family="monospace" font-size="10" fill="#38bdf8">Agentic Planning</text>
+    <rect x="22" y="134" width="125" height="24" rx="5" fill="#2d1f08" stroke="#fbbf24" stroke-width="0.8" />
+    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#fde68a">Agentic Planning</text>
+  </g>
+
+  <!-- Card 6: Safety Guardrails & Local Privacy -->
+  <g class="feature-card" transform="translate(735, 285)" filter="url(#cardShadow)">
+    <rect class="card-border" width="320" height="180" rx="12" fill="url(#cardBg)" stroke="#1a3326" stroke-width="1.2" />
+    <text x="22" y="38" font-family="sans-serif" font-size="20">🛡️</text>
+    <text class="card-title" x="52" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#f87171">Safety &amp; Privacy Shield</text>
+    <text x="22" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#94a3b8">
+      <tspan x="22" dy="0">100% offline inference, credential</tspan>
+      <tspan x="22" dy="18">scrubbing, and explain-before-execute</tspan>
+      <tspan x="22" dy="18">safeguards for destructive commands.</tspan>
+    </text>
+    <rect x="22" y="134" width="130" height="24" rx="5" fill="#2d1010" stroke="#f87171" stroke-width="0.8" />
+    <text x="32" y="150" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#fca5a5">Zero Data Leakage</text>
   </g>
 </svg>

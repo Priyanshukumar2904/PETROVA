@@ -7,7 +7,7 @@ from rich.table import Table
 from petrova.config.settings import get_config
 from petrova.core.server import is_server_running
 from petrova.memory.store import get_memory_count, get_db_size_mb
-from petrova.linux.stats import get_distro_info, get_cpu_temp, get_ram_usage
+from petrova.linux.stats import get_distro_info, get_cpu_temp, get_ram_usage, get_battery_status
 
 
 def get_ai_status() -> str:
@@ -43,9 +43,11 @@ def get_status_table() -> Table:
     distro = get_distro_info()
     cpu_temp = get_cpu_temp()
     ram = get_ram_usage()
+    battery = get_battery_status()
     uname = platform.uname()
 
     temp_str = f" • [green]{cpu_temp}°C[/green]" if cpu_temp else ""
+    bat_str = f" • {battery['icon']} {battery['percent']}%" if (battery["present"] and battery["percent"] is not None) else ""
 
     table.add_row("User Profile", f"[bold green]{config.user_name}[/bold green]")
     table.add_row("AI Model", f"[bold cyan]{config.model_name}[/bold cyan]")
@@ -53,6 +55,6 @@ def get_status_table() -> Table:
     table.add_row("Permissions", f"[bold green]{perm_mode}[/bold green]")
     table.add_row("Memory DB", f"[bold green]READY[/bold green] [dim]({mem_count} items, {db_size}MB / {quota_str})[/dim]")
     table.add_row("Operating System", f"[bold cyan]{distro['pretty_name']}[/bold cyan] [dim](pkg: {distro['package_manager']}/{distro['aur_helper']})[/dim]")
-    table.add_row("Hardware Stats", f"[dim]RAM: {ram['used_gb']}/{ram['total_gb']}GB ({ram['pct']}%){temp_str} • Kernel: {uname.release}[/dim]")
+    table.add_row("Hardware Stats", f"[dim]RAM: {ram['used_gb']}/{ram['total_gb']}GB ({ram['pct']}%){temp_str}{bat_str} • Kernel: {uname.release}[/dim]")
 
     return table
